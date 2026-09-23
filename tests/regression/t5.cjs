@@ -1,0 +1,33 @@
+const path=require('path'), fs_=require('fs');
+const ROOT=path.join(__dirname,'..','..');
+const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
+const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
+const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
+const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
+const WRAP=n=>{const p=T(n); if(!fs_.existsSync(p)) fs_.writeFileSync(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
+const { chromium } = require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:900}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
+const fs=require('fs'); const body=fs.readFileSync(APP,'utf8');
+fs.writeFileSync(T('t5.html'),`<!doctype html><html><head><meta charset="utf-8"><script>
+window.claude={use:async n=>{ if(n==="sample"){const f=async()=>({text:""}); f.limits=async()=>({images:{maxCount:5}}); f.json=async(p,o)=>{ if(p.includes("원재료명·알레르기")) return {productName:"딸기 요거트 음료",ingredients:"정제수, 백설탕, 딸기과즙, 탈지분유, 카라기난, 수크랄로스(감미료), D-솔비톨액, 메타중아황산나트륨, 이눌린",allergyLine:"우유, 대두, 복숭아 함유"}; return {}}; return f}
+ if(n==="downloads") return {save:async()=>({status:"saved"})}; return null}};
+</script></head><body>`+body+'</body></html>');
+await p.goto('file://'+WRAP('t5.html'));await p.waitForTimeout(600);await p.evaluate(()=>{S.consent={date:today(),ai:true};render()});
+await p.evaluate(()=>{S.profile.allergies=['peach'];render()});
+await p.click('.tab[data-tab=food]'); await p.click('[data-act=foodSub][data-v=label]');
+fs.writeFileSync(T('t.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64'));
+await p.setInputFiles('#lbPick',T('t.png'));
+await p.click('[data-act=lbRead]'); await p.waitForTimeout(300);
+console.log(await p.evaluate(()=>JSON.stringify({o:LB.res.overall,rows:LB.res.rows.map(r=>[r.lv,r.title,r.found])})));
+await p.click('[data-act=lbReset]');
+await p.fill('#lbText','쌀, 정제소금'); await p.click('[data-act=lbCheck]');
+console.log(await p.evaluate(()=>JSON.stringify(LB.res)));
+await p.click('[data-act=lbReset]');
+await p.fill('#lbText','정제수, 카라기난, 복숭아과즙'); await p.click('[data-act=lbCheck]'); await p.waitForTimeout(400);
+console.log(await p.evaluate(()=>JSON.stringify(LB.res.rows.map(r=>[r.lv,r.title,r.found]))));
+await p.screenshot({path:T('lb.png'),fullPage:true});
+console.log('errors',errs); await b.close()})();

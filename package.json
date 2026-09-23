@@ -1,0 +1,14 @@
+{
+  "name": "uc-table",
+  "version": "1.0.0",
+  "description": "궤양성 대장염 식단·증상 기록 웹앱(단일 파일, 오프라인 PWA)",
+  "private": true,
+  "scripts": {
+    "test": "bash tests/run-all.sh",
+    "build": "python3 src/data/build_app.py && python3 tools/build_offline.py",
+    "build:offline": "python3 tools/build_offline.py",
+    "serve": "python3 -m http.server 8080 --directory public"
+  },
+  "devDependencies": { "playwright": "1.56.0" },
+  "license": "MIT"
+}

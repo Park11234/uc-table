@@ -1,0 +1,32 @@
+const path=require('path'), fs_=require('fs');
+const ROOT=path.join(__dirname,'..','..');
+const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
+const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
+const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
+const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
+const WRAP=n=>{const p=T(n); if(!fs_.existsSync(p)) fs_.writeFileSync(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
+const { chromium } = require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:900}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
+const fs=require('fs'); const body=fs.readFileSync(APP,'utf8');
+fs.writeFileSync(T('t6.html'),`<!doctype html><html><head><meta charset="utf-8"><script>
+window.claude={use:async n=>{ if(n==="sample"){const f=async()=>({text:""}); f.limits=async()=>({images:{maxCount:5}}); f.json=async(p,o)=>{ window.__n=o.images.length; if(p.includes("영양정보 표와")) return {productName:"초코 단백질 바",ingredients:"귀리, 치커리뿌리섬유(이눌린), 말티톨, 팜유, 대두단백",allergyLine:"대두, 우유 함유",nutrition:{basis:"1회 제공량 40g당",basisAmount:40,basisUnit:"g",totalAmount:40,totalUnit:"g",kcal:"170",carbohydrate:20,sugar:3,fiber:"5g",protein:10,fat:7,saturatedFat:4,transFat:0,sodium:"95mg",calcium:null}}; return {}}; return f}
+ if(n==="downloads") return {save:async()=>({status:"saved"})}; return null}};
+</script></head><body>`+body+'</body></html>');
+await p.goto('file://'+WRAP('t6.html'));await p.waitForTimeout(600);await p.evaluate(()=>{S.consent={date:today(),ai:true};render()});
+await p.evaluate(()=>{S.orders.checked=['lowfat'];S.profile.sex='F';S.profile.age='30';render()});
+await p.click('.tab[data-tab=food]'); await p.click('[data-act=foodSub][data-v=label]');
+fs.writeFileSync(T('t.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64'));
+await p.setInputFiles('#lbPick',[T('t.png'),T('t.png'),T('t.png')]);
+console.log('photos',await p.evaluate(()=>[LB.photos.length,LB.err]));
+await p.click('[data-act=lbRead]'); await p.waitForTimeout(300);
+console.log(await p.evaluate(()=>JSON.stringify({n:window.__n,eat:LB.eat,c:lbCombine()})));
+await p.fill('#lbEat','20'); await p.click('[data-act=lbRecheck]');
+console.log(await p.evaluate(()=>JSON.stringify(LB.nres.rows.filter(r=>r.title==='식이섬유'))));
+await p.click('[data-act=lbRate][data-v=bad]'); await p.waitForTimeout(400); await p.screenshot({path:T('lb6a.png'),fullPage:true}); await p.click('[data-act=lbEaten]'); await p.waitForTimeout(150); await p.click('[data-act=badSym][data-v=pain]'); await p.click('[data-act=badSave]');
+console.log(await p.evaluate(()=>JSON.stringify({x:S.extras[today()],t:S.triggers,r:S.ratings.slice(-1)})));
+await p.click('.tab[data-tab=food]'); await p.waitForTimeout(400); await p.screenshot({path:T('lb6.png'),fullPage:true}); await p.click('.tab[data-tab=nutri]'); await p.waitForTimeout(400); await p.screenshot({path:T('n6.png')});
+console.log('errors',errs); await b.close()})();

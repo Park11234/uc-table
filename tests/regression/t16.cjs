@@ -1,0 +1,25 @@
+const path=require('path'), fs_=require('fs');
+const ROOT=path.join(__dirname,'..','..');
+const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
+const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
+const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
+const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
+const WRAP=n=>{const p=T(n); if(!fs_.existsSync(p)) fs_.writeFileSync(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
+const { chromium } = require('playwright'); const fs=require('fs');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
+const body=fs.readFileSync(APP,'utf8');
+fs.writeFileSync(T('t16.html'),'<!doctype html><html><head><meta charset="utf-8"></head><body>'+body+'</body></html>');
+await p.goto('file://'+WRAP('t16.html'));await p.waitForTimeout(500);
+await p.evaluate(()=>{S.consent={date:today(),ai:false};S.profile.allergies=["egg"];S.triggers=[{name:"우유",foodId:"milk",sym:["gas"],never:false}];render()});
+console.log('DL fallback', await p.evaluate(()=>[aiReady, DL===DL_FALLBACK]));
+console.log('safe', await p.evaluate(()=>[safeAIText("계란찜을 곁들이면 좋아요"),safeAIText("두부는 부드러워요"),safeAIText("우유를 한 잔 드세요"),safeAIText("우유는 피하세요")]));
+// backup download in plain browser
+const dl=p.waitForEvent('download',{timeout:5000}).catch(()=>null);
+await p.evaluate(()=>{S.tab="me";SCR=null;render()}); await p.click('[data-act=openScr][data-v=set-data]').catch(()=>{});
+await p.click('[data-act=backup]').catch(e=>console.log('no backup btn',e.message.slice(0,50)));
+const d=await dl; console.log('download', d?d.suggestedFilename():null, await p.evaluate(()=>S.lastBackup));
+console.log(errs);await b.close()})();

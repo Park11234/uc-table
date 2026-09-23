@@ -1,0 +1,25 @@
+const path=require('path'), fs_=require('fs');
+const ROOT=path.join(__dirname,'..','..');
+const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
+const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
+const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
+const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
+const WRAP=n=>{const p=T(n); if(!fs_.existsSync(p)) fs_.writeFileSync(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
+const { chromium } = require('playwright'); const fs=require('fs');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
+p.on('pageerror',e=>console.log('ERR',e.message));
+await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
+await p.goto('file://'+WRAP('t23.html'));await p.waitForTimeout(400);
+await p.evaluate(()=>{S.consent={date:today(),ai:false};render()});
+console.log('stage', await p.evaluate(()=>currentStage().stage));
+console.log('direct swap', await p.evaluate(()=>{const before=S.plan.days[0].meals[0].title;const ok=swapMeal(0,0);return [before,ok,S.plan.days[0].meals[0].title]}));
+console.log('again', await p.evaluate(()=>{const ok=swapMeal(0,0);return [ok,S.plan.days[0].meals[0].title,S.plan.days[0].meals[0].vi]}));
+console.log('B titles fit', await p.evaluate(()=>{samplePlan();return TPL.B.map(m=>[m.title,!!SAMPLE_FIT.fit(m)])}));
+// click path
+await p.evaluate(()=>{S.plan=null;render()}); await p.waitForTimeout(200);
+const before=await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title);
+await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
+console.log('click swap', before, await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title), await p.evaluate(()=>document.querySelector('.toast')?.textContent||''));
+await b.close()})();

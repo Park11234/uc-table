@@ -1,0 +1,48 @@
+const path=require('path'), fs_=require('fs');
+const ROOT=path.join(__dirname,'..','..');
+const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
+const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
+const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
+const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
+const WRAP=n=>{const p=T(n); if(!fs_.existsSync(p)) fs_.writeFileSync(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
+// 한글 IME 조합(ㅇ→우→웅→우+유)을 CDP로 흉내 내 입력칸마다 '우유'가 되는지, 조합 중 입력칸이 교체되는지 확인
+const { chromium } = require('playwright'); const fs=require('fs');
+const body=fs.readFileSync(process.argv[2]||APP,'utf8');
+fs.writeFileSync(T('ime.html'),'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+body+'</body></html>');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
+await p.goto('file://'+WRAP('ime.html'));await p.waitForTimeout(400);
+const cdp=await p.context().newCDPSession(p);
+async function typeKo(sel){
+  await p.focus(sel);
+  await p.evaluate(s=>{const el=document.querySelector(s); el.__mark=1},sel);
+  const st=async t=>{await cdp.send('Input.imeSetComposition',{text:t,selectionStart:t.length,selectionEnd:t.length}); await p.waitForTimeout(40)};
+  await st('ㅇ'); await st('우'); await st('웅');
+  await cdp.send('Input.insertText',{text:'우'}); await p.waitForTimeout(40);
+  await st('유'); await cdp.send('Input.insertText',{text:'유'}); await p.waitForTimeout(120);
+  return p.evaluate(s=>{const el=document.querySelector(s); return {value:el?el.value:null, same:!!(el&&el.__mark)}},sel);
+}
+const res={};
+const go=async(fn)=>{await p.evaluate(fn); await p.waitForTimeout(150)};
+await go(()=>{S.consent={date:today(),ai:false};SCR=null;S.tab="food";S.foodSub="search";S.foodQ="";render()});
+res.foodQ=await typeKo('#foodQ');
+res.foodResults=await p.evaluate(()=>[...document.querySelectorAll('.fcard b')].map(x=>x.textContent).slice(0,4));
+await go(()=>{S.foodQ="";S.tab="me";SCR=null;render();openTrigPicker()});
+res.tpQ=await typeKo('#tpQ');
+await go(()=>{closeSheet();SCR={name:"set-profile"};render()});
+for(const id of ['p_dislikes','p_allergyOther','p_medOther']) if(await p.$('#'+id)) res[id]=await typeKo('#'+id);
+await go(()=>{SCR={name:"set-orders"};render()});
+if(await p.$('#orderAdd')) res.orderAdd=await typeKo('#orderAdd');
+await go(()=>{SCR=null;S.tab="log";render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()});
+if(await p.$('#otherAdd')) res.otherAdd=await typeKo('#otherAdd');
+if(await p.$('#memo')) res.memo=await typeKo('#memo');
+await go(()=>{wizardDirty=()=>false;draft=null;SCR=null;S.tab="food";S.foodSub="menu";render()});
+if(await p.$('#mjText')) res.mjText=await typeKo('#mjText');
+await go(()=>{S.foodSub="label";render()});
+if(await p.$('#lbText')) res.lbText=await typeKo('#lbText');
+console.log(JSON.stringify(res,null,0).replace(/},/g,'},\n'));
+console.log('errors',errs);
+await b.close();})();
