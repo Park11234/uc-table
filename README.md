@@ -57,7 +57,7 @@ AI 기능은 동의한 뒤에만, 필요한 값만 보냅니다.
 ## 실행
 
 ```bash
-git clone https://github.com/USERNAME/uc-table.git
+git clone https://github.com/Park11234/uc-table.git
 cd uc-table
 npm run serve          # http://localhost:8080 에서 오프라인 빌드 실행
 ```
