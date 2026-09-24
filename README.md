@@ -6,6 +6,8 @@
 프레임워크 없이 HTML 한 파일로 만들었고, 설치하면 인터넷 없이도 씁니다.
 기록은 서버로 보내지 않고 기기 안에만 남습니다.
 
+https://github.com/Park11234/uc-table/releases/latest/download/uc-table-offline.html
+
 | 홈(오늘 식단) | 증상 기록 | 음식 찾아보기 | 음식 상세 |
 |---|---|---|---|
 | ![홈](docs/screenshots/home.png) | ![기록](docs/screenshots/log.png) | ![찾아보기](docs/screenshots/food.png) | ![상세](docs/screenshots/detail.png) |
