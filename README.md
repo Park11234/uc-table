@@ -14,7 +14,7 @@ https://github.com/Park11234/uc-table/releases/latest/download/uc-table-offline.
 
 어두운 화면도 지원합니다: [홈](docs/screenshots/home-dark.png) · [상세](docs/screenshots/detail-dark.png)
 
-## 왜 만들었나
+## 만든 이유
 
 궤양성 대장염은 같은 음식이라도 **활동기냐 관해기냐에 따라 먹어도 되는지가 달라집니다.**
 환자용 자료는 "기름진 음식을 피하세요" 같은 문장으로 끝나는 경우가 많아,
