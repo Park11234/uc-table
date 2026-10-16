@@ -1,0 +1,30 @@
+name: links
+
+# v1.8.0 정기 점검: 매달 1일 참고문헌·레시피 링크가 열리는지, 근거 확인일이 1년을 넘지 않았는지 확인한다.
+on:
+  schedule:
+    - cron: '17 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 근거 확인일 점검(1년 넘은 근거 목록)
+        run: python3 tools/stale_check.py --warn | tee stale-report.txt
+      - name: 링크 점검(실제로 열어 보기)
+        run: python3 tools/link_check.py --online --report link-report.md
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-and-stale-report
+          path: |
+            link-report.md
+            stale-report.txt
+          retention-days: 30

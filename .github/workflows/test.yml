@@ -1,0 +1,59 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 의존성 설치 (package-lock.json 그대로)
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: 정적 분석 (ESLint, 경고 0 유지)
+        run: npm run lint
+      - name: 빌드 재현 확인 (생성 스크립트 결과가 커밋된 앱과 같은지)
+        run: |
+          cp src/app/index.html /tmp/committed.html
+          cp public/index.html /tmp/committed_pwa.html
+          cp public/app.js /tmp/committed_app.js
+          cp public/sw.js /tmp/committed_sw.js
+          python3 src/data/build_app.py
+          python3 tools/build_offline.py
+          diff -q /tmp/committed.html src/app/index.html
+          diff -q /tmp/committed_pwa.html public/index.html
+          diff -q /tmp/committed_app.js public/app.js
+          diff -q /tmp/committed_sw.js public/sw.js
+      - name: 데이터 생성 코드 단위 점검 (Python unittest)
+        run: python3 -m unittest discover -s tests/python -v
+      - name: 근거 확인일·링크 형식·문구 말투 점검 (내려받기 없이)
+        run: |
+          python3 tools/stale_check.py
+          python3 tools/link_check.py
+          python3 tools/tone_check.py
+      - name: 점검 실행 (Playwright)
+        run: npm test
+      - name: 점검의 점검 (일부러 망가뜨린 앱을 점검이 잡는지)
+        run: npm run test:mutation
+      - name: 화면 비교 점검 (기준 화면과 픽셀 비교)
+        run: node tests/visual/visual.cjs
+      - name: 실패 로그 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: .test-out/
+          retention-days: 7

@@ -17,6 +17,14 @@ import menus  # noqa: E402
 import spec8  # noqa: E402
 import snack_check  # noqa: E402
 import ramen_check  # noqa: E402
+import mart_check  # noqa: E402
+import spec9  # noqa: E402
+import spec10  # noqa: E402
+import cj10  # noqa: E402
+import brand10  # noqa: E402
+import label10  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, 'tools'))
+import cj_import  # noqa: E402
 from build_app import render  # noqa: E402
 
 
@@ -90,6 +98,17 @@ class FoodSpecTest(unittest.TestCase):
             if x[3].startswith('L:'):
                 self.assertIn(x[3][2:], spec8.LABEL)
         self.assertGreaterEqual(sum(1 for x in spec8.TR8 if 'ons' in x[5]), 30)
+
+    def test_template_keys_do_not_override(self):
+        """판정 문장 묶음(templates·spec8·spec9·spec10)을 합칠 때 같은 이름으로 앞 문장을 덮어쓰지 않아야 한다.
+        v1.9.0 작업 중 spec10의 'upf_reduce'가 기존 과자·라면 71종의 초가공식품 설명과 근거 번호를 바꾼 일이 있어 둔 점검(2026-10-16)"""
+        import templates
+        seen = {}
+        for name, d in [('templates', dict(templates.T)), ('spec8', spec8.T8), ('spec9', spec9.T9), ('spec10', spec10.T10)]:
+            for k, v in d.items():
+                if k in seen:
+                    self.assertEqual(seen[k][1], v, '%s의 %s가 %s 문장을 덮어씀' % (name, k, seen[k][0]))
+                seen[k] = (name, v)
 
     def test_all_generated_foods_have_values_or_marked(self):
         for fid in (re.match(r'LF\("([a-z0-9_]+)"', x).group(1) for x in GEN['foods']):
@@ -179,7 +198,7 @@ class SnackCheckTest(unittest.TestCase):
             self.assertNotIn(fid, FOOD_IDS)
 
     def test_ingredients_attached(self):
-        self.assertEqual(GEN['ingr'], {**snack_check.ING, **ramen_check.ING})
+        self.assertEqual(GEN['ingr'], {**snack_check.ING, **ramen_check.ING, **mart_check.ING, **spec10.ING10})
         for fid in snack_check.ING:
             self.assertIn(fid, FOOD_IDS)
 
@@ -531,3 +550,272 @@ class BrandTest(unittest.TestCase):
         self.assertIn(json.dumps(logo, ensure_ascii=False), app)
         self.assertIn('<title>UC TABLE</title>', app)
         self.assertNotIn('UC 식단 관리 도우미</h1>', app)
+
+
+class MartCheckTest(unittest.TestCase):
+    """마트·편의점 시판 식품 대조(src/data/mart_check.py)를 다시 계산한다(2026-10-14)"""
+
+    def test_every_mart_label_has_crosscheck(self):
+        rows = {x[0]: x for x in spec9.TR9}
+        self.assertEqual(len(mart_check.X), 17)
+        self.assertEqual(len(rows), 17)
+        for key, v in mart_check.X.items():
+            d = spec9.LABEL9[v['lk']]
+            self.assertEqual(d['xm'], v['fid'])
+            self.assertEqual(rows[v['fid']][3], 'L:' + v['lk'])
+            self.assertIn(27, d['ref'])
+            self.assertIn(81, d['ref'])
+            self.assertIn(v['fid'], FOOD_IDS)
+
+    def test_label_matches_db_rows(self):
+        """C 포장 표시와 식약처 DB 같은 제품 행(가장 최근 날짜)이 허용 범위 안에서 맞아야 한다"""
+        for key, v in mart_check.X.items():
+            w = v['w']
+            self.assertTrue(v['db'], key)
+            self.assertEqual(len({r['date'] for r in v['db']}), 1, key)
+            for r in v['db']:
+                for n in ('kcal', 'c', 's', 'p', 'f', 'na'):
+                    lv = v['show'].get(n)
+                    if isinstance(lv, str) or lv is None or r.get(n) is None:
+                        continue
+                    self.assertLessEqual(abs(r[n] * w / 100 - lv), mart_check.tol(n, lv, w), f'{key} {r["code"]} {n}')
+
+    def test_printed_kcal_matches_macros(self):
+        """D 포장 표시 열량과 탄수화물·단백질·지방 계산이 반올림 오차 안에서 맞아야 한다"""
+        for key, v in mart_check.X.items():
+            self.assertLessEqual(abs(mart_check.calc_kcal(v['show']) - v['show']['kcal']), mart_check.CALC_TOL, key)
+
+    def test_app_values_are_printed_values(self):
+        for v in mart_check.X.values():
+            d = spec9.LABEL9[v['lk']]
+            self.assertEqual(d['vol'], v['w'], v['fid'])
+            self.assertEqual(d['unit'], v['u'], v['fid'])
+            for n in ('kcal', 'c', 'p', 'f', 'na'):
+                self.assertEqual(d[n], v['show'][n], f"{v['fid']} {n}")
+            for n in ('fi', 'ca', 'fe', 'vd'):
+                self.assertEqual(d[n], v['show'].get(n), f"{v['fid']} {n}")
+
+    def test_allergy_tags_follow_label(self):
+        """포장의 '함유' 표시마다 알레르기 태그가 있어야 하고, 표시에 없는 알레르기 태그는 없어야 한다"""
+        names = {'우유': 'dairy', '대두': 'soy', '밀': 'wheat', '쇠고기': 'beef', '닭고기': 'chicken', '조개류': 'clam',
+                 '달걀': 'egg', '돼지고기': 'pork', '새우': 'shrimp', '땅콩': 'peanut'}
+        rows = {x[0]: x for x in spec9.TR9}
+        for fid, t in mart_check.ING.items():
+            m = re.search(r'([가-힣, ()]+) 함유', t)
+            want = set()
+            if m:
+                for part in re.split(r',\s*', m.group(1).strip('. ')):
+                    part = re.sub(r'\(.*?\)', '', part).strip()
+                    want.add(names[part])
+            have = {g for g in rows[fid][5] if g in names.values()}
+            self.assertEqual(have, want, fid)
+
+    def test_ingredients_and_label_text_attached(self):
+        self.assertEqual(GEN['plabel'], {**mart_check.PLABEL, **spec10.PLABEL10})
+        for fid in mart_check.ING:
+            self.assertEqual(GEN['ingr'][fid], mart_check.ING[fid])
+            self.assertIn(str(mart_check.X[next(k for k, v in mart_check.X.items() if v['fid'] == fid)]['show']['kcal']) + 'kcal', GEN['plabel'][fid])
+
+    def test_excluded_and_held_products_not_in_app(self):
+        keys = set()
+        for x in spec9.TR9:
+            for n in [x[1]] + list(x[7]):
+                keys.add(re.sub(r'\s', '', n))
+        for name, *_ in mart_check.EXCLUDED + mart_check.HOLD:
+            for part in re.sub(r'\(.*?\)', '', name).split('·'):
+                part = re.sub(r'\s', '', part)
+                self.assertNotIn(part, keys, name)
+
+
+class Spec10Test(unittest.TestCase):
+    """v1.9.0 시판 식품(CJ더마켓·동원몰·식품안전나라, 제품마다 한 곳 확인)과 '절대 금지'(아질산염 가공육) 규칙"""
+    NIT = re.compile(r'아질산나트륨|아질산칼륨|질산나트륨|질산칼륨')
+
+    def test_nitrite_foods_are_banned(self):
+        """원재료에 발색제가 있으면 nitrite·processed 태그, 시작 단계 9, 첫 설명이 '절대 금지'여야 한다"""
+        n = 0
+        for x in spec10.TR10:
+            ing = spec10.ING10[x[0]]
+            direct = bool(self.NIT.search(ing))
+            if 'nitrite' in x[5]:
+                n += 1
+                # 원재료명에 발색제가 없으면 스팸 클래식(고시에 아질산나트륨)이 원재료인 CJ 제품뿐
+                self.assertTrue(direct or (x[0].startswith('cj') and re.search(r'스팸\s*[Ⓡ®]?\s*클래식', ing)), x[0])
+                self.assertIn('processed', x[5], x[0])
+                self.assertEqual(x[4], 9, x[0])
+                self.assertIn(x[9][0], ('nitrite_meat', 'nitrite_dish'), x[0])    # 가공육 자체 / 가공육이 든 음식(볶음밥·찌개 등)
+            else:
+                self.assertFalse(direct, x[0])
+        self.assertGreaterEqual(n, 150)
+        self.assertIn("'절대 금지'", spec10.T10['nitrite_meat'][0])
+        self.assertIn("'절대 금지'", spec10.T10['nitrite_dish'][0])
+        self.assertIn('가공육이 들어 있', spec10.T10['nitrite_dish'][0])
+        self.assertIn('가공육이 들어 있', spec10.T10['processed_dish'][0])
+        spam = next(p for p in cj10.P if p['prd'] == '40134669')    # 설명이 인용하는 스팸 클래식 고시
+        self.assertRegex(spam['ing'], self.NIT)
+
+    def test_app_ban_level(self):
+        """앱: 판정 단계 '절대 금지'(ban)가 피하기보다 위이고, 아질산염 태그는 절대 금지에만 있다"""
+        self.assertIn('const BAN_TAG=[["nitrite",', APP_SRC)
+        self.assertIn('const LV_RANK={ok:0,caution:1,later:2,avoid:3,ban:4}', APP_SRC)
+        self.assertIn('ban:"절대 금지"', APP_SRC)
+        av = APP_SRC[APP_SRC.index('const AVOID_TAG='):APP_SRC.index('];', APP_SRC.index('const AVOID_TAG='))]
+        self.assertNotIn('"nitrite"', av)
+
+    def test_every_food_has_one_source(self):
+        ids = {x[0] for x in spec10.TR10}
+        self.assertEqual(set(spec10.PSRC10), ids)
+        self.assertEqual(GEN['psrc'], spec10.PSRC10)
+        site_ref = {'cj': 82, 'dw': 83, 'fs': 84, 'dl': 85, 'rk': 86, 'im': 87, 'pm': 88}
+        for x in spec10.TR10:
+            p = spec10.PSRC10[x[0]]
+            self.assertEqual(p[0], x[0][:2], x[0])
+            self.assertIn(p[0], site_ref)
+            self.assertRegex(p[1], r'^\d+$' if p[0] != 'rk' else r'^[A-Z]?\d+$', x[0])
+            self.assertRegex(p[2], r'^2026-\d\d-\d\d$', x[0])
+            refs = spec10.T10['p_' + x[0]][1]
+            if p[0] in ('dl', 'rk', 'im', 'pm') and len(refs) == 2:    # 판매처에 영양정보가 없어 식약처 가공식품 DB 값을 쓴 제품
+                self.assertEqual(refs, [site_ref[p[0]], 27], x[0])
+                self.assertEqual(spec10.PLABEL10[x[0]][14][:11], '식약처 가공식품 DB', x[0])
+            else:
+                self.assertEqual(refs, [site_ref[p[0]]], x[0])
+            if p[0] == 'fs':     # 품목제조보고: 원장 번호·보고 일자
+                self.assertEqual(len(p), 5, x[0])
+                self.assertRegex(p[3], r'^\d+$', x[0])
+                self.assertRegex(p[4], r'^(\d{4}-\d\d-\d\d)?$', x[0])
+            else:
+                self.assertEqual(len(p), 3, x[0])
+        for n in site_ref.values():
+            self.assertIn(n, REF_NOS)
+        # 앱의 자료별 이름·링크·근거 번호가 테스트와 같다
+        for site, n in site_ref.items():
+            self.assertRegex(APP_SRC, site + r':\{nm:"[^"]+",doc:"[^"]+",ref:' + str(n) + ',')
+
+    def test_names_and_exclusions(self):
+        """이름 20자 이내, 밀키트·도시락은 넣지 않음, 이름·id가 겹치지 않음"""
+        seen = set()
+        for x in spec10.TR10:
+            self.assertLessEqual(len(x[1]), 20, x[1])
+            for nm in [x[1]] + list(x[7]):
+                self.assertNotRegex(nm, r'밀키트|도시락|쿡킷|키트', x[0])
+            k = re.sub(r'\s', '', x[1])
+            self.assertNotIn(k, seen, x[1])
+            seen.add(k)
+        self.assertEqual(len({x[0] for x in spec10.TR10}), len(spec10.TR10))
+        for p in cj10.P:
+            self.assertNotRegex(p['ty'], r'먹는샘물|탄산수', p['prd'])
+
+    def test_brand_products_have_no_nutrition(self):
+        """동원몰·식품안전나라 제품은 영양값 없이(N:-) 원재료로 판정, 식품안전나라는 발색제가 든 제품만"""
+        for x in spec10.TR10:
+            if x[0][:2] in ('dw', 'fs'):
+                self.assertEqual(x[3], 'N:-', x[0])
+                self.assertNotIn(x[0], spec10.LABEL10)
+                self.assertNotIn(x[0], spec10.PLABEL10)
+                self.assertIn('processed', x[5], x[0])
+            elif x[3] == 'N:-' and x[0][:2] == 'cj':      # CJ에서 영양값을 맞출 수 없어 뺀 것은 아질산염 가공육뿐
+                self.assertIn('nitrite', x[5], x[0])
+        for r in brand10.P:
+            if r['site'] == 'fs':
+                self.assertTrue(r['nit'], r['id'])
+                self.assertRegex(r['ing'], self.NIT, r['id'])
+                self.assertTrue(r['ledg'], r['id'])
+
+    def test_label_values_are_notice_values(self):
+        """CJ 영양값(LABEL10)은 고시 값 그대로이고, 열량은 탄수화물·단백질·지방 계산과 맞는다(가져올 때 규칙과 같음)"""
+        by = {'cj' + p['mat']: p for p in cj10.P}
+        for k, d in spec10.LABEL10.items():
+            if k[:2] in ('dl', 'rk', 'im', 'pm'):     # 만두·육포·볶음밥·국은 아래 test_label_photo_products에서 점검
+                continue
+            p = by[k]
+            for n in ('c', 'p', 'f', 'na'):
+                self.assertEqual(d[n], p[n], f'{k} {n}')
+            self.assertEqual(spec10.PLABEL10[k][4], p['kcal'], k)
+            if d['kcal'] is None:
+                continue
+            # 식이섬유 2·당알코올 2.4·알룰로오스 0kcal/g로 셈한 계산과 15kcal 또는 15% 안(식이섬유·당알코올 원료가 있으면 30%)
+            tv = cj_import.text_vals(p['nut_text'])
+            if tv.get('_multi'):
+                tv = {'_lt': tv['_lt']}
+            rng = cj_import.energy(p, tv)
+            dd, rel = cj_import.kcal_err(d['kcal'], rng)
+            lim = 0.30 if (cj_import.LOW_E.search(p['ing']) and d['kcal'] < rng[0]) else 0.15
+            self.assertTrue(dd <= 15 or rel <= lim, f'{k} {d["kcal"]} {rng}')
+            self.assertFalse(p['s'] is not None and p['s'] > p['c'] + 0.5, k)    # 당류가 탄수화물보다 많으면 안 됨
+
+    def test_label_photo_products(self):
+        """만두·육포·볶음밥·국(동원몰·랭킹닭컴·아임닭·풀무원샵 포장 표시, label10): 표시 값 그대로, 육포는 가공육, 아질산염이면 절대 금지"""
+        tr = {x[0]: x for x in spec10.TR10}
+        nut = ('kcal', 'na', 'c', 's', 'f', 'tf', 'sf', 'ch', 'p', 'fi')
+        n_mandu = n_jerky = n_chicken = n_rice = n_stew = 0
+        skipped = {f for f, _ in spec10.LABEL_NONUT}
+        for r in label10.P:
+            fid = r['site'] + r['id']
+            if r['kind'] in ('mandu', 'friedrice', 'stew') and r['kcal'] is None:    # 만두·볶음밥·국은 영양정보까지 확인한 것만 넣는다
+                self.assertIn(fid, skipped)
+                self.assertNotIn(fid, tr)
+                continue
+            x = tr[fid]
+            self.assertTrue(spec10.ING10[fid].startswith(r['ing']), fid)
+            self.assertEqual(r['nit'], bool(self.NIT.search(r['ing'])), fid)
+            if r['kind'] == 'jerky':
+                n_jerky += 1
+                self.assertEqual(x[2], '단백질', fid)
+                self.assertIn('processed', x[5], fid)
+                self.assertIn('tough', x[5], fid)
+                self.assertEqual(x[4], 9, fid)
+                self.assertEqual(x[9][0], 'nitrite_meat' if r['nit'] else 'processed_meat', fid)
+            elif r['kind'] in ('friedrice', 'stew'):
+                # 볶음밥·주먹밥·국·탕·찌개: CJ 같은 종류와 같은 규칙. 햄·소시지·베이컨이 재료면 가공육이 든 음식(피하기)
+                n_rice += r['kind'] == 'friedrice'
+                n_stew += r['kind'] == 'stew'
+                self.assertEqual(x[2], '요리', fid)
+                proc = bool(spec10.PROC_ING.search(r['ing']))
+                self.assertEqual('processed' in x[5], proc or r['nit'], fid)
+                if proc and not r['nit']:
+                    self.assertEqual(x[9][0], 'processed_dish', fid)
+                self.assertNotIn('fried', x[5], fid)                     # 튀긴 볶음밥·국은 없다('치킨' 이름은 튀김이 아님)
+                self.assertEqual(x[4] == 9, 'processed' in x[5], fid)
+                if r['kind'] == 'stew':
+                    self.assertIn('liq', x[5], fid)
+                g, u = x[6]
+                self.assertTrue(0 < g <= max(r['tot'], 600), fid)
+                if r.get('serv'):
+                    self.assertEqual([g, u], list(r['serv']), fid)
+            else:
+                n_mandu += 1
+                n_chicken += '닭가슴살' in r['names'][0]
+                self.assertNotIn('processed', x[5], fid)
+                self.assertFalse(r['nit'], fid)
+                self.assertEqual(x[4] == 9, 'fried' in x[5], fid)       # 만두는 튀긴 제품만 피하기
+            self.assertEqual('nitrite' in x[5], r['nit'], fid)
+            if r['kcal'] is None:            # 영양정보를 찾지 못한 육포: 가공육이라 원재료로 판정
+                self.assertEqual(r['kind'], 'jerky', fid)
+                self.assertEqual(x[3], 'N:-', fid)
+                self.assertNotIn(fid, spec10.LABEL10)
+                self.assertNotIn(fid, spec10.PLABEL10)
+                continue
+            self.assertEqual(x[3], 'L:' + fid)
+            pl = spec10.PLABEL10[fid]
+            self.assertEqual(pl[:4], [r['b'], r['bu'], r['tot'], r['tu']], fid)
+            self.assertEqual(pl[4:14], [r.get(k) for k in nut], fid)
+            d = spec10.LABEL10[fid]
+            for k in ('kcal', 'c', 'p', 'f', 'na'):
+                self.assertEqual(d[k], r[k], fid)
+            self.assertEqual(d['vol'], r['b'], fid)
+            atw = 4 * r['c'] + 4 * r['p'] + 9 * r['f']
+            self.assertLessEqual(abs(atw - r['kcal']), max(15, 0.15 * r['kcal']), fid)
+            self.assertLessEqual(r['s'], r['c'] + 0.5, fid)
+            if r['sf'] is not None:      # 표시가 서로 바뀐 것으로 보여 비운 칸(올반 김치볶음밥의 트랜스·포화지방)은 건너뜀
+                self.assertLessEqual(r['sf'], r['f'] + 0.5, fid)
+            if r.get('nsrc') == 'mfds':      # 판매처에 영양정보가 없어 식약처 가공식품 DB 값
+                self.assertEqual(d['ref'], [27], fid)
+                self.assertRegex(pl[14], r'^식약처 가공식품 DB \d{4}-\d\d-\d\d$', fid)
+            else:
+                self.assertEqual(d['ref'], [{'dl': 85, 'rk': 86, 'im': 87, 'pm': 88}[r['site']]], fid)
+                self.assertEqual(len(pl), 14, fid)
+        self.assertGreaterEqual(n_mandu, 60)
+        self.assertGreaterEqual(n_jerky, 20)
+        self.assertGreaterEqual(n_chicken, 9)
+        self.assertGreaterEqual(n_rice, 80)
+        self.assertGreaterEqual(n_stew, 50)

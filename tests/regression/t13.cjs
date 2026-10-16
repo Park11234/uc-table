@@ -58,7 +58,8 @@ console.log('recipes',await p.evaluate(()=>Object.values(RECIPES).filter(r=>!/^h
 console.log('tplFoods',await p.evaluate(()=>Object.values(TPL).flat().flatMap(m=>[...m.items.map(x=>x[0]).filter(id=>!FOOD[id]),...(m.rec||[]).filter(r=>!RECIPES[r])])));
 // meal screen with recipes
 await p.evaluate(()=>{S.logs={};S.plan=null;S.profile.meds=["steroid"];render()});
-await p.click('.mrow[data-k="0"]'); await p.waitForTimeout(500);
+{const k=await p.evaluate(()=>Math.max(0,S.plan.days[0].meals.findIndex(m=>m.rec&&m.rec.length)));  // 날짜에 따라 첫 끼에 레시피가 없을 수 있어(2026-10-15 아침) 레시피가 있는 첫 끼를 연다
+ await p.click(`.mrow[data-k="${k}"]`); await p.waitForTimeout(500);}
 console.log('links',await p.evaluate(()=>[...document.querySelectorAll('a.rec-link')].map(a=>[a.textContent,a.getAttribute('href'),a.target,a.rel])));
 console.log('notes',await p.evaluate(()=>[...document.querySelectorAll('.rnotes li')].map(l=>l.textContent)));
 await p.screenshot({path:T('n_meal.png'),fullPage:true});
@@ -98,7 +99,7 @@ console.log('danger',await p.evaluate((L)=>[
   dangerSignals({...L,temp:"37.6"}), dangerSignals({...L,other:["구토"]}), dangerSignals({...L,pain:8}), dangerSignals({...L,other:["소변이 줄고 입이 마름"]}),
   activity({...L,other:["어지러움"]}).stage, activity({...L,temp:"37.8"}).stage, activity({...L}).stage, activity({...L,pain:5}).stage],L()));
 // wizard other options
-await p.evaluate(()=>{SCR=null;render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()});
+await p.evaluate(()=>{SCR=null;render();openWizard();WZ.step=wzStepOf("other");render()});
 console.log('otherOpts',await p.evaluate(()=>[...document.querySelectorAll('#main button')].map(b=>b.textContent.trim()).filter(t=>/오한|구토|소변/.test(t))));
 // urgent banner on plan
 await p.evaluate(()=>{wizardDirty=()=>false;SCR=null;S.logs[today()]={...S.logs[today()],temp:"37.9",other:["오한"]};S.tab="plan";render()});

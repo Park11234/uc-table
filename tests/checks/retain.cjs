@@ -43,8 +43,8 @@ const screens=[
  ['set-meds',()=>{S.tab="me";SCR=null;openScr("set-meds")}],   // 편집 초안(PE)으로 열기(v1.7.1)
  ['set-orders',()=>{S.tab="me";S.orders.checked=["fluid"];SCR=null;openScr("set-orders")}],
  ['set-weight',()=>{S.tab="me";SCR={name:"set-weight"};render()}],
- ['wizard-other',()=>{SCR=null;S.tab="log";render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()}],
- ['wizard-temp',()=>{WZ.step=WSTEPS.findIndex(s=>s.k==="vitals");render()}],
+ ['wizard-other',()=>{SCR=null;S.tab="log";render();openWizard();WZ.step=wzStepOf("other");render()}],
+ ['wizard-temp',()=>{WZ.step=wzStepOf("vitals");render()}],
  ['asks',()=>{SCR=null;S.tab="log";openScr("asks")}],   // v1.8.0 진료 때 물어볼 것
  ['set-goals',()=>{S.tab="me";SCR=null;openScr("set-goals")}],   // v1.8.0 목표 직접 정하기
  ['onboard-step',()=>{SCR=null;S.onb="1";render()}],   // v1.8.0 첫 실행 설정 1단계

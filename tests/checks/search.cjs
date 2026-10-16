@@ -29,12 +29,13 @@ const r=await p.evaluate(()=>{S.consent={date:today()};
     broken:has("ㅇㅜㅇㅠ","우유"), partial:has("웅","우유"), mixed:has("우ㅇ","우유"), mixed2:has("우ㅇㅠ","우유"),
     cho:has("ㄴㄹㅈ","누룽지"), choCompound:has("ㄷㄳ","닭가슴살"), nfd:has("우유".normalize("NFD"),"우유"),
     brokenLong:has("ㄴㅜㄹㅜㅇㅈㅣ","누룽지"), brokenCompoundVowel:has("ㅅㅏㄱㅗㅏ","사과"), space:has(" 우 유 ","우유"),
-    single:names("ㅇ").length, nothing:names("ㅋㅋㅋ").length, latin:names("zz").length,
+    single:names("ㅇ").length, nothing:names("ㅋㅋㅋㅋㅋㅋ").length, latin:names("zz").length,
     oldAllergy:nameHit(FOOD.milk,"우유".normalize("NFD")), tags:tagsOfText("우유".normalize("NFD")+"함유")
   }});
 console.log(JSON.stringify(r));
 const F=[]; const need=(c,m)=>{if(!c) F.push(m)};
 for(const k of ["broken","partial","mixed","mixed2","cho","choCompound","nfd","brokenLong","brokenCompoundVowel","space","oldAllergy"]) need(r[k]===true,'검색 규칙 '+k);
+// v1.9.0: 'ㅋㅋㅋ'는 '코카콜라'(ㅋㅋㅋㄹ) 초성과 같아 시판 제품을 넣은 뒤로 결과가 나오는 것이 맞다 → 어느 이름에도 없는 'ㅋ' 여섯 개로 확인
 need(r.single===0&&r.nothing===0&&r.latin===0,'엉뚱한 검색어에 결과가 나옴');
 need(r.tags.includes("dairy")&&r.tags.includes("lactose"),'NFD 한글 알레르기 태그');
 // 결과 순서: 같은 판정 묶음 안에서 이름이 똑같은 음식이 자모만 겹치는 음식보다 앞
@@ -44,7 +45,8 @@ const ord=await p.evaluate(()=>{const keep=S.foodQ; S.foodQ="김"; const rows=fo
   EX={q:"계란찜",date:today()}; const first=(exListHTML().match(/data-v="([a-z_0-9]+)"/)||[])[1];
   return {sorted,laverRank:lv&&lv.r,manduRank:mv&&mv.r,first}});
 console.log('order',JSON.stringify(ord));
-need(ord.sorted&&ord.laverRank===0&&ord.manduRank===3,'"김" 검색 순서(같은 판정 안에서 이름 일치가 먼저)');
+// v1.9.0 F-6: 한 글자 검색은 낱말 처음·끝에만 걸리므로 '만두'는 '김' 결과에 없을 수 있다(있다면 자모 일치 순위 3)
+need(ord.sorted&&ord.laverRank===0&&(ord.manduRank==null||ord.manduRank===3),'"김" 검색 순서(같은 판정 안에서 이름 일치가 먼저)');
 need(ord.first==="egg_steamed",'먹은 음식 추가 창 첫 결과');
 // 조합 단계별 결과 수
 await p.evaluate(()=>{SCR=null;S.tab="food";S.foodSub="search";S.foodQ="";render()});
@@ -54,10 +56,11 @@ const st=async t=>{await cdp.send('Input.imeSetComposition',{text:t,selectionSta
 await st('ㅇ'); await st('우'); await st('웅'); await cdp.send('Input.insertText',{text:'우'}); await st('유'); await cdp.send('Input.insertText',{text:'유'}); await p.waitForTimeout(80);
 steps.push(['final',await p.inputValue('#foodQ')]);
 console.log('steps',JSON.stringify(steps));
-need(steps[1][1]>0&&steps[1][1]===steps[2][1]&&steps[2][1]===steps[3][1]&&steps[4][1]==="우유",'한글 조합 중간에 결과 수가 흔들림');
+// '우'를 조합하다 받침이 붙은 '웅'이 되어도 결과가 같아야 한다. '우유'는 새 검색어라 한 글자 검색(F-6: 낱말 처음·끝만)보다 결과가 같거나 많다
+need(steps[1][1]>0&&steps[1][1]===steps[2][1]&&steps[3][1]>=steps[2][1]&&steps[4][1]==="우유",'한글 조합 중간에 결과 수가 흔들림');
 // 조합이 깨진 키보드처럼 낱자로 들어오는 경우
 await p.fill('#foodQ',''); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅜ'); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅠ'); await p.waitForTimeout(80);
-const jt=await p.evaluate(()=>[...document.querySelectorAll('#foodRes .fcard b')].map(x=>x.textContent).slice(0,3));
+const jt=await p.evaluate(()=>[...document.querySelectorAll('#foodRes .fcard b')].map(x=>x.textContent).slice(0,6));  // 락토프리 제품(판정 '좋음')이 앞에 오므로 상위 6개에서 확인
 console.log('jamoTyped',await p.inputValue('#foodQ'),jt); need(jt.includes('우유'),'낱자 입력 검색');
 // Enter: 검색칸은 키보드 닫기(blur)
 await p.focus('#foodQ'); await p.keyboard.press('Enter'); const eb=await p.evaluate(()=>document.activeElement.id||document.activeElement.tagName);

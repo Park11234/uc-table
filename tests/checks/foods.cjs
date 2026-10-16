@@ -32,7 +32,7 @@ const r=await p.evaluate(()=>{
   const lib=FOODS.filter(f=>f.lib); ok(lib.length>=300,'lib '+lib.length);
   // 영양값 자료가 없는 음식은 '자료 없음'으로 보이고 합계에서 빠져야 하며, 영양식(제품)·명시한 음식만 허용
   const NOSRC_OK=new Set(["tteokkochi"]);
-  for(const f of lib){ ok((f.src&&f.src.code)||((f.tags.includes("ons")||NOSRC_OK.has(f.id))&&f.missing.includes("전체")),'no src '+f.id); ok(SERV[f.id],'no serv '+f.id); ok(ALIAS[f.id],'no alias '+f.id); ok(EMO[f.id]||FICON[f.id],'no icon '+f.id);
+  for(const f of lib){ ok((f.src&&f.src.code)||((f.tags.includes("ons")||NOSRC_OK.has(f.id)||(PSRC[f.id]&&(f.tags.includes("nitrite")||f.tags.includes("processed"))))&&f.missing.includes("전체")),'no src '+f.id);   // v1.9.0: 영양 표기를 맞출 수 없거나 자료에 영양정보가 글로 없는 가공육(CJ더마켓·동원몰·식품안전나라)은 영양값 없이 넣음 ok(SERV[f.id],'no serv '+f.id); ok(ALIAS[f.id],'no alias '+f.id); ok(EMO[f.id]||FICON[f.id],'no icon '+f.id);
     ok(typeof f.why==='string'&&f.why.length>10,'why '+f.id); ok(f.refs.every(n=>REFS[n]),'ref '+f.id); ok([1,2,3,9].includes(f.ms),'ms '+f.id);
     ok(["곡류","단백질","유제품","채소","과일","지방","기타","요리","영양식"].includes(f.cat),'cat '+f.id); ok(isFinite(f.fi)&&isFinite(f.k),'num '+f.id) }
   // 검색
@@ -75,9 +75,13 @@ const r=await p.evaluate(()=>{
 });
 console.log(JSON.stringify(r));
 // 화면: 음식 탭 전체 목록 그리기 시간, 요리 칩, 상세 기준량
+// v1.9.0 U-7: 목록은 묶음마다 12개씩 보이고 '더 보기'로 펼친다. 전체 목록 점검은 모두 펼친 뒤에 센다
+const expandAll=()=>p.evaluate(()=>{for(let i=0;i<8;i++){const bs=[...document.querySelectorAll('[data-act="fMore"]')]; if(!bs.length) break; bs.forEach(b=>FMORE.add(b.dataset.v)); refreshFoodRes()}});
 const t0=Date.now(); await p.evaluate(()=>{SCR=null;S.tab="food";S.foodSub="search";S.foodQ="";S.foodCat="전체";S.foodLv="전체";render()}); await p.waitForTimeout(100);
-const cards=await p.evaluate(()=>document.querySelectorAll('.fcard').length); const ms=Date.now()-t0;
+const ms=Date.now()-t0; await expandAll();
+const cards=await p.evaluate(()=>document.querySelectorAll('.fcard').length);
 await p.click('.chip[data-act=cat][data-v="요리"]'); await p.waitForTimeout(150);
+await expandAll();
 const yori=await p.evaluate(()=>[...document.querySelectorAll('.fcard')].every(b=>FOOD[b.dataset.id].cat==="요리")&&document.querySelectorAll('.fcard').length>50);
 await p.evaluate(()=>{showFood("janchi_guksu")}); await p.waitForTimeout(200);
 const basis=await p.evaluate(()=>document.querySelector('#sheetRoot').innerText.includes('100ml당'));

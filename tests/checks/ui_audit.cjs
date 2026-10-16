@@ -55,7 +55,7 @@ for(const [k,v] of Object.entries(q)) console.log("검색 "+JSON.stringify(k)+" 
 // 3) 작은 화면·큰 글자·다크에서 가로 스크롤/겹침
 for(const [w,h,dark,font] of [[320,640,false,"md"],[360,760,true,"xl"],[430,930,false,"lg"]]){
   const q2=await open(w,h,dark,font);
-  await q2.evaluate(()=>{S.foodQ="";render()}); await q2.waitForTimeout(250);
+  await q2.evaluate(()=>{S.foodQ="";render(); for(let i=0;i<8;i++){const bs=[...document.querySelectorAll('[data-act="fMore"]')]; if(!bs.length) break; bs.forEach(b=>FMORE.add(b.dataset.v)); refreshFoodRes()}}); await q2.waitForTimeout(250);   // 묶음별 '더 보기'를 모두 펼쳐 전체 목록으로 점검(U-7)
   const m=await q2.evaluate(()=>{
     const over=[...document.querySelectorAll('#main *')].filter(el=>el.scrollWidth>el.clientWidth+2&&!el.className.toString().includes("cats")&&!el.className.toString().includes("days")).slice(0,5).map(el=>el.className+" "+el.scrollWidth+">"+el.clientWidth);
     const cards=[...document.querySelectorAll('.fcard')];

@@ -45,16 +45,20 @@ await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
 console.log('swap', t1, await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title));
 await p.click('.mrow[data-k="0"]'); await p.waitForTimeout(300);
 await p.click('[data-act=skipMeal]'); await p.waitForTimeout(200);
-console.log('skip', await p.evaluate(()=>[JSON.stringify(S.skips), document.querySelector('#main').textContent.includes('안 먹음 표시 지우기')]));
+// v1.9.0 U-3: 안 먹음으로 표시하면 바로 홈으로 돌아가고 '되돌리기' 알림
+console.log('skip', await p.evaluate(()=>[JSON.stringify(S.skips), SCR, /되돌리기/.test(document.querySelector('#toasts').textContent)]));
 await p.evaluate(()=>{closeScr()}); await p.waitForTimeout(300);
 console.log('skip row', await p.evaluate(()=>document.querySelector('.mwrap.skipped')!==null));
 // 기록 탭: 차트·상관·삭제
 await p.evaluate(()=>{S.tab="log";SCR=null;render()}); await p.waitForTimeout(400);
 console.log('chart', await p.evaluate(()=>{const c=document.querySelector('#logChart');if(!c)return 'none';const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let nz=0;for(let i=0;i<d.length;i+=400)if(d[i]!==255)nz++;return nz>10?'drawn':'blank'}));
 await p.screenshot({path:T('shots/n_log2.png'),fullPage:true});
-await p.click('[data-act=delLog]'); await p.waitForTimeout(150);
-await p.click('[data-act=delLogGo]'); await p.waitForTimeout(200);
-console.log('delLog', await p.evaluate(()=>Object.keys(S.logs).length));
+// v1.9.0 U-3: 확인 창 없이 바로 지우고 '되돌리기' 알림 → 되돌리면 돌아오고, 다시 지움
+await p.click('[data-act=delLog]'); await p.waitForTimeout(200);
+console.log('delLog', await p.evaluate(()=>[Object.keys(S.logs).length, !S.logs[today()], !document.querySelector('#sheetRoot').firstChild, /기록을 지웠습니다/.test(document.querySelector('#toasts').textContent)&&!!document.querySelector('#toasts .t-act')]));
+await p.click('#toasts .t-act'); await p.waitForTimeout(200);
+console.log('delLog undo', await p.evaluate(()=>[Object.keys(S.logs).length, S.logs[today()]?.day]));
+await p.click('[data-act=delLog]'); await p.waitForTimeout(200);
 // 먹은 음식 추가: 최근/그릇 단위/직접 기록
 await p.evaluate(()=>{S.tab="plan";openScr("nutri")}); await p.waitForTimeout(200);
 await p.click('[data-act=extraOpen]'); await p.waitForTimeout(200);
@@ -78,5 +82,8 @@ await p.evaluate(()=>{S.tab="food";S.foodSub="search";SCR=null;render()}); await
 await p.click('[data-act=lvFilter][data-v=ok]'); await p.waitForTimeout(200);
 console.log('filter', await p.evaluate(()=>[S.foodLv, document.querySelectorAll('.fcard').length]));
 console.log('errors',errs);expect(()=>jsonOf('past')[0]==='past','지난 날 화면'); expect(()=>/drawn/.test(logOf('chart')),'그래프'); expect(()=>jsonOf('skip row')===true,'안 먹음 줄');
+expect(()=>{const s=jsonOf('skip'); return /아침/.test(s[0])&&s[1]===null&&s[2]===true},'끼니 화면에서 안 먹음 → 홈으로·되돌리기 알림(v1.9.0)');
+expect(()=>{const d=jsonOf('delLog'); return d[0]===7&&d.slice(1).every(Boolean)},'기록 삭제: 확인 창 없이 지우고 되돌리기 알림(v1.9.0)');
+expect(()=>{const d=jsonOf('delLog undo'); return d[0]===8&&d[1]===2},'기록 삭제 되돌리기');
 expect(()=>jsonOf('recent chips').length>0,'최근 음식'); expect(()=>jsonOf('custom btn')===true,'직접 기록 버튼');
 __done(); await b.close()})();

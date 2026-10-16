@@ -30,9 +30,9 @@ const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 await p.goto('file://'+WRAP('fin.html'));await p.waitForTimeout(400);
 const cases=[
- ['wizard memo','#memo',()=>{S.consent={date:today()};SCR=null;S.tab="log";render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()}],
+ ['wizard memo','#memo',()=>{S.consent={date:today()};SCR=null;S.tab="log";render();openWizard();WZ.step=wzStepOf("other");render()}],
  ['wizard otherAdd','#otherAdd',null],
- ['wizard temp','#temp',()=>{WZ.step=WSTEPS.findIndex(s=>s.k==="vitals");render()}],
+ ['wizard temp','#temp',()=>{WZ.step=wzStepOf("vitals");render()}],
  ['orders add','#orderAdd',()=>{wizardDirty=()=>false;draft=null;SCR=null;S.tab="me";render();openScr("set-orders")}],
  ['diet dislikes','#p_dislikes',()=>{openScr("set-diet")}],
  ['allergy other','#p_allergyOther',()=>{openScr("set-allergy")}],

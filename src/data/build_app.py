@@ -6,7 +6,10 @@ app.src.html에는 화면·판정 규칙·식단 코드가 모두 들어 있고,
   /*@GEN:mfds@*/   식약처 영양값                          ← generated/gen_out.json
   /*@GEN:emo@*/ /*@GEN:fodi@*/ /*@GEN:serv@*/ /*@GEN:alias@*/ /*@GEN:ficon@*/ /*@GEN:cap@*/
   /*@GEN:micro@*/  나트륨·비타민 D(음식별 100g당)            ← generated/gen_out.json
-  /*@GEN:ingr@*/   시판 과자 원재료명(포장 표시)              ← generated/gen_out.json
+  /*@GEN:ingr@*/   시판 과자·라면·마트 식품 원재료명(포장 표시)  ← generated/gen_out.json
+  /*@GEN:plabel@*/ 마트 시판 식품 포장 영양정보(표시 그대로)    ← generated/gen_out.json
+  /*@GEN:psrc@*/   CJ더마켓 시판 식품의 확인한 상품 번호·확인일 ← generated/gen_out.json
+  /*@GEN:cjt@*/    CJ더마켓 시판 식품에 되풀이되는 설명 문장     ← generated/gen_out.json
   /*@GEN:menus@*/  오프라인 예시 식단 메뉴                 ← menus.py build()
   /*@GEN:qa@*/     궁금한 점(Q&A)과 근거 원문 인용          ← qa.py build()
   /*@GEN:dishx@*/  음식(D) 값의 종류와 같은 이름 자료의 열량 범위 ← generated/gen_out.json
@@ -50,6 +53,9 @@ def render():
         'cap': ','.join(f'{k}:{v}' for k, v in o['cap'].items()),
         'micro': js(o['micro']),
         'ingr': js(o.get('ingr', {})),
+        'plabel': js(o.get('plabel', {})),
+        'psrc': js(o.get('psrc', {})),
+        'cjt': js(o.get('cjt', [])),
         'menus': js(build_menus()),
         'qa': js(build_qa()),
         'dishx': js(o.get('dishx', {})),

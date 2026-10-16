@@ -1,7 +1,8 @@
 const path=require('path'), fs_=require('fs');
 const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
-const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'public','index.html');
+// v1.9.0: 오프라인 단일 파일은 dist/에 있다(public/은 앱 코드를 app.js로 나눈 PWA)
+const OFFLINE=process.env.OFFLINE_HTML||path.join(ROOT,'dist','uc-table-offline.html');
 const LIB_H2C=path.join(ROOT,'vendor','html2canvas.min.js');
 const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
@@ -23,6 +24,8 @@ p.on('request',r=>{const u=r.url(); if(!u.startsWith('file:')&&!u.startsWith('da
 await p.route(/^https?:/, r=>r.abort());   // 모든 네트워크 차단
 const f=process.argv[2]||OFFLINE;
 await p.goto('file://'+f); await p.waitForTimeout(800);
+// v1.9.0 P-1: 그림 PDF 라이브러리는 처음에 실행하지 않고 '그림 PDF 저장' 때 불러온다 → 불러온 뒤 확인
+await p.evaluate(()=>typeof loadPdfLibs==='function'?loadPdfLibs().catch(()=>{}):null);
 const r=await p.evaluate(()=>({
   foods:typeof FOODS!=='undefined'?FOODS.length:-1,
   ai:(typeof aiReady==='undefined'&&typeof generateWeek==='undefined'&&typeof askFood==='undefined'&&typeof foodAI==='undefined')?'none':'present',
@@ -43,6 +46,7 @@ for(const t of ['plan','log','food','nutri','me']){
   try{ await p.evaluate(x=>{if(x==='nutri'){S.tab='plan';openScr('nutri');return} S.tab=x;SCR=null;render()},t); await p.waitForTimeout(250);}catch(e){errs.push(t+':'+e.message)}
 }
 await p.evaluate(()=>{S.tab='food';S.foodSub='search';render()}); await p.waitForTimeout(300);
+await p.evaluate(()=>{for(let i=0;i<8;i++){const bs=[...document.querySelectorAll('[data-act="fMore"]')]; if(!bs.length) break; bs.forEach(b=>FMORE.add(b.dataset.v)); refreshFoodRes()}});   // 묶음별 '더 보기'를 모두 펼침(U-7)
 const cs=await p.evaluate(()=>document.querySelectorAll('.fcard').length); console.log('cards', cs); if(cs<400) F.push('음식 목록');
 await p.screenshot({path:T('offline_home.png')});
 console.log('net', net.slice(0,5), 'errors', errs); if(net.length||errs.length) F.push('외부 요청 또는 오류'); if(F.length){ console.log('FAIL '+F.join(' / ')); process.exitCode=1 }

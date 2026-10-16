@@ -52,12 +52,18 @@ await p.mouse.click(btn.x+btn.width/2, btn.y+btn.height/2); // 같은 자리 두
 await p.waitForTimeout(200);
 console.log('B guard', await p.evaluate(()=>[Object.keys(S.logs).length, SCR, S.tab]));
 // 같은 버튼 연속 탭(다음→다음)은 막지 않아야 함
-await p.evaluate(()=>{S.logs={};SCR=null;openWizard();WZ.step=6;render()});
+// v1.9.0 F-9: 화면이 바뀐 직후 0.4초 동안은 같은 자리에 새로 나타난 버튼(다음 쪽의 '다음')이 비활성(.cool)으로 보이고, 그 뒤에는 그대로 눌린다.
+//  마법사가 4쪽으로 묶여(U-1) 옛 7번째 단계가 없으므로, 답할 질문이 없는 날짜 쪽(0) → 배변 쪽(1) → 급박감 쪽(2)으로 확인한다
+await p.evaluate(()=>{S.logs={};SCR=null;openWizard();WZ.step=0;render()});
+await p.waitForTimeout(450);   // 앞 단계(연타 가드)의 0.4초가 지난 뒤부터 지켜본다
+await p.evaluate(()=>{window.__cool=null; new MutationObserver(()=>{const b=document.querySelector('[data-act=wzNext].cool'); if(b&&!window.__cool) window.__cool={step:WZ.step,dis:b.disabled}}).observe(document.getElementById('main'),{subtree:true,attributes:true,attributeFilter:['class']})});
 const nb=await p.locator('[data-act=wzNext]').boundingBox();
 await p.mouse.click(nb.x+nb.width/2, nb.y+nb.height/2);
+await p.waitForTimeout(450); await p.waitForFunction(()=>!document.querySelector('[data-act=wzNext]').disabled,null,{timeout:5000}).catch(()=>{});   // 0.4초 뒤 같은 자리 다시
 await p.mouse.click(nb.x+nb.width/2, nb.y+nb.height/2);
-console.log('B same-button', await p.evaluate(()=>WZ.step));
+console.log('B same-button', JSON.stringify(await p.evaluate(()=>[window.__cool,WZ.step,document.querySelector('[data-act=wzNext]')?.disabled])));
 console.log('errors',errs); expect(()=>{const a=jsonOf('A'); return a.slice(0,6).every(x=>x[1]===null)&&a[6][1]===20&&a[7][1]===5000&&a[8][1]===100},'영양 기준량 방어');
 expect(()=>{const h=jsonOf('H'); return h[0].length===0},'짠 음식 양'); expect(()=>jsonOf('D')[0]==='caution','알레르기 직접 확인');
 expect(()=>jsonOf('B guard')[0]===1,'연타 한 번만 저장');
+expect(()=>{const s=jsonOf('B same-button'); return s[0]&&s[0].step===1&&s[0].dis===true&&s[1]===2},'같은 자리 다음→다음: 0.4초 동안 비활성으로 보인 뒤 다시 눌림(v1.9.0)');
 __done(); await b.close()})();

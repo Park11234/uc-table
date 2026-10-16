@@ -31,18 +31,20 @@ const SEED=()=>{
     await p.goto('file://'+page); await p.waitForTimeout(300);
     await p.evaluate(SEED); await p.reload(); await p.waitForTimeout(400);
     await p.addScriptTag({path:AXE});
-    const views=[["tab","plan"],["tab","log"],["tab","food"],["scr","nutri"],["tab","me"],["scr","report"],["scr","asks"],["scr","set-goals"],["scr","set-home"],["onb","0"],["onb","2"],
-      ["scr","wizard"],["scr","pdf"],["scr","set-profile"],["scr","set-allergy"],["scr","set-data"],["scr","set-about"],["sheet","white_fish"],["qa","dairy"]];
+    // v1.9.0 A-17: 증상 기록은 마법사를 제대로 연 상태(날짜·4쪽·요약 모두)로 검사한다(예전에는 draft 없이 열어 오류 화면을 검사했다)
+    const views=[["tab","plan"],["tab","log"],["tab","food"],["scr","nutri"],["tab","me"],["scr","report"],["scr","asks"],["scr","set-goals"],["scr","set-home"],["scr","set-remind"],["scr","set-privacy"],["onb","0"],["onb","2"],
+      ["wz","0"],["wz","1"],["wz","2"],["wz","3"],["wz","4"],["wz","5"],["scr","pdf"],["scr","set-profile"],["scr","set-allergy"],["scr","set-data"],["scr","set-about"],["sheet","white_fish"],["qa","dairy"]];
     for(const [k,v] of views){
       await p.evaluate(([k,v])=>{document.querySelector("#sheetRoot").innerHTML=""; if(k!=="onb") S.onb="done";
-        if(k==="tab"){SCR=null;S.onb="done";S.tab=v;render()} else if(k==="onb"){SCR=null;S.tab="plan";S.onb=v;render()} else if(k==="scr"){openScr(v)} else if(k==="qa"){SCR=null;qaGo(v);const d=document.querySelector(".qa.on .qa-ev"); if(d) d.open=true} else {SCR=null;S.tab="food";render();showFood(v)}},[k,v]);   // qa: 궁금한 점 펼친 답과 근거 원문(v1.7.0)
+        if(k==="tab"){SCR=null;S.onb="done";S.tab=v;render()} else if(k==="onb"){SCR=null;S.tab="plan";S.onb=v;render()} else if(k==="scr"){openScr(v)} else if(k==="wz"){SCR=null; openWizard(addDays(today(),-1)); WZ.step=+v; render(); if(document.querySelector(".error,#main h2")&&!document.querySelector(".wz-q")) throw new Error("wizard not rendered")} else if(k==="qa"){SCR=null;qaGo(v);const d=document.querySelector(".qa.on .qa-ev"); if(d) d.open=true} else {SCR=null;S.tab="food";render();showFood(v)}},[k,v]);
+      if(k==="wz"&&!(await p.evaluate(()=>!!document.querySelector(".wz-q")))){all.push({view:"wizard "+v,id:"wizard-error",impact:"critical",help:"증상 기록 화면이 그려지지 않음",n:1,ex:[]})}   // qa: 궁금한 점 펼친 답과 근거 원문(v1.7.0)
       await p.waitForTimeout(350);
       // 넘어가는 효과(반투명) 중에는 대비가 낮게 재지므로 효과가 끝난 뒤 잰다
       await p.evaluate(()=>Promise.all(document.getAnimations().map(a=>a.finished.catch(()=>{}))));
       const res=await p.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:"tag",values:["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"]},resultTypes:["violations"]});
         return r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,n:v.nodes.length,ex:v.nodes.slice(0,3).map(x=>({t:x.target.join(" "),h:x.html.slice(0,140),s:(x.failureSummary||"").slice(0,200)}))}))});
       for(const r of res) all.push({view:`${dark?"dark":"light"} ${k}:${v}`,...r});
-      const sm=await p.evaluate(()=>[...document.querySelectorAll('button,a[href],input,select,textarea,[role=button],[tabindex="0"]')].filter(e=>{const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return r.width>0&&r.height>0&&cs.visibility!=="hidden"&&(r.width<44||r.height<44)&&!(e.tagName==="INPUT"&&["checkbox","radio"].includes(e.type)&&e.closest("label"))}).filter(e=>!e.matches('sup.ref,.term')).map(e=>{const r=e.getBoundingClientRect(); return (e.className||e.tagName)+" "+Math.round(r.width)+"x"+Math.round(r.height)+" "+(e.getAttribute("aria-label")||e.textContent||"").trim().slice(0,16)}));
+      const sm=await p.evaluate(()=>[...document.querySelectorAll('button,a[href],input,select,textarea,[role=button],[tabindex="0"]')].filter(e=>{const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return r.width>0&&r.height>0&&cs.visibility!=="hidden"&&(r.width<44||r.height<44)&&!(e.tagName==="INPUT"&&["checkbox","radio"].includes(e.type)&&e.closest("label"))}).filter(e=>!e.matches('sup.ref,.term,p a,li a,small a')).map(e=>{const r=e.getBoundingClientRect(); return (e.className||e.tagName)+" "+Math.round(r.width)+"x"+Math.round(r.height)+" "+(e.getAttribute("aria-label")||e.textContent||"").trim().slice(0,16)}));
       for(const s of sm) small.set(s.replace(/ \d+x\d+ /," * "),s);
     }
     await ctx.close();
@@ -56,7 +58,7 @@ const SEED=()=>{
     for(const e of g.v.ex) console.log(`      · ${e.t} :: ${e.h}\n        ${e.s.replace(/\n/g," ")}`) }
   console.log(`== 44px 미만 터치 영역 ${small.size}종`); for(const s of [...small.values()].slice(0,40)) console.log("  ",s);
   fs.writeFileSync(path.join(TMP,'a11y.json'),JSON.stringify({all,small:[...small.values()]},null,1));
-  // 터치 영역: 44×44px 미만이면 실패(문장 속 참고문헌 번호·용어 버튼은 WCAG 2.5.8 '문장 안' 예외이고, ::after로 누르는 범위를 넓혀 둠)
+  // 터치 영역: 44×44px 미만이면 실패(문장 속 참고문헌 번호·용어 버튼·문장 속 링크는 WCAG 2.5.8 '문장 안' 예외이고, ::after로 누르는 범위를 넓혀 둠)
   if(small.size) console.log('FAIL 44px 미만 터치 영역 '+small.size+'종');
   process.exit(bad.length||small.size?1:0);
 })();

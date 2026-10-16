@@ -5,7 +5,7 @@
 ```
 브라우저 ──▶ index.html (단일 파일)
                ├─ 상태 S  … localStorage("uc-table.v1")에만 저장, 서버 없음
-               ├─ 음식 DB … FOODS 674종(영양식 39종·시판 과자·사탕·젤리 83종·라면 55종 포함) + 식약처·국가표준식품성분표·제품 표시 영양값(MFDS·MICRO) + 별명/아이콘/분량 표
+               ├─ 음식 DB … FOODS 1,750종(영양식 39종·시판 과자·사탕·젤리 83종·라면 55종·마트 시판 식품 17종·v1.9.0 시판 제품 1,059종 포함) + 식약처·국가표준식품성분표·제품 표시 영양값(MFDS·MICRO) + 별명/아이콘/분량 표
                ├─ 판정    … foodStatus(음식, 사용자 맥락) → ok / caution / later / avoid + 이유
                ├─ 식단    … samplePlan() → 끼니 메뉴 1,174개 중 조건을 통과한 것으로 7일, 양 조절
                ├─ 궁금한 점 … QA 45문항(근거 원문 인용) → 음식 검색·음식 정보와 연결
@@ -123,6 +123,8 @@
 
 ```
 src/data/spec1~8.py      음식 정의(이름·분류·단계·태그·분량·별명·조리법). spec8은 영양식과 제품 표시값(LABEL)
+src/data/spec10.py       v1.9.0 시판 제품 1,059종: cj10.py(CJ더마켓 고시)·brand10.py(동원몰 고시·식품안전나라 품목제조보고)·
+                         label10.py(동원몰·랭킹닭컴·아임닭·풀무원샵 포장 표시)를 판정 태그·설명·출처(PSRC)로 바꿈
 src/data/templates.py    판정 설명 문장 템플릿(근거 번호 포함)
 src/data/menus.py        끼니 메뉴 1,144개(구성 요소 조합, 레시피 연결, 지중해식 메뉴)
 src/data/qa.py           궁금한 점 45문항과 근거 원문 인용 145건(data/sources/*.txt와 글자 대조)
@@ -148,7 +150,7 @@ src/brand/logo-mono.svg  UC TABLE 로고(tools/brand.cjs가 그림. 같은 스�
 |---|---|---|
 | `src/app/index.html` | `build_app.py` | 원본. 글꼴·PDF 라이브러리를 CDN에서 불러옴 |
 | `public/` | `python3 tools/build_offline.py` | GitHub Pages로 올리는 PWA(오프라인 설치용) |
-| `dist/uc-table-offline.html` | 같은 스크립트 | 파일 하나로 여는 오프라인 앱(약 2.3 MB) |
+| `dist/uc-table-offline.html` | 같은 스크립트 | 파일 하나로 여는 오프라인 앱(약 3.6 MB) |
 
 오프라인 빌드는 html2canvas·jsPDF를 파일 안에 인라인하고 구글 폰트 링크를 지웁니다.
 글꼴은 기기 글꼴로 대체되며, 나머지 기능은 모두 같습니다(앱이 AI나 외부 서버를 부르지 않음).

@@ -1,0 +1,36 @@
+name: release
+
+# main에 올릴 때마다 오프라인 단일 파일을 만들어 GitHub Release에 붙인다.
+# 안드로이드 APK는 서명 키가 필요해 여기서 만들지 않는다(키는 저장소에 두지 않음, docs/release.md).
+# 릴리스 이름은 package.json의 버전(v1.5.0 등). 같은 버전이면 파일만 새로 바꿔 끼운다.
+# README의 "오프라인 파일 받기" 링크(releases/latest/download/…)가 항상 최신 파일을 가리키게 하기 위함.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 오프라인 파일 만들기
+        run: python3 tools/build_offline.py
+      - name: 릴리스 만들기 또는 파일 교체
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="v$(node -p "require('./package.json').version")"
+          R="--repo $GITHUB_REPOSITORY"
+          if gh release view "$V" $R >/dev/null 2>&1; then
+            gh release upload "$V" dist/uc-table-offline.html --clobber $R
+          else
+            gh release create "$V" dist/uc-table-offline.html --title "$V" --generate-notes --latest $R
+          fi

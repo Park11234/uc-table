@@ -25,6 +25,8 @@ const lineJSON=pre=>{const l=__LOG.find(x=>x.startsWith(pre)); if(l==null) retur
 const FAILS=[]; const expect=(c,m)=>{let ok=false; try{ok=typeof c==='function'?!!c():!!c}catch(e){m+=' ('+e.message+')'} if(!ok) FAILS.push(m)};
 const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); process.exitCode=1 } else console.log('검증 통과') };
 const rateOpen=async p=>{const b=await p.$('[data-act=rateOpen]'); if(b){await b.click(); await p.waitForTimeout(80)}}; // v1.8.0 평가 버튼은 '불편했던 음식 고르기'를 눌러야 보임
+// v1.9.0 P-3: 느린 기기(목록을 한 번 그리는 데 50ms 넘음)에서는 검색 입력을 0.12초 모아 그린다. 결과 목록이 지금 검색어로 다시 그려질 때까지 기다린다
+const foodSettled=pg=>pg.waitForFunction(()=>{const el=document.querySelector('#foodRes'); if(!el) return false; const d=foodSearchData(); return el.__h===foodResHTML(d.c,d.q,d.list,d.rows)},null,{timeout:5000,polling:50}).catch(()=>{});
 const fs = require('fs');
 const body = fs.readFileSync(APP,'utf8');
 const page_html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style>
@@ -56,25 +58,23 @@ console.log('triggers', await p.evaluate(()=>JSON.stringify(S.triggers)), 'memo?
 // wizard
 await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(100);
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_wz1.png')});
+// v1.9.0 U-1: 질문을 쪽으로 묶음 — ① 배변(낮·밤·혈변) ② 급박감·피·몸 상태 ③ 복통·가스·피로·변 모양 ④ 약·그 밖의 증상 → 요약
 for(let i=0;i<7;i++) await p.click('[data-act=step][data-k=day][data-v="1"]');
-await p.click('[data-act=wzNext]'); // night
-await p.click('[data-act=wzNext]'); // bloody
-for(let i=0;i<3;i++) await p.click('[data-act=step][data-k=bloody][data-v="1"]');
-await p.click('[data-act=wzNext]'); // urg
+for(let i=0;i<3;i++) await p.click('[data-act=step][data-k=bloody][data-v="1"]');   // 같은 쪽(밤은 0회 그대로)
+await p.click('[data-act=wzNext]'); // 급박감·피·몸 상태
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_wz2.png')});
 await p.click('[data-act=set][data-k=urg][data-v="1"]'); await p.waitForTimeout(350);
-console.log('noAutoAdv', await p.evaluate(()=>WZ.step));
-await p.click('[data-act=wzNext]');
-await p.click('[data-act=set][data-k=blood][data-v="2"]'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=set][data-k=well][data-v="1"]'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=tog][data-k=extra]'); await p.click('[data-act=wzNext]');
-await p.fill('#pain','6'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=setS][data-k=gas][data-v="약간"]'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=setS][data-k=fatigue][data-v="심함"]'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=set][data-k=stool][data-v="6"]'); await p.click('[data-act=wzNext]');
-await p.click('[data-act=set][data-k=medtaken][data-v="2"]'); await p.click('[data-act=wzNext]');
-await p.fill('#temp','38.1'); await p.click('[data-act=wzNext]');
-await p.fill('#otherAdd','두통'); await p.click('[data-act=otherAdd]'); await p.fill('#memo','테스트 메모'); await p.click('[data-act=wzNext]');
+console.log('noAutoAdv', await p.evaluate(()=>[WZ.step,wzStepOf("urg")]));
+await p.click('[data-act=set][data-k=blood][data-v="2"]');
+await p.click('[data-act=set][data-k=well][data-v="1"]'); await p.click('[data-act=wzNext]'); // 복통·가스·피로·변 모양
+await p.fill('#pain','6');
+await p.click('[data-act=setS][data-k=gas][data-v="약간"]');
+await p.click('[data-act=setS][data-k=fatigue][data-v="심함"]');
+await p.click('[data-act=set][data-k=stool][data-v="6"]'); await p.click('[data-act=wzNext]'); // 약·그 밖의 증상
+await p.click('[data-act=set][data-k=medtaken][data-v="2"]');
+await p.click('[data-act=tog][data-k=extra]');
+await p.fill('#otherAdd','두통'); await p.click('[data-act=otherAdd]'); await p.fill('#memo','테스트 메모');
+await p.fill('#temp','38.1'); await p.click('[data-act=wzNext]'); // 요약
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_wz3.png')});
 await p.click('[data-act=saveLog]'); await p.waitForTimeout(100);
 console.log('log', await p.evaluate(()=>JSON.stringify({l:S.logs[today()],tab:S.tab,scr:SCR})));
@@ -84,7 +84,7 @@ await p.click('.tab[data-tab=log]'); await p.click('[data-act=openScr][data-v=pd
 await p.click('[data-act=pdf]'); await p.waitForFunction(()=>window.__saved,null,{timeout:60000}).catch(()=>{});   // 여러 점검을 동시에 돌리면 PDF 만들기가 6초를 넘을 수 있어 저장될 때까지 기다림
 console.log('saved', await p.evaluate(()=>JSON.stringify(window.__saved))); const arr=await p.evaluate(()=>window.__pdf); if(arr) fs.writeFileSync(T('report.pdf'), Buffer.from(arr));
 await p.click('[data-act=back]');
-await p.click('.tab[data-tab=food]'); await p.click('[data-act=foodSub][data-v=search]').catch(()=>{}); await p.fill('#foodQ','커피'); await p.waitForTimeout(200);
+await p.click('.tab[data-tab=food]'); await p.click('[data-act=foodSub][data-v=search]').catch(()=>{}); await p.fill('#foodQ','커피'); await p.waitForTimeout(200); await foodSettled(p);
 console.log('foodQA', await p.evaluate(()=>JSON.stringify([...document.querySelectorAll('#foodRes [data-act=qaGo]')].map(b=>b.dataset.v))));
 if(await p.locator('#foodRes [data-act=qaGo]').count()){ await p.click('#foodRes [data-act=qaGo]'); await p.waitForTimeout(300) }   // 없으면 아래 단언에서 실패
 console.log('qaScr', await p.evaluate(()=>JSON.stringify([SCR&&SCR.name,QAV.open,!!document.querySelector('.qa.on .qa-ev')])));
@@ -121,6 +121,9 @@ console.log('errors', errs);
 {const pl=lineJSON('{"n":'); expect(()=>pl.n===7,'식단 7일');
  expect(()=>JSON.parse(logOf('mealScr')).scr.name==='meal','끼니 화면'); expect(()=>logOf('ratedId')&&logOf('triggers').includes('"foodId":"'+logOf('ratedId')+'"'),'주의 음식 추가');   // v1.7.0: 앱 규칙 식단의 둘째 음식
  expect(()=>/진료를/.test(logOf('alerts')||''),'진료 안내'); expect(()=>JSON.parse(logOf('saved')).size>100000,'PDF 저장');
+ // v1.9.0 U-1: 쪽으로 묶인 마법사 — 답해도 저절로 넘어가지 않고, 쪽마다 적은 값이 모두 저장됨
+ expect(()=>{const a=jsonOf('noAutoAdv'); return a[0]===a[1]},'답해도 다음 쪽으로 저절로 넘어가지 않음');
+ expect(()=>{const o=JSON.parse(logOf('log')), l=o.l; return o.tab==='log'&&o.scr===null&&l.day===7&&l.night===0&&l.bloody===3&&l.urg===1&&l.blood===2&&l.well===1&&l.extra.length===1&&l.pain===6&&l.gas==='약간'&&l.fatigue==='심함'&&l.stool===6&&l.medtaken===2&&l.temp==='38.1'&&l.other.includes('두통')&&l.memo==='테스트 메모'},'증상 기록 쪽마다 적은 값 저장');
  expect(()=>/참고문헌|근거 자료/.test(logOf('sheet')||''),'참고문헌 시트');
  expect(()=>{const o=JSON.parse(logOf('profile')); return o.p.height==='170'&&o.p.sex==='F'&&o.o.checked.includes('lowres')},'내 정보 저장 버튼으로 반영(v1.7.1)');
  expect(()=>{const a=jsonOf('noAI'); return a[0]===false&&a.slice(1).every(t=>t==='undefined')},'AI 기능 없음(v1.7.0)');

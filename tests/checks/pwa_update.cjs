@@ -10,7 +10,7 @@ const ROOT=path.join(__dirname,'..','..');
 const PUB=path.join(ROOT,'public');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const DIR=path.join(TMP,'pwa_site'); fs.rmSync(DIR,{recursive:true,force:true}); fs.mkdirSync(DIR,{recursive:true});
-for(const f of fs.readdirSync(PUB)) fs.copyFileSync(path.join(PUB,f),path.join(DIR,f));
+fs.cpSync(PUB,DIR,{recursive:true});   // v1.9.0: public/에 vendor/ 폴더(그림 PDF 라이브러리)가 생김
 const { chromium } = require('playwright');
 const TYPES={".html":"text/html; charset=utf-8",".js":"text/javascript",".webmanifest":"application/manifest+json",".png":"image/png"};
 // GitHub Pages처럼 10분 캐시 헤더를 붙여, HTTP 캐시에 옛 파일이 남는 상황까지 재현
@@ -18,10 +18,15 @@ const srv=http.createServer((q,r)=>{let u=decodeURIComponent(q.url.split("?")[0]
   const f=path.join(DIR,u); if(!f.startsWith(DIR)||!fs.existsSync(f)){r.writeHead(404);return r.end()}
   r.writeHead(200,{"Content-Type":TYPES[path.extname(f)]||"application/octet-stream","Cache-Control":"max-age=600"}); r.end(fs.readFileSync(f))});
 (async()=>{
-  // 빌드 규칙: 캐시 이름은 index.html 내용의 해시여야 한다(앱이 바뀌면 sw.js도 바뀌어 갱신이 일어남)
-  const h=require('crypto').createHash('sha256').update(fs.readFileSync(path.join(PUB,'index.html'))).digest('hex').slice(0,10);
+  // 빌드 규칙(v1.9.0): 캐시 이름은 미리 보관하는 파일 전체(index.html·app.js·vendor 등)의 해시여야 한다.
+  // 어느 하나라도 바뀌면 sw.js도 바뀌어 갱신이 일어남(tools/build_offline.py와 같은 계산)
   const swSrc=fs.readFileSync(path.join(PUB,'sw.js'),'utf8');
-  if(!swSrc.includes(`const CACHE="uc-table-${h}";`)){ console.log('FAIL 캐시 이름이 index.html 해시와 다름'); process.exit(1) }
+  const assets=JSON.parse(swSrc.match(/const ASSETS=(\[.*?\]);/)[1]);
+  const hv=require('crypto').createHash('sha256');
+  for(const a of assets){ const f=a.slice(2).split('?')[0]||'index.html'; const fp=path.join(PUB,f); hv.update(a); if(fs.existsSync(fp)) hv.update(fs.readFileSync(fp)) }
+  const h=hv.digest('hex').slice(0,10);
+  if(!swSrc.includes(`const CACHE="uc-table-${h}";`)){ console.log('FAIL 캐시 이름이 미리 보관하는 파일들의 해시와 다름'); process.exit(1) }
+  if(!assets.some(a=>/^\.\/app\.js\?v=/.test(a))){ console.log('FAIL 앱 코드(app.js?v=)를 미리 보관하지 않음'); process.exit(1) }
   if(!swSrc.includes('cache:"reload"')){ console.log('FAIL 설치 때 HTTP 캐시를 건너뛰지 않음'); process.exit(1) }
   await new Promise(res=>srv.listen(0,"127.0.0.1",res)); const url=`http://127.0.0.1:${srv.address().port}/`;
   const b=await chromium.launch(); const ctx=await b.newContext(); const p=await ctx.newPage(); const fails=[];

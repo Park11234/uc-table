@@ -63,6 +63,8 @@ mut={
  # v1.8.0 장보기를 살 때 재료로
  'shop_cook.html': rep('const eat=s?g*s[1]:g, ref=s?s[2]:0;','const eat=g, ref=s?s[2]:0;'),  # 밥·죽을 익힌 무게 그대로 쌀로 적음
  'shop_dish.html': rep('if(wBasis(f).k==="dish"){','if(false){'),  # 완성 음식을 재료로 적고 레시피 재료를 안 보여 줌
+ # v1.9.0(2026-10-15 발견): 끝낸 '오늘 할 일' 줄이 전역 .done(26px 원) 규칙에 걸려 글자가 세로로 흘러내림
+ 'done_clash.html':rep('`<div class="task${ok?" is-done":""}">','`<div class="task${ok?" is-done done":""}">'),
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -116,7 +118,10 @@ nav_over.html tests/regression/t29.cjs
 tabs_hit.html tests/regression/t29.cjs
 logo_gone.html tests/regression/t29.cjs
 shop_cook.html tests/checks/v150.cjs
-shop_dish.html tests/checks/v150.cjs"
+shop_dish.html tests/checks/v150.cjs
+done_clash.html tests/checks/v190.cjs"
+# 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
+if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다
 expect_fail(){ local app="$1" test="$2"; local tmp="$M/tmp_${app%.html}_$(basename "$test" .cjs)"; mkdir -p "$tmp"
   if TEST_TMP="$tmp" APP_HTML="$M/$app" timeout 600 node "$test" >"$M/$(basename "$test").$app.log" 2>&1; then echo "놓침  $test ← $app"; else echo "잡음  $test ← $app"; fi; }

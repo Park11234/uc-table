@@ -30,20 +30,31 @@ const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 await p.goto('file://'+WRAP('t29.html'));await p.waitForTimeout(400);
 // 1. 동의 → 첫 실행 설정(안내 → 키·몸무게 → 알레르기 → 오늘 증상)
+// v1.9.0: 저장 위치 안내는 동의 화면('기록은 이 기기에만 저장됩니다')으로 모으고 첫 실행 안내에서는 뺐다.
+//  백업 파일 불러오기는 label[for=restore] 대신 키보드로도 누르는 버튼(data-act=restorePick, A-5)
+const where=await p.evaluate(()=>/기록은 이 기기에만 저장됩니다/.test(document.querySelector('#main').textContent));
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(250);
-const intro=await p.evaluate(()=>({onb:S.onb,tabsHidden:document.body.classList.contains('welcome'),restore:!!document.querySelector('label[for=restore]'),paste:!!document.querySelector('[data-act=restorePaste]'),skip:!!document.querySelector('[data-act=onbSkip]'),where:/저장됩니다/.test(document.querySelector('#main').textContent)}));
-console.log('intro',JSON.stringify(intro));
-expect(intro.onb==="0"&&intro.tabsHidden&&intro.restore&&intro.paste&&intro.skip&&intro.where,'첫 실행 안내: 백업 불러오기·그냥 시작하기·저장 위치');
+const intro=await p.evaluate(()=>({onb:S.onb,tabsHidden:document.body.classList.contains('welcome'),restore:!!document.querySelector('button[data-act=restorePick]')&&!!document.querySelector('input#restore[type=file]'),paste:!!document.querySelector('[data-act=restorePaste]'),skip:!!document.querySelector('[data-act=onbSkip]')}));
+console.log('intro',JSON.stringify(intro),where);
+expect(intro.onb==="0"&&intro.tabsHidden&&intro.restore&&intro.paste&&intro.skip&&where,'첫 실행 안내: 백업 불러오기·그냥 시작하기·저장 위치(동의 화면)');
+{const fc=p.waitForEvent('filechooser',{timeout:3000}).then(()=>true).catch(()=>false); await p.click('[data-act=restorePick]'); expect(await fc,'백업 파일 불러오기 버튼이 파일 선택 창을 엶')}
 expect(await p.evaluate(()=>{const b=[...document.querySelectorAll('.bottom-bar .btn,.bottom-bar label')].map(x=>x.textContent.trim()); return b.indexOf('그냥 시작하기')>b.indexOf('백업 파일 불러오기')}),'그냥 시작하기는 백업 불러오기 아래');
 await p.click('[data-act=onbGo]'); await p.waitForTimeout(200);
 await p.fill('#o_height','170'); await p.fill('#o_weight','90'); await p.fill('#o_age','40'); await p.click('[data-act=onbSex][data-v=F]'); await p.waitForTimeout(150);
 await p.click('[data-act=onbNext]'); await p.waitForTimeout(200);
-await p.click('label.swrow:has([data-act=onbAl][data-v=peanut])'); await p.click('label.swrow:has([data-act=onbLac])'); await p.waitForTimeout(150);
+// v1.9.0 D-9: 알레르기는 자주 고르는 8가지 칩(ONB_COMMON) + '더 보기'로 나머지를 펼친다(스위치 목록 대신)
+const alv=await p.evaluate(()=>({chips:[...document.querySelectorAll('[data-act=onbAlT]')].map(b=>b.dataset.v),more:!!document.querySelector('[data-act=onbAlMore]'),common:ONB_COMMON.slice(),all:[...ALLERGY_OPTS,...ALLERGY_EXTRA].map(([v])=>v)}));
+await p.click('[data-act=onbAlT][data-v=peanut]'); await p.click('label.swrow:has([data-act=onbLac])'); await p.waitForTimeout(150);
+await p.click('[data-act=onbAlMore]'); await p.waitForTimeout(150);
+const alx=await p.evaluate(()=>({n:document.querySelectorAll('[data-act=onbAlT]').length,more:!!document.querySelector('[data-act=onbAlMore]'),extra:[...document.querySelectorAll('[aria-label="그 밖의 알레르기"] [data-act=onbAlT]')].map(b=>b.dataset.v)}));
+await p.click('[aria-label="그 밖의 알레르기"] [data-act=onbAlT][data-v=pine]'); await p.waitForTimeout(150);   // 펼친 목록에서 하나(잣)
+console.log('onb allergy',JSON.stringify({alv,alx}));
+expect(JSON.stringify(alv.chips)===JSON.stringify(alv.common)&&alv.more&&alx.n===alv.all.length&&!alx.more&&alx.extra.length===alv.all.length-alv.common.length,'알레르기: 자주 고르는 칩 + 더 보기로 나머지 전부');
 await p.click('[data-act=onbNext]'); await p.waitForTimeout(200);
 await p.click('[data-act=onbDone][data-v=""]'); await p.waitForTimeout(400);
 const ob=await p.evaluate(()=>({onb:S.onb,h:S.profile.height,age:S.profile.age,sex:S.profile.sex,w:bodyWeight(),al:S.profile.allergies,lac:S.profile.lactose,persist:S.persist,tabs:document.querySelectorAll('.tab').length,nutriTab:!!document.querySelector('.tab[data-tab=nutri]')}));
 console.log('onboard',JSON.stringify(ob));
-expect(ob.onb==="done"&&ob.h==="170"&&ob.age==="40"&&ob.sex==="F"&&ob.w===90&&ob.al.includes("peanut")&&ob.lac,'첫 실행 설정 값 저장');
+expect(ob.onb==="done"&&ob.h==="170"&&ob.age==="40"&&ob.sex==="F"&&ob.w===90&&ob.al.includes("peanut")&&ob.al.includes("pine")&&ob.lac,'첫 실행 설정 값 저장');
 expect(["yes","no","na"].includes(ob.persist),'기록 보존 요청');
 expect(ob.tabs===4&&!ob.nutriTab,'하단 탭 4개(오늘 영양 탭 없음)');
 // 2. BMI에 따른 열량 목표(대한비만학회 표: 과체중·비만 25kcal/kg)
@@ -53,8 +64,9 @@ await p.evaluate(()=>{S.weights=[{date:today(),kg:50}];S.profile.weight="50";ren
 expect(await p.evaluate(()=>{const t=targets(); return t.bmi.low&&t.kpk===35&&t.k===1750}),'저체중이면 35kcal/kg');
 // 3. 홈: 첫 화면 안에 끼니, 한 줄 요약
 await p.evaluate(()=>{S.weights=[{date:today(),kg:63}];S.profile.weight="63";SCR=null;S.tab="plan";render();window.scrollTo(0,0)}); await p.waitForTimeout(300);
-const home=await p.evaluate(()=>{const m=document.querySelector('.mrow'); return {mealTop:m.getBoundingClientRect().top,vh:innerHeight,sum:!!document.querySelector('.sumline .sl-main'),card:!!document.querySelector('#dayNutri'),ring:!!document.querySelector('.ring')}});
-console.log('home',JSON.stringify(home)); expect(home.mealTop<home.vh-120&&home.sum&&home.card&&!home.ring,'홈 첫 화면 안에 끼니·요약·두 막대 카드');
+// v1.9.0: 홈 맨 위는 '오늘 할 일'(증상 기록·끼니 표시·물). 끼니 목록은 그 아래로 내려가고, 할 일의 '끼니 표시'가 끼니로 바로 데려간다
+const home=await p.evaluate(()=>{const t=document.querySelector('.tasks'); const g=document.querySelector('[data-act=goMeals]'); return {taskTop:t?t.getBoundingClientRect().top:9999,vh:innerHeight,goMeals:!!g,meals:!!document.querySelector('.mrow'),sum:!!document.querySelector('.sumline .sl-main'),card:!!document.querySelector('#dayNutri'),ring:!!document.querySelector('.ring')}});
+console.log('home',JSON.stringify(home)); expect(home.taskTop<home.vh-200&&home.goMeals&&home.meals&&home.sum&&home.card&&!home.ring,'홈 첫 화면 안에 오늘 할 일·요약, 끼니 바로 가기·두 막대 카드');
 // 4. 먹은 양 선택(반·전부·더 많이)
 await p.click('.mwrap:nth-child(1) [data-act=ateToggle]'); await p.waitForTimeout(200);
 const k1=await p.evaluate(()=>Math.round(eatenTotals(today()).k));
@@ -111,7 +123,8 @@ const tp=await p.evaluate(()=>({tips:S.tips,btn:!!document.querySelector('#dayNu
 console.log('tips',JSON.stringify(tp)); expect(tp.tips.includes("homePlan")&&tp.btn,'안내를 닫으면 ⓘ로 남음');
 // 12. 증상 기록 아래 버튼이 화면 전환 중에도 맨 아래
 await p.evaluate(()=>{openWizard(today())}); await p.waitForTimeout(400);
-const wz=[]; for(let i=0;i<3;i++){const d=await p.$('[data-act=wzNext][disabled]'); if(d) await p.click('.opts button'); await p.click('[data-act=wzNext]'); wz.push(await p.evaluate(()=>Math.round(document.querySelector('.bottom-bar').getBoundingClientRect().bottom)))}
+// v1.9.0 U-1: 한 쪽에 꼭 답할 질문이 여럿이면 질문마다 첫 보기를 눌러야 '다음'이 열린다
+const wz=[]; for(let i=0;i<3;i++){const d=await p.$('[data-act=wzNext][disabled]'); if(d){ await p.evaluate(()=>{ for(let k=0;k<12;k++){ const q=[...document.querySelectorAll('.wq')].find(q=>q.querySelector('.opts button,.seg3 button')&&!q.querySelector('.opts button[aria-pressed="true"],.seg3 button[aria-pressed="true"]')); if(!q) break; q.querySelector('.opts button,.seg3 button').click() } }); await p.waitForTimeout(150) } await p.click('[data-act=wzNext]'); wz.push(await p.evaluate(()=>Math.round(document.querySelector('.bottom-bar').getBoundingClientRect().bottom)))}
 console.log('wzbar',JSON.stringify(wz)); expect(wz.every(x=>Math.abs(x-844)<=2),'기록 버튼이 넘어가는 동안에도 맨 아래');
 await p.evaluate(()=>{wizardDirty=()=>false; SCR=null; render()}); await p.waitForTimeout(400);
 // 12-1. 화면을 연 직후(아래 탭이 내려가는 0.25초 동안)에도 아래 버튼을 누르면 탭이 아니라 그 버튼이 눌림
@@ -131,6 +144,7 @@ const fbx=await p.evaluate(()=>document.querySelector('#sheetRoot .fsv')?.getAtt
 await p.evaluate(()=>{closeSheet();showFood("egg_soup")}); await p.waitForTimeout(150);
 const fe=await p.evaluate(()=>document.querySelector('#sheetRoot').textContent.replace(/\s+/g,' '));
 await p.evaluate(()=>{closeSheet();showFood("white_rice")}); await p.waitForTimeout(150);
+await p.click('#sheetRoot [data-act=nutBasis][data-v="100"]'); await p.waitForTimeout(150);   // v1.9.0 D-13: 기본은 1회 분량 → 100g당으로 바꿔 실측값 확인
 const fr=await p.evaluate(()=>document.querySelector('#sheetRoot').textContent.replace(/\s+/g,' ')); await p.evaluate(()=>closeSheet());
 console.log('food',fb.slice(0,40));
 expect(/75g까지/.test(fb)&&/208g부터/.test(fb)&&/279g부터/.test(fb)&&/프럭탄/.test(fb)&&/2차 자료/.test(fb),'브로콜리 FODMAP 1회량');
@@ -172,7 +186,7 @@ const eb=await p.evaluate(()=>!!document.querySelector('#errbar .banner.crit'));
 expect(eb,'오류 안내 띄우기'); errs.splice(0,errs.length,...errs.filter(e=>!/시험용 오류/.test(e)));
 // 21. 홈 화면 바로가기 안내·저장 위치
 await p.evaluate(()=>{$("#errbar")?.remove(); S.tab="me"; openScr("set-home")}); await p.waitForTimeout(150);
-const hs=await p.evaluate(()=>({t:/설치 및 바로가기 만들기/.test(document.querySelector('#main').textContent),where:storeWhere().k}));
+const hs=await p.evaluate(()=>({t:/앱 설치/.test(document.querySelector('#main').textContent),where:storeWhere().k}));   // v1.9.0 W-7: 크롬 메뉴 이름 '앱 설치'(파일로 열면 주소를 열어 설치하라고 안내)
 console.log('home-shortcut',JSON.stringify(hs)); expect(hs.t&&hs.where==="file",'홈 화면 바로가기 안내·저장 위치');
 // 21-1. 홈 제목 자리에는 앱 이름 대신 UC TABLE 로고(그림), 화면 읽기에는 글자로
 const lg=await p.evaluate(()=>{closeScr(); S.tab="plan"; render(); const h=document.querySelector('#appbar h1'); const svg=h.querySelector('.logo svg'); const r=svg?.getBoundingClientRect();

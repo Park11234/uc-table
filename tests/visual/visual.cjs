@@ -61,6 +61,8 @@ async function diff(p,a,b,outPath){
   // 글꼴 지문: 기본 글꼴로 그린 한글·숫자 문장의 폭
   const fp=await p.evaluate(()=>{const c=document.createElement("canvas").getContext("2d"); const f=getComputedStyle(document.body).fontFamily; c.font=`16px ${f}`; return Math.round(c.measureText("궤양성 대장염 식단 0123456789 kcal").width*100)/100+"|"+f.slice(0,40)});
   const fpFile=path.join(BASE,'fingerprint.txt'); const baseFp=fs.existsSync(fpFile)?fs.readFileSync(fpFile,'utf8').trim():"";
+  // --fp-check: 이 환경이 기준 화면과 같은 글꼴인지만 알려 준다(같으면 0, 다르면 2). 돌연변이 점검이 화면 비교 쌍을 돌릴지 정할 때 쓴다
+  if(process.argv.includes('--fp-check')){console.log(fp); await b.close(); process.exitCode=(baseFp&&baseFp===fp)?0:2; return}
   if(!UPDATE&&baseFp&&baseFp!==fp){console.log(`기준 화면을 만든 환경과 글꼴이 달라 비교를 건너뜀(기준 ${baseFp} / 지금 ${fp}). 이 환경에서 비교하려면 --update로 기준을 만드십시오.`); await b.close(); return}
   const fails=[];
   for(const [name,go] of SCREENS){

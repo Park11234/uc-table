@@ -33,7 +33,7 @@ console.log('stage', await p.evaluate(()=>currentStage().stage));
 // 예시 식단의 짠 식품은 한 끼 상한(SALTY_CAP, 40g) 안에서만(날짜마다 고르는 메뉴가 달라 짠 식품 자체는 나올 수 있음)
 console.log('H sample', await p.evaluate(()=>samplePlan().days.flatMap(d=>d.meals.flatMap(m=>m.items.filter(([id,g])=>FOOD[id].tags.includes("salty")&&id!=="ons"&&g>SALTY_CAP))).slice(0,5)));
 // same-button repeat (answered step: extra=multi, always enabled)
-await p.evaluate(()=>{SCR=null;openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="extra");render()});
+await p.evaluate(()=>{SCR=null;openWizard();WZ.step=wzStepOf("extra");render()});
 const nb=await p.locator('[data-act=wzNext]').boundingBox();
 await p.mouse.click(nb.x+nb.width/2, nb.y+nb.height/2);
 const s1=await p.evaluate(()=>WZ.step);

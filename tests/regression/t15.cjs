@@ -33,16 +33,19 @@ fs.writeFileSync(T('t15.html'),'<!doctype html><html><head><meta charset="utf-8"
 await p.goto('file://'+WRAP('t15.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};render()});
 // wizard: urg step next disabled until answered
-await p.evaluate(()=>{openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="urg");render()});
+await p.evaluate(()=>{openWizard();WZ.step=wzStepOf("urg");render()});
 console.log('nextDisabled',await p.evaluate(()=>[document.querySelector('[data-act=wzNext]').disabled,[...document.querySelectorAll('[data-act=set]')].map(b=>b.getAttribute('aria-pressed'))]));
 await p.click('[data-act=set][data-k=urg][data-v="0"]');
-console.log('afterPick',await p.evaluate(()=>[document.querySelector('[data-act=wzNext]').disabled,WZ.step]));
+// v1.9.0 U-1: 한 쪽에 꼭 답할 질문이 셋(급박감·피·몸 상태) — 하나만 답하면 아직 막혀 있고 남은 수를 알려 준다
+console.log('afterPick1',await p.evaluate(()=>[document.querySelector('[data-act=wzNext]').disabled,WZ.step,document.querySelector('#wzMiss')?.textContent||'']));
+await p.click('[data-act=set][data-k=blood][data-v="0"]'); await p.click('[data-act=set][data-k=well][data-v="0"]');
+console.log('afterPick',await p.evaluate(()=>[document.querySelector('[data-act=wzNext]').disabled,WZ.step,!!document.querySelector('#wzMiss')]));
 // result banner order
 await p.evaluate(()=>{draft.temp="37.8";WZ.step=WSTEPS.length-1;render()});
 console.log('order',await p.evaluate(()=>{const m=document.querySelector('#main');const b=m.querySelector('.banner.crit'),c=m.querySelector('.card.result');return b&&c&&(b.compareDocumentPosition(c)&Node.DOCUMENT_POSITION_FOLLOWING)}));
 await p.screenshot({path:T('w_res.png')});
 // existing log: all answered
-await p.evaluate(()=>{S.logs[today()]={...BLANK_LOG(),day:2};openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="urg");render()});
+await p.evaluate(()=>{S.logs[today()]={...BLANK_LOG(),day:2};openWizard();WZ.step=wzStepOf("urg");render()});
 console.log('existing',await p.evaluate(()=>document.querySelector('[data-act=wzNext]').disabled));
 // taste only -> dislikes
 await p.evaluate(()=>{wizardDirty=()=>false;SCR=null;S.logs={};S.plan=null;S.tab="plan";render()});
@@ -54,7 +57,9 @@ console.log('tasteUI',await p.evaluate(()=>[BAD.list[0].dec,!!document.querySele
 await p.screenshot({path:T('w_taste.png')});
 await p.click('[data-act=badSave]'); await p.waitForTimeout(200);
 console.log('result',await p.evaluate(()=>[S.profile.dislikes,S.triggers.length,menuFoods().some(f=>f.id==="rice_porridge")]));
-console.log(errs);expect(()=>jsonOf('nextDisabled')[0]===true,'답하기 전 다음 막기'); expect(()=>jsonOf('afterPick')[0]===false,'답한 뒤 다음');
+console.log(errs);expect(()=>jsonOf('nextDisabled')[0]===true,'답하기 전 다음 막기');
+expect(()=>{const a=jsonOf('afterPick1'); return a[0]===true&&/2개/.test(a[2])},'쪽의 질문 하나만 답하면 아직 막고 남은 수 안내(v1.9.0)');
+expect(()=>{const a=jsonOf('afterPick'); return a[0]===false&&a[2]===false},'쪽의 질문에 모두 답한 뒤 다음');
 expect(()=>jsonOf('existing')===false,'저장된 기록은 답한 것으로'); expect(()=>{const t=jsonOf('tasteUI'); return t[0]==='dislike'&&t[2]===true},'맛만 나쁨');
 expect(()=>{const r=jsonOf('result'); return r[0].includes(String(jsonOf('rated')).split('(')[0].trim())&&r[1]===0},'싫어하는 음식에 추가');   // 앱은 괄호 앞 이름만 넣음(예: '누룽지(마른 무게, 끓여서)' → '누룽지')   // 날짜마다 첫 메뉴가 달라 평가한 음식 이름으로 확인(v1.6.2)
 __done(); await b.close()})();

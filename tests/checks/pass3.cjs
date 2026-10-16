@@ -65,17 +65,21 @@ out('4 overflow(px>0 = 넘침)', Object.fromEntries(Object.entries(ov).filter(([
 // P3-5 접근성: 이름 없는 버튼
 out('5 unnamed buttons', await p.evaluate(()=>{const bad=[];for(const t of ["plan","log","food","me","nutri"]){wizardDirty=()=>false;SCR=null;if(t==="nutri"){S.tab="plan";openScr("nutri")}else{S.tab=t;render()};
   document.querySelectorAll('button,a').forEach(el=>{const name=(el.getAttribute('aria-label')||el.textContent||'').trim(); if(!name) bad.push(t+':'+(el.className||el.tagName))})} return [...new Set(bad)].slice(0,10)}));
-// P3-6 확인 창: 평가가 있는 끼니를 안 먹음/다른 메뉴로
+// P3-6 평가가 있는 끼니를 안 먹음/다른 메뉴로
+// v1.9.0 U-3: 확인 창 대신 바로 바꾸고, 알림에 지운 사실과 '되돌리기'를 보인다(되돌리면 평가가 돌아옴)
 p=await mk();
 await p.goto('file://'+WRAP('app.html')); await p.waitForTimeout(300);
 await p.evaluate(()=>{S.consent={date:today()};S.plan=null;render(); const d=S.plan.days[0]; S.ratings=[{date:d.date,slot:"아침",title:d.meals[0].title,foodId:d.meals[0].items[0][0],rating:"good"}]; render()});
+const undoTxt=()=>p.evaluate(()=>{const t=document.querySelector('#toasts .toast'); return t?[t.querySelector('.t-msg')?.textContent||'',t.querySelector('.t-act')?.textContent||'']:null});
 await p.click('[data-act=skipToggleDate][data-slot="아침"]'); await p.waitForTimeout(200);
-out('6 skip confirm', await p.evaluate(()=>[document.querySelector('#sheetRoot').textContent.includes('안 먹은 끼니로'), S.ratings.length]));
-await p.evaluate(()=>closeSheet());
-await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(200);
-out('6b swap confirm', await p.evaluate(()=>[document.querySelector('#sheetRoot').textContent.includes('다른 메뉴로'), S.ratings.length]));
-await p.click('#sheetRoot [data-act=swapMeal]'); await p.waitForTimeout(300);
-out('6c swapped', await p.evaluate(()=>[S.ratings.length, isAte(today(),"아침")]));
+out('6 skip undo', await p.evaluate(()=>[!document.querySelector('#sheetRoot').firstChild, isSkipped(today(),"아침"), S.ratings.length]).then(async a=>[...a,...(await undoTxt()||[])]));
+await p.click('#toasts .t-act'); await p.waitForTimeout(200);
+out('6a skip undone', await p.evaluate(()=>[isSkipped(today(),"아침"), S.ratings.length]));
+const t0=await p.evaluate(()=>S.plan.days[0].meals[0].title);
+await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
+out('6b swap undo', await p.evaluate(t0=>[!document.querySelector('#sheetRoot').firstChild, S.plan.days[0].meals[0].title!==t0, S.ratings.length, isAte(today(),"아침")],t0).then(async a=>[...a,...(await undoTxt()||[])]));
+await p.click('#toasts .t-act'); await p.waitForTimeout(300);
+out('6c swap undone', await p.evaluate(t0=>[S.plan.days[0].meals[0].title===t0, S.ratings.length, isAte(today(),"아침")],t0));
 // P3-7 컵 용량 환산
 await p.evaluate(()=>{S.tab="plan";S.water[today()]=5;S.cupMl=200;openScr("nutri")});
 await p.selectOption('#cupMl','500'); await p.waitForTimeout(200);
@@ -86,5 +90,9 @@ out('8 perf', await p.evaluate(()=>{for(let i=0;i<365;i++){const d=addDays(today
   const t0=performance.now(); foodSuspects(); const t1=performance.now(); return [t, Math.round(t1-t0), JSON.stringify(S).length]}));
 console.log('errors',errs);expect(()=>jsonOf('1 load fail')[0]===true,'불러오기 실패 보호'); expect(()=>logOf('1b banner on welcome')==='true'&&logOf('1c banner home')==='true','불러오기 실패 안내');
 expect(()=>JSON.stringify(jsonOf('4 overflow(px>0 = 넘침)'))==='{}','넘침'); expect(()=>jsonOf('5 unnamed buttons').length===0,'이름 없는 버튼');
-expect(()=>jsonOf('6 skip confirm')[0]===true&&jsonOf('6b swap confirm')[0]===true,'평가 지움 확인');
+// v1.9.0 U-3: 확인 창 없이 바로 바뀌고(평가도 지움) 알림의 '되돌리기'로 돌아온다
+expect(()=>{const a=jsonOf('6 skip undo'); return a[0]===true&&a[1]===true&&a[2]===0&&/평가를 지웠습니다/.test(a[3])&&a[4]==='되돌리기'},'평가 있는 끼니를 안 먹음으로: 바로 바꾸고 되돌리기 알림');
+expect(()=>{const a=jsonOf('6a skip undone'); return a[0]===false&&a[1]===1},'안 먹음 되돌리기로 평가 복원');
+expect(()=>{const a=jsonOf('6b swap undo'); return a[0]===true&&a[1]===true&&a[2]===0&&a[3]===false&&/평가는 지웠습니다/.test(a[4])&&a[5]==='되돌리기'},'평가 있는 끼니를 다른 메뉴로: 바로 바꾸고 되돌리기 알림');
+expect(()=>{const a=jsonOf('6c swap undone'); return a[0]===true&&a[1]===1&&a[2]===true},'다른 메뉴 되돌리기로 메뉴·평가 복원');
 __done(); await b.close()})();

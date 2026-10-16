@@ -52,7 +52,7 @@ await go(()=>{closeSheet();SCR={name:"set-profile"};render()});
 for(const id of ['p_dislikes','p_allergyOther','p_medOther']) if(await p.$('#'+id)) res[id]=await typeKo('#'+id);
 await go(()=>{SCR={name:"set-orders"};render()});
 if(await p.$('#orderAdd')) res.orderAdd=await typeKo('#orderAdd');
-await go(()=>{SCR=null;S.tab="log";render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()});
+await go(()=>{SCR=null;S.tab="log";render();openWizard();WZ.step=wzStepOf("other");render()});
 if(await p.$('#otherAdd')) res.otherAdd=await typeKo('#otherAdd');
 if(await p.$('#memo')) res.memo=await typeKo('#memo');
 await go(()=>{wizardDirty=()=>false;draft=null;SCR=null;S.tab="food";S.foodSub="menu";render()});

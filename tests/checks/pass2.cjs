@@ -26,6 +26,8 @@ const FAILS=[]; const expect=(c,m)=>{let ok=false; try{ok=typeof c==='function'?
 const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); process.exitCode=1 } else console.log('검증 통과') };
 const rateOpen=async p=>{const b=await p.$('[data-act=rateOpen]'); if(b){await b.click(); await p.waitForTimeout(80)}}; // v1.8.0 평가 버튼은 '불편했던 음식 고르기'를 눌러야 보임
 const out=(k,v)=>console.log(k, typeof v==='string'?v:JSON.stringify(v));
+// v1.9.0 P-3: 느린 기기(목록을 한 번 그리는 데 50ms 넘음)에서는 검색 입력을 0.12초 모아 그린다. 결과 목록이 지금 검색어로 다시 그려질 때까지 기다린다
+const foodSettled=pg=>pg.waitForFunction(()=>{const el=document.querySelector('#foodRes'); if(!el) return false; const d=foodSearchData(); return el.__h===foodResHTML(d.c,d.q,d.list,d.rows)},null,{timeout:5000,polling:50}).catch(()=>{});
 (async()=>{const b=await chromium.launch();
 const ctx=await b.newContext({viewport:{width:390,height:844}});
 const p=await ctx.newPage();
@@ -43,11 +45,14 @@ await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(300);
 let guard=0;
 while(guard++<30){
   const st=await p.evaluate(()=>SCR?.name==="wizard"?WSTEPS[WZ.step]:null); if(!st) break;
-  if(st.type==="step"){await p.click(`[data-act=step][data-k=${st.k}][data-v="1"]`); await p.click(`[data-act=step][data-k=${st.k}][data-v="1"]`)}
-  else if(st.type==="one"){await p.locator(`[data-act=set][data-k=${st.k}]`).nth(1).click()}
-  else if(st.type==="oneS"){await p.locator(`[data-act=setS][data-k=${st.k}]`).nth(1).click()}
-  else if(st.type==="range"){await p.fill('#pain','3')}
-  else if(st.type==="vitals"){await p.fill('#temp','36.9'); await p.fill('#pulse','78')}
+  // v1.9.0 U-1: 한 쪽에 질문이 여러 개(st.q)라 쪽 안의 질문마다 답한다
+  for(const q of (st.q||[st])){
+    if(q.type==="step"){await p.click(`[data-act=step][data-k=${q.k}][data-v="1"]`); await p.click(`[data-act=step][data-k=${q.k}][data-v="1"]`)}
+    else if(q.type==="one"){await p.locator(`[data-act=set][data-k=${q.k}]`).nth(1).click()}
+    else if(q.type==="oneS"){await p.locator(`[data-act=setS][data-k=${q.k}]`).nth(1).click()}
+    else if(q.type==="range"){await p.fill('#pain','3')}
+    else if(q.type==="vitals"){await p.fill('#temp','36.9'); await p.fill('#pulse','78')}
+  }
   if(st.type==="result"){await p.waitForTimeout(500); await p.screenshot({path:T('s1_result.png')}); await p.click('[data-act=saveLog]'); break}
   const dis=await p.evaluate(()=>document.querySelector('[data-act=wzNext]')?.disabled);
   if(dis){out('S1 stuck at',st.k); break}
@@ -80,7 +85,7 @@ await p.evaluate(()=>{wizardDirty=()=>false}); await p.goBack(); await p.waitFor
 out('S3 after back', await p.evaluate(()=>[SCR&&SCR.name, S.tab]));
 // S4 음식 탭
 await p.evaluate(()=>{SCR=null;S.tab="food";S.foodSub="search";render()}); await p.waitForTimeout(200);
-for(const q of ["계란","흰죽","ㄴㄹㅈ","ㅋㅋㅋㅎ"]){await p.fill('#foodQ',q); await p.waitForTimeout(120); out('S4 search '+q, await p.evaluate(()=>document.querySelectorAll('.fcard').length))}
+for(const q of ["계란","흰죽","ㄴㄹㅈ","ㅋㅋㅋㅎ"]){await p.fill('#foodQ',q); await p.waitForTimeout(120); await foodSettled(p); out('S4 search '+q, await p.evaluate(()=>document.querySelectorAll('.fcard').length))}
 await p.fill('#foodQ',''); await p.waitForTimeout(100);
 await p.click('.fcard'); await p.waitForTimeout(200); out('S4 detail sheet', await p.evaluate(()=>!!document.querySelector('#sheetRoot .sheet')));
 await p.keyboard.press('Escape'); await p.evaluate(()=>closeSheet());
@@ -100,6 +105,8 @@ out('S6 url before', await p.evaluate(()=>[location.href.slice(-12), history.len
 for(let i=0;i<5;i++){await p.evaluate(()=>openSheet('<h2>t</h2>')); await p.waitForTimeout(80); await p.goBack(); await p.waitForTimeout(150)}
 out('S6 sheets', await p.evaluate(()=>[!!document.querySelector('#sheetRoot').firstChild, !!document.querySelector('#main').textContent.trim()]));
 console.log('errors',errs);expect(()=>jsonOf('S1 welcome').every(Boolean),'처음 화면'); expect(()=>jsonOf('S1 home')[0]==='plan','홈');
+// v1.9.0 U-1: 쪽으로 묶인 마법사를 끝까지 눌러 저장한 값(낮·밤 +2, 혈변 +2, 보기 두 번째, 복통 3, 체온·맥박)
+expect(()=>logOf('S1 stuck at')==null&&JSON.stringify(jsonOf('S1 saved log'))===JSON.stringify([2,2,2,1,1,1,3,"약간","약간",1,1,"36.9","78"]),'마법사 전체를 눌러 기록 저장');
 expect(()=>{const n=jsonOf('S2 nutri consistency'); return String(n[1]).endsWith(String(n[0]))&&+n[2]===n[3]},'영양 합계와 화면 일치');
 expect(()=>jsonOf('S3 after back')[1]==='plan','뒤로 가기'); expect(()=>+logOf('S4 search 계란')>0&&+logOf('S4 search 흰죽')>0&&+logOf('S4 search ㄴㄹㅈ')>0&&+logOf('S4 search ㅋㅋㅋㅎ')===0,'검색');
 expect(()=>logOf('S4 detail sheet')==='true','음식 상세'); expect(()=>/백업 불러오기/.test(logOf('S5 restore sheet')),'복원 확인');

@@ -1,12 +1,12 @@
 {
  "name": "UC TABLE",
  "short_name": "UC TABLE",
- "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미)",
+ "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미). 의료기기가 아닙니다.",
  "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
- "background_color": "#F2F4F6",
+ "background_color": "#1F242B",
  "theme_color": "#2462E6",
  "lang": "ko",
  "icons": [

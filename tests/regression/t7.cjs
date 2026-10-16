@@ -70,10 +70,12 @@ console.log('back again', await p.evaluate(()=>[SCR&&SCR.name,!!document.querySe
 await p.click('[data-act=back]'); await p.waitForTimeout(150); await p.click('[data-act=wzDiscard]'); await p.waitForTimeout(300);
 console.log('discard', await p.evaluate(()=>[SCR,!!document.querySelector('#sheetRoot').firstChild,NAV.depth,NAV.skip]));
 // double tap
-await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(100); for(let i=0;i<3;i++) await p.click('[data-act=wzNext]');
+// v1.9.0 U-1: 급박감 질문이 있는 쪽까지 '다음'(배변 쪽 → 급박감·피·몸 상태 쪽). 그 쪽은 답하기 전 '다음'이 막혀 있다
+await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(100);
+for(let i=0;i<5&&await p.evaluate(()=>WZ.step<wzStepOf("urg"));i++) await p.click('[data-act=wzNext]');
 const stepBefore=await p.evaluate(()=>WZ.step);
 await p.dblclick('[data-act=set][data-k=urg][data-v="1"]'); await p.waitForTimeout(500);
-console.log('double tap step', stepBefore, await p.evaluate(()=>WZ.step));
+console.log('double tap step', stepBefore, await p.evaluate(()=>WZ.step), await p.evaluate(()=>wzStepOf("urg")));
 // font size
 await p.evaluate(()=>{draft=null;SCR=null;S.fontSize="xl";S.tab="plan";render()}); await p.waitForTimeout(400);
 await p.screenshot({path:T('t7_xl_plan.png')});
@@ -90,5 +92,5 @@ console.log('errors',errs); {const j=lineJSON('{"label"'); expect(j,'출력 없�
  expect(()=>j.water[0]===1740&&j.water[1]==='kg','수분 목표'); expect(()=>j.viol.length===0,'저잔사식 섬유');
  expect(()=>jsonOf('open meal')[0]==='meal','끼니 화면'); expect(()=>jsonOf('after back')[0]===null,'뒤로 가기');
  expect(()=>jsonOf('wizard dirty back')[1]===true,'작성 중 뒤로 가기 확인'); expect(()=>jsonOf('discard')[0]===null,'버리기');
- expect(()=>{const d=logOf('double tap step').split(' '); return d[0]===d[1]},'연타 한 번만'); expect(()=>+logOf('hscroll')<=390,'가로 넘침');}
+ expect(()=>{const d=logOf('double tap step').split(' '); return d[0]===d[1]&&d[0]===d[2]},'연타 한 번만'); expect(()=>+logOf('hscroll')<=390,'가로 넘침');}   // v1.9.0: 급박감 쪽에 그대로 있어야 함
 __done(); await b.close()})();

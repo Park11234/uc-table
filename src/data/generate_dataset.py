@@ -7,10 +7,16 @@ import json, sys, re
 import pandas as pd
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from spec1 import G; from spec2 import P; from spec3 import DY,V; from spec4 import FR,FAT,ETC; from spec5 import DS; from spec6 import EX; from spec7 import TR; from spec8 import TR8, LABEL, T8
+from spec9 import TR9, LABEL9, T9, FOD9   # 마트·편의점 시판 식품(2026-10-14)
+LABEL.update(LABEL9)
+# CJ더마켓 시판 식품(v1.9.0, 2026-10-14): 한 곳(CJ더마켓 상품정보 제공고시)에서 확인, 아질산염 가공육은 '절대 금지' 고정
+from spec10 import TR10, LABEL10, T10, FOD10, ING10, PLABEL10, PSRC10
+LABEL.update(LABEL10)
 import snack_check
 import ramen_check
+import mart_check
 from templates import T
-T=dict(T); T.update(T8)
+T=dict(T); T.update(T8); T.update(T9); T.update(T10)
 import hashlib
 # ---- 템플릿 보정 ----
 T['fish_white']=("흰살생선은 급성기에도 권장되는 지방이 적은 단백질 반찬입니다. 껍질을 벗기고 굽거나 찝니다.",[39,37])
@@ -52,7 +58,7 @@ T['plant_milk']=("유당이 없는 식물성 음료입니다. 우유보다 단�
 T['padthai']=("쌀국수를 기름에 볶고 땅콩·숙주를 올리는 음식입니다. 땅콩·숙주는 저잔사식에서 제한되고, 기름진 음식은 증상 악화 음식으로 안내돼 관해기에 소량 드십시오.",[39])
 T['rose_sauce']=("로제 소스는 매운 양념에 크림이나 우유를 섞어 만들어 유제품이 들어갑니다.",[])
 T['cream_sauce']=("크림소스는 생크림·버터·치즈로 만들어 기름지고 유당이 있습니다. 기름진 음식은 증상 악화 음식으로 안내돼 소량만 드십시오.",[39])
-L=[list(x) for x in G+P+DY+V+FR+FAT+ETC+DS+EX+TR+TR8]
+L=[list(x) for x in G+P+DY+V+FR+FAT+ETC+DS+EX+TR+TR8+TR9+TR10]
 IDX={x[0]:x for x in L}
 # ---- 음식별 보정(근거 검토 결과) ----
 def add(i,*tags):
@@ -212,7 +218,7 @@ for i in ['newcare_active','newcare_fiber']: FOD[i]=('high','치커리 식이섬
 for i in ['newcare_dangplan_pro','newcare_dangplan_pro_injeolmi']: FOD[i]=('high','돼지감자 추출분말(이눌린 원료) 첨가',[51])
 # 1팩 식이섬유 5g 이상인 영양식은 '식이섬유를 늘린 제품'(저잔사식 단계 보류)
 for x in L:
-    if x[3].startswith('L:') and (LABEL[x[3][2:]].get('fi') or 0)>=5 and 'hifiber' not in x[5]:
+    if x[3].startswith('L:') and not re.match(r'(cj|dw|fs)\d',x[0]) and (LABEL[x[3][2:]].get('fi') or 0)>=5 and 'hifiber' not in x[5]:   # v1.9.0 시판 식품은 spec10이 100g당 값으로 정함
         x[5].append('hifiber')
         if 'ons_hifiber' not in x[9]: x[9].append('ons_hifiber')
 FOD['sugarfree_candy']=('high','당알코올(폴리올)',[47])
@@ -279,6 +285,9 @@ FOD['potato_chip_ns']=('low','소금만 넣은 감자칩은 프럭탄이 아주 
 # 시판 라면(v1.6.2): 밀 면(진비빔면은 비빔장에 사과과즙도)
 for v in ramen_check.X.values(): FOD[v['fid']]=('high','밀 면',[24])
 FOD['rm_jinbibim']=('high','밀 면·사과과즙(비빔장)',[24,20])
+# 마트·편의점 시판 식품(2026-10-14): 원재료명으로 정함(spec9.FOD9)
+FOD.update(FOD9)
+FOD.update(FOD10)   # CJ더마켓 시판 식품: 원재료명으로 정함(spec10.fodmap)
 for i in ['baek_kimchi','nabak_kimchi','yeolmu_kimchi','chonggak','gat_kimchi','pa_kimchi','kkakdugi','dongchimi','oi_sobagi']:
     if i in IDX: FOD[i]=('unk','배추김치는 47g까지 낮다는 Monash 앱 결과가 있으나(2차 자료) 이 김치는 시험되지 않음',[58])
 for x in L:
@@ -477,15 +486,45 @@ for i,t in snack_check.ING.items():
 for i,t in ramen_check.ING.items():   # 시판 라면(v1.6.2)
     assert i in IDX and i not in out['ingr'], i
     out['ingr'][i]=t
+for i,t in mart_check.ING.items():   # 마트·편의점 시판 식품(2026-10-14)
+    assert i in IDX and i not in out['ingr'], i
+    out['ingr'][i]=t
+# 포장 영양정보 표시 그대로(열량·나트륨·탄수화물·당류·지방·트랜스지방·포화지방·콜레스테롤·단백질 등)
+out['plabel']={}
+for i,t in mart_check.PLABEL.items():
+    assert i in IDX, i
+    out['plabel'][i]=t
+# CJ더마켓 시판 식품(v1.9.0): 원재료명·고시 영양정보 글·확인한 상품 번호(앱이 근거 82와 상품 주소로 보여 줌)
+for i,t in ING10.items():
+    assert i in IDX and i not in out['ingr'], i
+    out['ingr'][i]=t
+for i,t in PLABEL10.items():
+    assert i in IDX and i not in out['plabel'], i
+    out['plabel'][i]=t
+out['psrc']={}
+for i,v in PSRC10.items():
+    assert i in IDX, i
+    out['psrc'][i]=v
 # 식약처 원본 CSV 기록(데이터 기준일자·행 수·SHA-256)
 for key,fn in [('raw','raw.csv'),('dish','dish.csv'),('proc','proc.csv'),('prep','prep.csv')]:
     fp=os.path.join(MFDS,fn); d=pd.read_csv(fp,dtype=str)
     col='데이터기준일자' if '데이터기준일자' in d.columns else '데이터생성일자'
     out['source'][key]={'rows':len(d),'dateCol':col,'dates':sorted(d[col].dropna().unique().tolist())[-3:],'sha256':hashlib.sha256(open(fp,'rb').read()).hexdigest()}
+CJT=[]   # CJ더마켓 시판 식품(v1.9.0)에 되풀이되는 설명 문장: 앱에 한 번만 두고 CW([번호],제품 문장)로 잇는다
 for x in L:
     i,nm,cat,_,msv,tags,serv,al,emo,tk,_f,_c,pr,cost=x
     w,refs=why(x)
-    out['foods'].append(f'LF({js(i)},{js(nm)},{js(cat)},{msv},{js(tags)},{cost},{js(pr)},{js(w)},{js(refs)})')
+    if i.startswith('cj') and i[2:].isdigit():
+        ks=[]; last=None
+        for k in tk:
+            sent=T[k][0]
+            if k.startswith('p_'): last=sent; continue
+            if sent not in CJT: CJT.append(sent)
+            ks.append(CJT.index(sent))
+        assert ' '.join([CJT[j] for j in ks]+([last] if last else []))==w, i
+        out['foods'].append(f'LF({js(i)},{js(nm)},{js(cat)},{msv},{js(tags)},{cost},{js(pr)},CW({js(ks)},{js(last or "")}),{js(refs)})')
+    else:
+        out['foods'].append(f'LF({js(i)},{js(nm)},{js(cat)},{msv},{js(tags)},{cost},{js(pr)},{js(w)},{js(refs)})')
     if MF[i] is None:
         out['micro'][i]=[None,None]
         if emo: out['emo'][i]=emo
@@ -509,6 +548,7 @@ for x in L:
 for i in list(RDA)+list(SRC_MATCH):
     if i not in out['mfds']: out['mfds'][i]=MF[i]
 out['dishx']={k:DISHX[k] for k in sorted(DISHX)}
+out['cjt']=CJT
 for key,fn in [('rda','rda104.csv'),('rda_codes','rda104_codes.csv')]:
     fp=os.path.join(RDA_DIR,fn)
     out['source'][key]={'rows':len(rda) if key=='rda' else len(rcode),'version':'국가표준식품성분 Database 10.4','sha256':hashlib.sha256(open(fp,'rb').read()).hexdigest()}

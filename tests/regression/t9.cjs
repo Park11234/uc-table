@@ -46,7 +46,8 @@ const r=await p.evaluate(()=>{
 });
 for(const c of r) console.log(JSON.stringify(c));
 console.log(errs); {const R=__LOG.filter(x=>x.startsWith('{"nm"')).map(x=>JSON.parse(x)); const o=Object.fromEntries(R.map(r=>[r.nm,r.overall]));
- expect(o['치즈닭갈비볶음밥 삼각김밥']==='avoid'&&o['닭강정 반반']==='avoid'&&o['도시락(돼지불고기)']==='caution'&&o['로스트 햄 슬라이스']==='avoid'&&o['저당 아이스바']==='caution'&&o['떡볶이 밀키트']==='avoid','제품 판정 '+JSON.stringify(o));
+ // v1.9.0: 원재료명에 아질산나트륨이 있는 제품은 '절대 금지'(ban)
+expect(o['치즈닭갈비볶음밥 삼각김밥']==='avoid'&&o['닭강정 반반']==='avoid'&&o['도시락(돼지불고기)']==='caution'&&o['로스트 햄 슬라이스']==='ban'&&o['저당 아이스바']==='caution'&&o['떡볶이 밀키트']==='avoid','제품 판정 '+JSON.stringify(o));
  expect(()=>R.find(r=>r.nm==='도시락(돼지불고기)').rows.some(x=>/같은 제조시설/.test(x)),'혼입 안내');
  expect(()=>R.find(r=>r.nm==='저당 아이스바').nut.some(x=>/당알코올/.test(x)),'당알코올 표시');
  expect(()=>R.find(r=>r.nm==='떡볶이 밀키트').rows.some(x=>/내 알레르기 원재료=새우/.test(x)),'새우 알레르기');}

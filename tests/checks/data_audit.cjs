@@ -48,7 +48,7 @@ const out=await p.evaluate(()=>{
   for(const f of FOODS) for(const k of foodKeys(f)) (map[k]||(map[k]=[])).push(f.id);
   for(const [k,v] of Object.entries(map)) if(v.length>=4) R.aliasDup.push([k,v.length,v.slice(0,6).join(",")]);
   // v1.5.0: 유당 규칙(우유·요거트·크림 등이 이름에 든 유제품은 lactose, 락토프리 제품만 예외)
-  R.lactose=[]; const LAC_RE=/우유|요거트|요구르트|아이스크림|라떼|커스터드|밀크|연유|분유|크림/; const LAC_FREE=new Set(["lf_milk"]);
+  R.lactose=[]; const LAC_RE=/우유|요거트|요구르트|아이스크림|라떼|커스터드|밀크|연유|분유|크림/; const LAC_FREE=new Set(["lf_milk","mk_lf_milk_orig","mk_lf_milk_low"]);  // 락토프리(포장에 유당 0g 표시)
   for(const f of FOODS){const txt=[f.name,...(ALIAS[f.id]||[])].join(" "); if(f.tags.includes("dairy")&&!f.tags.includes("lactose")&&LAC_RE.test(txt)&&!LAC_FREE.has(f.id)) R.lactose.push([f.id,f.name])}
   // 지방 규칙(앱 기준: 100g당 10g 이상이거나 1회 20g 이상이면 fatty, 예외는 FAT_EXEMPT·지방 분류·질긴 음식·등푸른 생선)과 반대 방향(지방이 적은데 fatty)
   R.fat=[]; for(const f of FOODS){ if(!hasNut(f,"f")) continue; const sg=(SERV[f.id]||[100])[0]; const big=f.f>=10||f.f*sg/100>=20;

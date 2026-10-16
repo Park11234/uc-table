@@ -31,10 +31,10 @@ fs.writeFileSync(T('fin.html'),'<!doctype html><html><head><meta charset="utf-8"
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 await p.goto('file://'+WRAP('fin.html'));await p.waitForTimeout(400);
-await p.evaluate(()=>{S.consent={date:today()};SCR=null;S.tab="log";render();openWizard();WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()});
+await p.evaluate(()=>{S.consent={date:today()};SCR=null;S.tab="log";render();openWizard();WZ.step=wzStepOf("other");render()});
 await p.fill('#otherAdd','두통'); await p.waitForTimeout(700); await p.click('[data-act=wzNext]'); await p.waitForTimeout(150);
 const r1=await p.evaluate(()=>draft.other);
-await p.evaluate(()=>{WZ.step=WSTEPS.findIndex(s=>s.k==="other");render()});
+await p.evaluate(()=>{WZ.step=wzStepOf("other");render()});
 await p.fill('#otherAdd','어깨 통증'); await p.waitForTimeout(700); await p.click('#main [data-act=tog][data-k=other] >> nth=0'); await p.waitForTimeout(150);
 const r2=await p.evaluate(()=>draft.other);
 await p.fill('#otherAdd','눈 충혈'); await p.press('#otherAdd','Enter'); await p.waitForTimeout(150);
