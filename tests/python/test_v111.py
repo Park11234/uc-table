@@ -3,6 +3,7 @@
 
 - M2: 시판 제품 표시는 데이터를 만들 때 정한다(포장 표시에서 옮긴 과자·사탕·젤리, 환자용 영양식 포함, 이름만 있는 일반 메뉴는 제외)
 - M3: 훈제오리는 햄과 같은 방식(앱에 넣은 시판 훈제오리 가운데 발색제가 든 비율, 절반 이상이면 절대 금지), 햄이 흔히 들어가는 일반 음식에 표시
+- M6: 끼니가 되는 시판 요리(일품요리·국·죽·밥)는 1회 분량이 포장 총량의 15% 이상(반찬·누룽지로 잘못 분류해 1회 40~50g이 되던 것)
 """
 import json, os, re, sys, unittest
 
@@ -10,6 +11,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, os.path.join(ROOT, 'src', 'data'))
 
 import brand10  # noqa: E402
+import cj10  # noqa: E402
+import spec10  # noqa: E402
 
 
 def read(*p):
@@ -78,6 +81,29 @@ class HamRuleTest(unittest.TestCase):
             self.assertIn('hamopt', FOODS[i][2], i)
             self.assertNotIn('nitrite', FOODS[i][2], i)
         self.assertIn('const HAM_NOTE="햄·소시지가 들어가면 절대 금지입니다. 빼고 드십시오.";', APP_SRC)
+
+
+class ServingTest(unittest.TestCase):
+    MEAL = ('004013', '004012', '003604', '003601', '003602', '003609', '003603', '003605')   # 일품요리·국탕찌개·죽·밥·컵반·볶음밥
+
+    def test_meal_products_serving_at_least_15pct(self):
+        bad = []
+        for p in cj10.P:
+            if p['cats'][0] not in self.MEAL or not p.get('tot'):
+                continue
+            kind = spec10.kind_of(p)
+            if kind == 'nurungji':      # 마른 누룽지(끓여 먹는 무게)는 제외
+                continue
+            g = spec10.serving(p, kind)[0]
+            if g < p['tot'] * 0.15:
+                bad.append((p['disp'], kind, g, p['tot']))
+        self.assertEqual(bad, [])
+
+    def test_porridge_with_nurungji_name_is_porridge(self):
+        p = next(x for x in cj10.P if x['disp'].startswith('햇반 누룽지닭백숙죽'))
+        self.assertEqual(spec10.kind_of(p), 'porridge')
+        dry = next(x for x in cj10.P if x['disp'].startswith('오쌀미X햇반 파로누룽지'))
+        self.assertEqual(spec10.kind_of(dry), 'nurungji')
 
 
 if __name__ == '__main__':

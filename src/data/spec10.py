@@ -187,7 +187,8 @@ def kind_of(p):
     if c == '003605':
         return 'friedrice'
     if c == '003604':
-        return 'nurungji' if re.search(r'누룽지', n) else 'soup' if re.search(r'수프|스프', n) else 'porridge'
+        # v1.11.0 M6: '누룽지닭백숙죽'처럼 이름에 누룽지가 든 죽은 죽(마른 누룽지만 누룽지)
+        return 'nurungji' if re.search(r'누룽지', n) and not re.search(r'죽', n) else 'soup' if re.search(r'수프|스프', n) else 'porridge'
     if c == '004012':
         return 'stew'
     if c.startswith('0057'):
@@ -287,6 +288,8 @@ def serving(p, kind):
     if p['b'] and p['b'] != 100 and 10 <= p['b'] < (tot or 0) and kind not in ('kimchi', 'laver', 'pickle', 'jam', 'snack', 'jelly', 'choco', 'cheese'):
         u = UNIT.get(kind, SERV_FIX.get(kind, (0, '개'))[1])
         return [int(round(p['b'])), u if u not in ('인분', '접시', '줄') else '개']
+    if p['cats'][0] == '004013' and tot:   # v1.11.0 M6: 일품요리(전골·볶음·찜)는 포장 1인분, 600g이 넘으면 2인분으로 보고 반
+        return [int(round(tot if tot <= 600 else tot / 2)), '봉']
     if kind in SERV_FIX:
         g, u = SERV_FIX[kind]
         if kind in ('tofu', 'mandu', 'chickendish', 'pizza', 'meatdish', 'fishcake', 'meat', 'seafood', 'side') and 0 < tot <= g * 1.3:
