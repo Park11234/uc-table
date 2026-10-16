@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=635216b1fd"></script>
+<script defer src="app.js?v=ae7d3522b5"></script>
 </head>
 <body>
 <style>
@@ -56,20 +56,10 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}
 .wrap{max-width:560px;margin:0 auto}
-/* v1.10.0 PC(넓은 화면): PC 전용 화면을 따로 만들지 않고, 휴대폰과 같은 화면을 가운데 휴대폰 너비로 보인다(사용자 요청).
-   고정 위치 요소(메뉴·아래 버튼·알림·시트·+버튼)도 같은 너비 안에 둔다 */
-:root{--phone:430px}
-@media (min-width:700px){
-  html{background:var(--pc-bg)}
-  body{width:var(--phone);margin:0 auto;min-height:100vh;box-shadow:0 0 0 1px var(--line),0 12px 48px rgba(0,0,0,.10)}
-  .wrap{max-width:none}
-  .tabs,.toasts,#errbar,body.pushed .bottom-bar,body.welcome .bottom-bar{left:calc(50% - var(--phone)/2);right:calc(50% - var(--phone)/2);max-width:none}
-  .tabs-in{max-width:none}
-  .fab{right:calc(50% - var(--phone)/2 + 20px)}
-  .sheet{max-width:var(--phone)}
-  .plan-note,.hint,.card{word-break:keep-all}
-}
 .plan-note{display:flex;gap:6px;align-items:flex-start;margin:0 6px 14px}
+.bc-cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
+.bc-cam video{width:100%;height:100%;object-fit:cover;display:block}
+.bc-cam i{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ff4d4d;box-shadow:0 0 8px #ff4d4d}
 .why-sum{margin:12px 0 0;font-weight:600}
 .why-more{margin:8px 0 10px;background:var(--surface-2);border-radius:14px;padding:4px 12px}
 .why-more summary{min-height:44px;display:flex;align-items:center;font-size:0.8125rem;font-weight:700;color:var(--accent);cursor:pointer}
@@ -266,7 +256,7 @@ html{scroll-padding-bottom:104px;scroll-padding-top:72px}
 .linkish{background:none;border:0;display:inline-flex;align-items:center;gap:4px;color:var(--accent-deep);font:inherit;font-size:0.8125rem;min-height:44px;cursor:pointer}
 .linkish svg{width:15px;height:15px}
 .f.inline{display:inline-flex;align-items:center;gap:6px;font-size:0.8125rem;color:var(--muted)}
-.f.inline select,.f.inline input{min-height:44px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;padding:0 8px}
+.f.inline select,.f.inline input{min-height:44px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:1rem;padding:0 8px} /* v1.10.0 아이폰: 16px보다 작은 입력칸은 누르면 화면이 확대된다 */
 /* v20 */
 .icon-btn{min-width:44px;min-height:44px}
 .glass.chip-btn,.chip-btn{min-height:44px;padding-inline:14px}
@@ -400,13 +390,6 @@ sup.ref.grp{min-width:0;padding:0 7px;height:20px;font-size:0.75rem;font-weight:
 .banner.row-b{display:flex;align-items:center;gap:10px} .banner.row-b .grow{flex:1} .banner.row-b .btn{flex:none;white-space:nowrap}
 .sumline .sl-sep{width:1px;align-self:stretch;background:var(--line)}
 .sumline .grow{flex:1}
-.dbar{display:grid;grid-template-columns:4.6em 1fr auto;gap:4px 10px;align-items:center;margin:8px 0}
-.dbar>span:first-child{font-size:0.8438rem;color:var(--ink)}
-.dbar .tracks{display:flex;flex-direction:column;gap:3px}
-.dbar .tr{height:7px;border-radius:9px;background:var(--surface-2);overflow:hidden}
-.dbar .tr i{display:block;height:100%;border-radius:9px}
-.dbar .tr.plan i{background:var(--line-strong)} .dbar .tr.ate i{background:var(--accent)} .dbar .tr.ate i.short{background:var(--warn-fill)}
-.dbar .v{font-size:0.8125rem;text-align:right;line-height:1.25;color:var(--muted)} .dbar .v b{color:var(--ink);font-size:0.8438rem}
 .legend{display:flex;gap:12px;font-size:0.8125rem;color:var(--muted);align-items:center}
 .legend i{display:inline-block;width:14px;height:7px;border-radius:9px;margin-right:4px;vertical-align:middle}
 .tipbox{position:relative;padding-right:30px}
@@ -529,7 +512,7 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .tk-n .ic{width:16px;height:16px;stroke-width:2.6}
 .task.is-done .tk-n{background:var(--ok-soft);color:var(--ok)}
 .tk-main{display:flex;align-items:center;gap:12px;flex:1 1 12rem;min-width:0}
-.tk-act{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;flex:none}
+.tk-act{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;flex:0 1 auto;max-width:100%;justify-content:flex-end} /* v1.10.0 버튼이 셋이어도 큰 글자에서 줄바꿈 */
 .tk-act .btn{white-space:nowrap}
 .tk-act .btn.sm{min-height:44px}
 /* quick tiles */
@@ -724,6 +707,19 @@ details summary{cursor:pointer;font-weight:700}
   #printDoc table.pair tr.sub td{padding-top:0;font-size:8.5pt;color:#333}
   #printDoc canvas{max-width:100%;height:auto!important}
   #printDoc .foot{font-size:8pt;color:#666;margin-top:8pt}
+}
+/* v1.10.0 PC(넓은 화면): PC 전용 화면을 따로 만들지 않고, 휴대폰과 같은 화면을 가운데 휴대폰 너비로 보인다(사용자 요청).
+   고정 위치 요소(메뉴·아래 버튼·알림·시트·+버튼)도 같은 너비 안에 둔다 */
+:root{--phone:430px}
+@media (min-width:700px){
+  html{background:var(--pc-bg)}
+  body{width:var(--phone);margin:0 auto;min-height:100vh;box-shadow:0 0 0 1px var(--line),0 12px 48px rgba(0,0,0,.10)}
+  .wrap{max-width:none}
+  .tabs,.toasts,#errbar,body.pushed .bottom-bar,body.welcome .bottom-bar{left:calc(50% - var(--phone)/2);right:calc(50% - var(--phone)/2);max-width:none}
+  .tabs-in{max-width:none}
+  .fab{right:calc(50% - var(--phone)/2 + 20px)}
+  .sheet{max-width:var(--phone)}
+  .plan-note,.hint,.card{word-break:keep-all}
 }
 </style>
 

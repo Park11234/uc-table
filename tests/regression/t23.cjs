@@ -41,7 +41,7 @@ await p.screenshot({path:T('shots/n_past.png'),fullPage:true});
 // 끼니 교체 + 안 먹음
 await p.evaluate(()=>{closeScr();S.tab="plan";render()});
 const t1=await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title);
-await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
+await p.click('[data-act=mealMore][data-k="0"]'); await p.click('#sheetRoot [data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
 console.log('swap', t1, await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title));
 await p.click('.mrow[data-k="0"]'); await p.waitForTimeout(300);
 await p.click('[data-act=skipMeal]'); await p.waitForTimeout(200);
@@ -79,7 +79,8 @@ await p.click('.cup'); await p.waitForTimeout(150); await p.click('[data-act=cup
 console.log('water', await p.evaluate(()=>S.water[today()]));
 // 음식 탭 필터
 await p.evaluate(()=>{S.tab="food";S.foodSub="search";SCR=null;render()}); await p.waitForTimeout(200);
-await p.click('[data-act=lvFilter][data-v=ok]'); await p.waitForTimeout(200);
+// v1.10.0 디자인 3: 판정 걸러 보기는 '걸러 보기' 시트 안
+await p.click('[data-act=filterOpen]'); await p.waitForTimeout(150); await p.click('#sheetRoot [data-act=lvS][data-v=ok]'); await p.waitForTimeout(150); await p.evaluate(()=>closeSheet()); await p.waitForTimeout(150);
 console.log('filter', await p.evaluate(()=>[S.foodLv, document.querySelectorAll('.fcard').length]));
 console.log('errors',errs);expect(()=>jsonOf('past')[0]==='past','지난 날 화면'); expect(()=>/drawn/.test(logOf('chart')),'그래프'); expect(()=>jsonOf('skip row')===true,'안 먹음 줄');
 expect(()=>{const s=jsonOf('skip'); return /아침/.test(s[0])&&s[1]===null&&s[2]===true},'끼니 화면에서 안 먹음 → 홈으로·되돌리기 알림(v1.9.0)');

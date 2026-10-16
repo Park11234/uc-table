@@ -41,7 +41,7 @@ out('S1 welcome', await p.evaluate(()=>[!!document.querySelector('#consentGo'), 
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
 out('S1 home', await p.evaluate(()=>[S.tab, !!document.querySelector('.mrow'), document.querySelectorAll('.mrow').length]));
 // 마법사 전체(실제 클릭)
-await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(300);
+await p.click('.tasks [data-act=wizard]'); await p.waitForTimeout(300);
 let guard=0;
 while(guard++<30){
   const st=await p.evaluate(()=>SCR?.name==="wizard"?WSTEPS[WZ.step]:null); if(!st) break;
@@ -62,7 +62,7 @@ out('S1 saved log', await p.evaluate(()=>{const l=S.logs[today()];return l?[l.da
 // S2 일주일 사용
 await p.click('.tab[data-tab=plan]'); await p.waitForTimeout(200);
 await p.click('[data-act=ateToggle][data-k="0"]'); await p.waitForTimeout(450);
-await p.click('[data-act=skipToggleDate][data-slot="점심"]'); await p.waitForTimeout(150);
+await p.click('[data-act=mealMore][data-k="1"]'); await p.click('#sheetRoot [data-act=skipToggleDate][data-slot="점심"]'); await p.waitForTimeout(150);
 await p.click('.mrow[data-k="2"]'); await p.waitForTimeout(300);
 await rateOpen(p); await p.click('[data-act=rateSet][data-j="0"][data-v=bad]'); await p.click('[data-act=rateSave]'); await p.waitForTimeout(200);
 await p.click('[data-act=badSym][data-v=gas]'); await p.click('[data-act=badSave]'); await p.waitForTimeout(250);

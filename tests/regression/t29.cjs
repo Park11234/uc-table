@@ -66,7 +66,7 @@ expect(await p.evaluate(()=>{const t=targets(); return t.bmi.low&&t.kpk===35&&t.
 await p.evaluate(()=>{S.weights=[{date:today(),kg:63}];S.profile.weight="63";SCR=null;S.tab="plan";render();window.scrollTo(0,0)}); await p.waitForTimeout(300);
 // v1.9.0: 홈 맨 위는 '오늘 할 일'(증상 기록·끼니 표시·물). 끼니 목록은 그 아래로 내려가고, 할 일의 '끼니 표시'가 끼니로 바로 데려간다
 const home=await p.evaluate(()=>{const t=document.querySelector('.tasks'); const g=document.querySelector('[data-act=goMeals]'); return {taskTop:t?t.getBoundingClientRect().top:9999,vh:innerHeight,goMeals:!!g,meals:!!document.querySelector('.mrow'),sum:!!document.querySelector('.sumline .sl-main'),card:!!document.querySelector('#dayNutri'),ring:!!document.querySelector('.ring')}});
-console.log('home',JSON.stringify(home)); expect(home.taskTop<home.vh-200&&home.goMeals&&home.meals&&home.sum&&home.card&&!home.ring,'홈 첫 화면 안에 오늘 할 일·요약, 끼니 바로 가기·두 막대 카드');
+console.log('home',JSON.stringify(home)); expect(home.taskTop<home.vh-200&&home.goMeals&&home.meals&&home.sum&&!home.card&&!home.ring,'홈 첫 화면 안에 오늘 할 일·요약, 끼니 바로 가기(v1.10.0: 겹치던 영양 막대 카드는 요약 줄→오늘 영양 화면으로)');
 // 4. 먹은 양 선택(반·전부·더 많이)
 await p.click('.mwrap:nth-child(1) [data-act=ateToggle]'); await p.waitForTimeout(200);
 const k1=await p.evaluate(()=>Math.round(eatenTotals(today()).k));
@@ -76,8 +76,8 @@ await p.click('.mwrap:nth-child(1) [data-act=ateRatio][data-v="1.5"]'); await p.
 const k3=await p.evaluate(()=>Math.round(eatenTotals(today()).k));
 console.log('ratio',k1,k2,k3); expect(k1>0&&Math.abs(k2-k1/2)<=k1*0.05&&Math.abs(k3-k1*1.5)<=k1*0.05,'반·더 많이가 먹은 양 합계에 반영');
 // 5. 저녁 7시 전에는 모자람을 강조하지 않음
-const sh=await p.evaluate(()=>{const D=Date; const at=h=>{window.Date=class extends D{constructor(...a){if(a.length) super(...a); else {super(); this.setHours(h,0,0,0)}} static now(){const d=new D(); d.setHours(h,0,0,0); return d.getTime()}}; render(); return !!document.querySelector('#dayNutri .tr.ate i.short')};
-  const before=at(9), after=at(20); window.Date=D; render(); return {before,after}});
+const sh=await p.evaluate(()=>{const D=Date; const at=h=>{window.Date=class extends D{constructor(...a){if(a.length) super(...a); else {super(); this.setHours(h,0,0,0)}} static now(){const d=new D(); d.setHours(h,0,0,0); return d.getTime()}}; SCR=null; openScr("nutri"); return !!document.querySelector('.meter .bar i.low')};
+  const before=at(9), after=at(20); window.Date=D; SCR=null; S.tab="plan"; render(); return {before,after}});
 console.log('short',JSON.stringify(sh)); expect(!sh.before&&sh.after,'저녁 7시가 지나야 주황색');
 // 6. 즐겨찾기·끼니별 기록·다른 날 기록 가져오기
 await p.evaluate(()=>{showFood("banana")}); await p.waitForTimeout(150); await p.click('#sheetRoot [data-act=favToggle]'); await p.waitForTimeout(150);
@@ -118,9 +118,9 @@ await p.evaluate(()=>{S.refMode="hide";render()}); const g3=await p.evaluate(()=
 await p.evaluate(()=>{S.refMode="group";SCR=null;S.tab="plan";render()});
 console.log('refs',JSON.stringify({g1,g2,g3})); expect(g1.grp>0&&g1.num===0&&/^근거·/.test(g1.label)&&g2===0&&g3[0]==="hide"&&/^none/.test(g3[1]),'근거 표시 세 방식');
 // 11. 안내 접기(처음 한 번만)
-await p.click('#dayNutri .tip-x'); await p.waitForTimeout(150);
-const tp=await p.evaluate(()=>({tips:S.tips,btn:!!document.querySelector('#dayNutri [data-act=tipShow]')}));
-console.log('tips',JSON.stringify(tp)); expect(tp.tips.includes("homePlan")&&tp.btn,'안내를 닫으면 ⓘ로 남음');
+await p.evaluate(()=>{openScr("nutri")}); await p.waitForTimeout(200); await p.click('.tipbox[data-tip=nutriAte] .tip-x'); await p.waitForTimeout(150);
+const tp=await p.evaluate(()=>({tips:S.tips,btn:!!document.querySelector('[data-act=tipShow][data-v=nutriAte]')}));
+console.log('tips',JSON.stringify(tp)); expect(tp.tips.includes("nutriAte")&&tp.btn,'안내를 닫으면 ⓘ로 남음'); await p.evaluate(()=>{SCR=null;S.tab="plan";render()});
 // 12. 증상 기록 아래 버튼이 화면 전환 중에도 맨 아래
 await p.evaluate(()=>{openWizard(today())}); await p.waitForTimeout(400);
 // v1.9.0 U-1: 한 쪽에 꼭 답할 질문이 여럿이면 질문마다 첫 보기를 눌러야 '다음'이 열린다

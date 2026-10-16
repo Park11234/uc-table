@@ -35,9 +35,9 @@ const SEED=()=>{
     // A-3 초점 유지: 키보드로 '+1잔'을 누른 뒤에도 초점이 그 버튼에
     await p.focus('[data-act=cupAdd]'); await p.keyboard.press('Enter'); await p.waitForTimeout(200);
     need(await p.evaluate(()=>document.activeElement?.dataset?.act==='cupAdd'),'A-3 다시 그린 뒤 초점 유지(+1잔)');
-    // A-6·D-6 알림 영역: 늘 있는 aria-live, 위쪽
-    const live=await p.evaluate(()=>{const t=document.getElementById('toasts'); const r=t&&t.querySelector('.toast')?.getBoundingClientRect(); return {live:t&&t.getAttribute('aria-live'),txt:t&&t.textContent,top:r?r.top:null}});
-    need(live.live==='polite'&&/물/.test(live.txt)&&live.top!==null&&live.top<200,'D-6 알림은 위쪽 전용 영역(aria-live)');
+    // A-6·D-6 알림 영역: 늘 있는 aria-live. v1.10.0 디자인 10: 화면 제목을 가리지 않게 아래쪽(메뉴 위)
+    const live=await p.evaluate(()=>{const t=document.getElementById('toasts'); const r=t&&t.querySelector('.toast')?.getBoundingClientRect(); return {live:t&&t.getAttribute('aria-live'),txt:t&&t.textContent,top:r?r.top:null,half:innerHeight/2}});
+    need(live.live==='polite'&&/물/.test(live.txt)&&live.top!==null&&live.top>live.half,'D-6 알림은 아래쪽 전용 영역(aria-live, 제목을 가리지 않음)');
     // A-4 시트: 초점이 시트 안에서만 돈다, 뒤 화면 inert, 닫으면 연 버튼으로
     await p.focus('[data-act=info]'); await p.keyboard.press('Enter'); await p.waitForTimeout(250);
     let out=0; for(let i=0;i<40;i++){await p.keyboard.press('Tab'); if(!(await p.evaluate(()=>!!document.activeElement.closest('#sheetRoot')))) out++}
@@ -86,7 +86,7 @@ const SEED=()=>{
     const wz=await p.evaluate(()=>{openWizard(); const pages=WSTEPS.filter(x=>x.q).length; const req=WSTEPS.flatMap(x=>(x.q||[]).filter(q=>(q.type==="one"||q.type==="oneS")&&!q.opt)).length;
       WZ.step=wzStepOf("urg"); render(); const dis1=document.querySelector('[data-act=wzNext]').disabled;
       return {pages,req,dis1,h:document.querySelector('.wz-q')?.tagName,prog:document.querySelector('.wz-progress')?.getAttribute('role'),lbl:!!document.querySelector('#wq_urg [role=group][aria-labelledby]')}});
-    need(wz.pages===4&&wz.req===5,`U-1 증상 기록 4쪽·꼭 답할 질문 5개(${wz.pages}쪽, ${wz.req}개)`);
+    need(wz.pages===4&&wz.req===3,`U-1 증상 기록 4쪽·꼭 답할 질문 3개(가스·피로는 v1.10.0부터 선택)(${wz.pages}쪽, ${wz.req}개)`);
     need(wz.dis1&&wz.h==='H2'&&wz.prog==='progressbar'&&wz.lbl,'A-1·A-2·A-13 질문 묶음 레이블·진행 표시(progressbar)·제목 h2');
     for(const v of ["0","0","0"]){}
     await p.click('#wq_urg [data-act=set][data-v="0"]'); await p.click('#wq_blood [data-act=set][data-v="0"]'); await p.click('#wq_well [data-act=set][data-v="0"]'); await p.waitForTimeout(450);
@@ -133,7 +133,7 @@ const SEED=()=>{
     need(u.cards<=80&&u.more>=3,`U-7 묶음마다 12개 + 더 보기(카드 ${u.cards}개)`);
     need(!u.both1&&u.filt1&&u.miss2&&!u.both2,'U-5 결과 없음 안내가 서로 모순되지 않음');
     const lv=await p.evaluate(()=>[LV.ok,LV.caution,LV.later,LV.avoid,LV.ban].join("·"));
-    need(lv==="좋음·주의·보류·피하기·절대 금지",'U-6 판정 어휘 5단계(절대 금지 포함)');
+    need(lv==="좋음·주의·다음 단계·피하기·절대 금지",'U-6 판정 어휘 5단계(절대 금지 포함)');
     // 절대 금지(사용자 요청): 원재료에 아질산나트륨 같은 발색제가 든 시판 가공육은 모두 '절대 금지', 확인한 곳(한 곳)을 출처로 보인다
     const ban=await p.evaluate(()=>{const nit=FOODS.filter(f=>f.tags.includes("nitrite")); const lvs=[...new Set(nit.map(f=>foodStatus(f).level))];
       SCR=null; S.foodQ=""; S.foodCat="전체"; S.foodLv="ban"; refreshFoodRes(); const cards=[...document.querySelectorAll('#foodRes .fcard')];
@@ -147,7 +147,7 @@ const SEED=()=>{
     need(ban.txt&&/cjthemarket\.com/.test(ban.link),'절대 금지 음식 정보: 판정 글자와 확인한 상품 주소(CJ더마켓)');
     need(ban.fsLv==="ban"&&/foodsafetykorea\.go\.kr/.test(ban.fs),'식품안전나라 품목제조보고로 넣은 가공육: 절대 금지, 품목제조보고 상세 주소');
     // 시판 만두·육포(동원몰·랭킹닭컴 상세의 포장 표시 사진): 영양정보·원재료명을 보이고 확인한 곳을 출처로, 육포는 가공육
-    const lbl=await p.evaluate(()=>{const sheet=id=>{showFood(id); const sh=document.querySelector('#sheetRoot'); const r={t:sh.innerText,a:(sh.querySelector('.psrc a')||{}).href||"",lv:foodStatus(FOODS.find(f=>f.id===id)).level}; closeSheet(); return r};
+    const lbl=await p.evaluate(()=>{const sheet=id=>{showFood(id); const sh=document.querySelector('#sheetRoot'); sh.querySelectorAll('details').forEach(d=>d.open=true); const r={t:sh.innerText,a:(sh.querySelector('.psrc a')||{}).href||"",lv:foodStatus(FOODS.find(f=>f.id===id)).level}; closeSheet(); return r};
       const byName=n=>FOODS.find(f=>f.name===n);
       const mandu=byName("동원 개성 왕만두"), db=byName("동원 개성 한입쏙만두"), rk=FOODS.find(f=>PSRC[f.id]&&PSRC[f.id][0]==="rk"&&/닭가슴살/.test(f.name));
       const zil=byName("샘표 질러 클래식 육포"), anshim=byName("동원 상상육포 안심");
@@ -162,7 +162,7 @@ const SEED=()=>{
     need(lbl.an.lv==="avoid"&&/셀러리 분말/.test(lbl.an.t),'발색제 표시가 없는 육포(상상육포 안심): 가공육이라 피하기, 셀러리 분말 사용을 밝힘');
     need(lbl.jn>=20&&lbl.jl.every(l=>l==="ban"||l==="avoid"),`육포 ${lbl.jn}종이 모두 피하기 또는 절대 금지(${lbl.jl.join(",")})`);
     // 아임닭·풀무원샵 상세의 포장 표시(2026-10-15 추가)
-    const lbl2=await p.evaluate(()=>{const sheet=id=>{showFood(id); const sh=document.querySelector('#sheetRoot'); const r={t:sh.innerText,a:(sh.querySelector('.psrc a')||{}).href||""}; closeSheet(); return r};
+    const lbl2=await p.evaluate(()=>{const sheet=id=>{showFood(id); const sh=document.querySelector('#sheetRoot'); sh.querySelectorAll('details').forEach(d=>d.open=true); const r={t:sh.innerText,a:(sh.querySelector('.psrc a')||{}).href||""}; closeSheet(); return r};
       const pm=FOODS.find(f=>f.name==="풀무원 얇은피꽉찬속 고기만두"), im=FOODS.find(f=>f.name==="맛있는 한우 물만두");
       return {ok:!!(pm&&im), pm:pm&&sheet(pm.id), im:im&&sheet(im.id), pmk:pm&&pm.k}});
     need(lbl2.ok&&/shop\.pulmuone\.co\.kr\/shop\/goodsView\/45864/.test(lbl2.pm.a)&&lbl2.pmk===165&&/영양정보 보기\(포장 표시 그대로\)/.test(lbl2.pm.t),'풀무원 얇은피꽉찬속 고기만두: 풀무원샵 상품 주소, 100g당 165kcal, 포장 표시 영양정보');

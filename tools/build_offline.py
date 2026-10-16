@@ -6,6 +6,8 @@ v1.9.0
   - 그림 PDF 라이브러리(html2canvas·jsPDF, 약 563KB)는 처음에 실행하지 않는다(P-1)
       · 오프라인 단일 파일: 문서 끝에 <script type="text/plain" id="lib-…">로 넣어 두고 '그림 PDF 저장' 때 실행
       · PWA: public/vendor/에 따로 두고 그때 불러온다(서비스 워커가 미리 보관)
+v1.10.0
+  - 바코드 읽기 라이브러리(@zxing/library 0.21.3 UMD, 약 336KB)도 같은 방식(쓸 때만 실행)
   - PWA는 화면 뼈대(index.html: 글꼴·색·첫 화면 문구)와 앱 코드(app.js)를 나눈다(P-2).
     뼈대가 먼저 그려지고, 앱 코드는 따로 캐시되어 다음 방문에 다시 받지 않는다.
   - 시작 화면 바탕색은 어두운 중립색(W-8): 어두운 모드에서 흰 화면이 번쩍이지 않게
@@ -17,7 +19,8 @@ SRC = os.path.join(ROOT, 'src', 'app', 'index.html')     # 앱 원본(데이터�
 OUT = os.path.join(ROOT, 'dist')                        # 단일 파일 결과물
 PUB = os.path.join(ROOT, 'public')                      # GitHub Pages로 배포하는 PWA
 VENDOR = os.path.join(ROOT, 'vendor')
-LIBS = [('lib-html2canvas', 'html2canvas.min.js'), ('lib-jspdf', 'jspdf.umd.min.js')]
+LIBS = [('lib-html2canvas', 'html2canvas.min.js'), ('lib-jspdf', 'jspdf.umd.min.js'),
+        ('lib-zxing', 'zxing.min.js')]   # v1.10.0 바코드 읽기(@zxing/library 0.21.3, Apache-2.0): BarcodeDetector가 없는 아이폰 등에서만 그때 불러온다
 
 s = open(SRC, encoding='utf-8').read()
 assert 'fonts.googleapis' not in s and 'fonts.gstatic' not in s, '웹 글꼴 링크가 남아 있음'

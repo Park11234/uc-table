@@ -44,7 +44,7 @@ await p.click('.tab[data-tab=food]'); await p.screenshot({path:T('food2.png')});
 await p.click('.tab[data-tab=me]'); await p.screenshot({path:T('me2.png'),fullPage:true});
 console.log('errors',errs); {const j=lineJSON('{"viol"'); expect(j,'출력 없음');
  expect(()=>j.viol.length===0,'저잔사식 섬유 위반 '+(j&&j.viol));
- const okNo=new Set(["broth","alcohol","fried","tteokkochi"]); expect(()=>j.noSrc.every(id=>okNo.has(id)||/^(newcare|mediwell|greenbia|monowell|elemental|carewell|careme|curewell|procare|takefit)/.test(id)||/^(cj|dw|fs)\d+(_\d+)?$/.test(id)||/^(dl|rk|im|pm)[0-9a-z]+$/.test(id)),'영양값 없는 음식 '+(j&&j.noSrc));   // v1.9.0: cj·dw·fs…는 영양값 없이 원재료로 판정한 가공육(아질산염이면 절대 금지), dl·rk·im·pm은 판매처에 영양정보가 없는 육포
+ const okNo=new Set(["broth","alcohol","fried","tteokkochi","salmon_don","gyudon","katsudon","tendon","caesar_salad","ham_toast"]);   // v1.10.0 외식 메뉴 6종: 식약처 음식 DB에 같은 이름 행이 없어 판정만 expect(()=>j.noSrc.every(id=>okNo.has(id)||/^(newcare|mediwell|greenbia|monowell|elemental|carewell|careme|curewell|procare|takefit)/.test(id)||/^(cj|dw|fs)\d+(_\d+)?$/.test(id)||/^(dl|rk|im|pm)[0-9a-z]+$/.test(id)),'영양값 없는 음식 '+(j&&j.noSrc));   // v1.9.0: cj·dw·fs…는 영양값 없이 원재료로 판정한 가공육(아질산염이면 절대 금지), dl·rk·im·pm은 판매처에 영양정보가 없는 육포
  expect(()=>{const st=Object.fromEntries(j.st.map(x=>[x[0],x[2]])); return st.white_rice==='ok'&&st.corn==='later'&&st.oatmeal==='later'&&st.pumpkin==='caution'},'1단계 판정');
  expect(()=>j.rc[0].level==='avoid'&&j.rc[0].reasons.some(r=>/새우/.test(r))&&j.rc[1].level==='avoid','외식 판정 알레르기');
  expect(()=>j.t.k>1000,'하루 열량');}

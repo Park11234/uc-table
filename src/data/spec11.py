@@ -13,10 +13,11 @@
 
 튜플: (id, 이름, 분류, 자료, 시작 단계, 태그, 1회량, 별명, 그림, 근거 문장 열쇠, FODMAP, 과일 상한, 먹는 방법, 가격)
 """
+import re
 
 EO = [
  # ---- 찌개·국밥·해장국 ----
- ("sundubu_jjigae", "순두부찌개", "요리", "D:순두부찌개_김치", 3, ["spicy", "soy", "salty", "egg", "clam", "shrimp", "pork"], [400, "그릇"],
+ ("sundubu_jjigae", "순두부찌개", "요리", "D:순두부찌개_김치", 3, ["spicy", "soy", "wheat", "salty", "egg", "clam", "shrimp", "pork"], [400, "그릇"],
   ["순두부찌개", "해물순두부찌개", "짬뽕순두부", "김치순두부찌개", "얼큰순두부"], "🍲", ["spicy", "tofu_ok", "stew_salty"], None, None, "맵지 않은 하얀 순두부가 되는지 물어보기", 1),
  ("dwaeji_gukbap", "돼지국밥", "요리", "D:국밥_돼지고기", 2, ["pork", "redmeat", "fatty", "salty", "liq"], [600, "그릇"],
   ["돼지국밥", "부산돼지국밥", "수육국밥"], "🥣", ["soup_bone", "meat_fat", "stew_salty"], None, None, "기름 걷고, 다대기·부추무침 빼기", 1),
@@ -53,7 +54,7 @@ EO = [
   ["가츠동", "돈가스덮밥", "돈까스덮밥", "카츠동"], "🍱", ["fried"], None, None, "", 1),
  ("tendon", "텐동(튀김덮밥)", "곡류", "N:-", 9, ["fried", "shrimp", "wheat", "egg", "soy", "sugar"], [400, "그릇"],
   ["텐동", "튀김덮밥", "새우튀김덮밥"], "🍤", ["fried"], None, None, "", 2),
- ("jjamppong_bap", "짬뽕밥", "곡류", "D:짬뽕밥", 3, ["spicy", "squid", "clam", "shrimp", "pork", "liq"], [600, "그릇"],
+ ("jjamppong_bap", "짬뽕밥", "곡류", "D:짬뽕밥", 3, ["spicy", "wheat", "squid", "clam", "shrimp", "pork", "liq"], [600, "그릇"],
   ["짬뽕밥"], "🍜", ["spicy", "shell"], None, None, "", 1),
  ("japchae_rice", "잡채밥", "곡류", "D:잡채밥", 2, ["soy", "sesame", "pork", "wheat", "allium"], [450, "그릇"],
   ["잡채밥"], "🍛", ["dish_mixed"], None, None, "기름 적게", 1),
@@ -105,6 +106,9 @@ EO = [
  ("hotcake", "핫케이크(팬케이크)", "곡류", "D:핫케이크", 2, ["wheat", "egg", "dairy", "sugar"], [150, "장"],
   ["핫케이크", "팬케이크", "팬케익"], "🥞", ["bread_soft", "sweet"], ("high", "밀가루"), None, "시럽·버터는 조금만", 1),
 ]
+
+# 이름과 같은 별명(띄어쓰기만 다른 것 포함)은 빼 둔다(검색 열쇠가 겹치지 않게)
+EO = [x[:7] + ([a for a in dict.fromkeys(x[7]) if re.sub(r'\s', '', a) != re.sub(r'\s', '', x[1].split('(')[0])],) + x[8:] for x in EO]
 
 # 이 메뉴들에만 쓰는 근거 문장
 T11 = {

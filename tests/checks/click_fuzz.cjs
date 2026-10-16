@@ -120,7 +120,7 @@ const STATES=["S","SCR","WZ","draft","BAD","rateDraft","TP","EX","MP","MM","MJ",
   }
   // 메뉴 고르기·내 메뉴·주의 음식 고르기 검색칸
   for(const q of QUERIES){ await openStart(["tab","plan"]); errs.length=0;
-    await p.evaluate(()=>{const b=document.querySelector('[data-act="menuPick"]'); b&&b.click()}); await p.waitForTimeout(80);
+    await p.evaluate(()=>{const m=document.querySelector('[data-act="mealMore"]'); m&&m.click(); const b=document.querySelector('#sheetRoot [data-act="menuPick"]'); b&&b.click()}); await p.waitForTimeout(80);
     const el=await p.$('#mpQ'); if(el){ await el.fill(q); await p.waitForTimeout(60) }
     await p.evaluate(()=>{const b=document.querySelector('[data-act="myMenuNew"]'); b&&b.click()}); await p.waitForTimeout(60);
     const el2=await p.$('#mmQ'); if(el2){ await el2.fill(q); await p.waitForTimeout(60) }

@@ -36,7 +36,7 @@ console.log('B titles fit', await p.evaluate(()=>{samplePlan();return TPL.B.map(
 // click path
 await p.evaluate(()=>{S.plan=null;render()}); await p.waitForTimeout(200);
 const before=await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title);
-await p.click('[data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
+await p.click('[data-act=mealMore][data-k="0"]'); await p.click('#sheetRoot [data-act=swapMeal][data-k="0"]'); await p.waitForTimeout(300);
 console.log('click swap', before, await p.evaluate(()=>S.plan.days[S.selDay].meals[0].title), await p.evaluate(()=>document.querySelector('.toast')?.textContent||''));
 expect(()=>+logOf('stage')===1,'단계'); expect(()=>{const d=jsonOf('direct swap'); return d[1]===true&&d[0]!==d[2]},'바꾸기');
 expect(()=>jsonOf('again')[0]===true,'다시 바꾸기'); expect(()=>jsonOf('B titles fit').filter(x=>x[1]).length>=15,'아침 메뉴 적합');

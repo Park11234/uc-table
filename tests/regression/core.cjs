@@ -56,7 +56,7 @@ console.log('ratedId', await p.evaluate(()=>{const it=curDay().meals[0].items[1]
 await rateOpen(p); await p.click('[data-act=rateSet][data-j="1"][data-v=bad]'); await p.click('[data-act=rateSave]'); await p.waitForTimeout(150); console.log('trig sheet', (await p.textContent('#sheetRoot')).slice(0,40)); await p.click('[data-act=badSym][data-v=diarrhea]'); await p.click('[data-act=badSave]'); await p.waitForTimeout(200);
 console.log('triggers', await p.evaluate(()=>JSON.stringify(S.triggers)), 'memo?', await p.evaluate(()=>!!document.querySelector('textarea#rateNote, #lbNote')));
 // wizard
-await p.click('.tile[data-act=wizard]'); await p.waitForTimeout(100);
+await p.click('.tasks [data-act=wizard]'); await p.waitForTimeout(100);
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_wz1.png')});
 // v1.9.0 U-1: 질문을 쪽으로 묶음 — ① 배변(낮·밤·혈변) ② 급박감·피·몸 상태 ③ 복통·가스·피로·변 모양 ④ 약·그 밖의 증상 → 요약
 for(let i=0;i<7;i++) await p.click('[data-act=step][data-k=day][data-v="1"]');

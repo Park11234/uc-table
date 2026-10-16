@@ -35,7 +35,7 @@ console.log('vi', await p.evaluate(()=>S.plan.days[0].meals.map(m=>[m.title,m.vi
 console.log('direct', await p.evaluate(()=>{const ok=swapMeal(0,0);return [ok,JSON.stringify(S.swaps),S.plan.days[0].meals[0].title]}));
 console.log('after render', await p.evaluate(()=>{render();return S.plan.days[0].meals[0].title}));
 const before=await p.evaluate(()=>S.plan.days[0].meals[1].title);
-await p.click('[data-act=swapMeal][data-k="1"]'); await p.waitForTimeout(300);
+await p.click('[data-act=mealMore][data-k="1"]'); await p.click('#sheetRoot [data-act=swapMeal][data-k="1"]'); await p.waitForTimeout(300);
 console.log('click', before, await p.evaluate(()=>S.plan.days[0].meals[1].title));
 expect(()=>{const d=jsonOf('direct'); return d[0]===true&&/"t:|"g:/.test(d[1])},'교체 키 저장'); expect(()=>logOf('after render')===jsonOf('direct')[2],'다시 그려도 유지');
 __done(); await b.close()})();

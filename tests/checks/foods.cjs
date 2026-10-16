@@ -31,7 +31,7 @@ const r=await p.evaluate(()=>{
   const names=new Set(); for(const f of FOODS){ ok(!names.has(f.name),'dup name '+f.name); names.add(f.name) }
   const lib=FOODS.filter(f=>f.lib); ok(lib.length>=300,'lib '+lib.length);
   // 영양값 자료가 없는 음식은 '자료 없음'으로 보이고 합계에서 빠져야 하며, 영양식(제품)·명시한 음식만 허용
-  const NOSRC_OK=new Set(["tteokkochi"]);
+  const NOSRC_OK=new Set(["tteokkochi","salmon_don","gyudon","katsudon","tendon","caesar_salad","ham_toast"]);   // v1.10.0 외식 메뉴 가운데 식약처 음식 DB에 같은 이름 행이 없는 6종은 영양값 없이 판정만
   for(const f of lib){ ok((f.src&&f.src.code)||((f.tags.includes("ons")||NOSRC_OK.has(f.id)||(PSRC[f.id]&&(f.tags.includes("nitrite")||f.tags.includes("processed"))))&&f.missing.includes("전체")),'no src '+f.id);   // v1.9.0: 영양 표기를 맞출 수 없거나 자료에 영양정보가 글로 없는 가공육(CJ더마켓·동원몰·식품안전나라)은 영양값 없이 넣음 ok(SERV[f.id],'no serv '+f.id); ok(ALIAS[f.id],'no alias '+f.id); ok(EMO[f.id]||FICON[f.id],'no icon '+f.id);
     ok(typeof f.why==='string'&&f.why.length>10,'why '+f.id); ok(f.refs.every(n=>REFS[n]),'ref '+f.id); ok([1,2,3,9].includes(f.ms),'ms '+f.id);
     ok(["곡류","단백질","유제품","채소","과일","지방","기타","요리","영양식"].includes(f.cat),'cat '+f.id); ok(isFinite(f.fi)&&isFinite(f.k),'num '+f.id) }
@@ -80,7 +80,8 @@ const expandAll=()=>p.evaluate(()=>{for(let i=0;i<8;i++){const bs=[...document.q
 const t0=Date.now(); await p.evaluate(()=>{SCR=null;S.tab="food";S.foodSub="search";S.foodQ="";S.foodCat="전체";S.foodLv="전체";render()}); await p.waitForTimeout(100);
 const ms=Date.now()-t0; await expandAll();
 const cards=await p.evaluate(()=>document.querySelectorAll('.fcard').length);
-await p.click('.chip[data-act=cat][data-v="요리"]'); await p.waitForTimeout(150);
+// v1.10.0 디자인 3: 종류 칩은 '걸러 보기' 시트 안으로 옮김
+await p.click('[data-act="filterOpen"]'); await p.waitForTimeout(150); await p.click('.chip[data-act=catS][data-v="요리"]'); await p.waitForTimeout(150); await p.evaluate(()=>closeSheet());
 await expandAll();
 const yori=await p.evaluate(()=>[...document.querySelectorAll('.fcard')].every(b=>FOOD[b.dataset.id].cat==="요리")&&document.querySelectorAll('.fcard').length>50);
 await p.evaluate(()=>{showFood("janchi_guksu")}); await p.waitForTimeout(200);

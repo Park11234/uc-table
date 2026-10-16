@@ -117,19 +117,19 @@ const r=await p.evaluate(()=>{
 const fail=[...r.fail];
 // 4. 메뉴 고르기·내 메뉴
 await p.evaluate(()=>{S.logs={}; S.swaps={}; S.plan=null; S.myMenus=[]; S.tab="plan"; SCR=null; render()});
-await p.click('[data-act="menuPick"][data-k="1"]'); await p.waitForTimeout(200);
+await p.click('[data-act="mealMore"][data-k="1"]'); await p.click('#sheetRoot [data-act="menuPick"][data-k="1"]'); await p.waitForTimeout(200);
 const n1=await p.$$eval('#mpList [data-act="mpSet"]',e=>e.length); if(n1<15) fail.push('메뉴 고르기 목록 '+n1);
 await p.fill('#mpQ','연어'); await p.waitForTimeout(150);
 const salmonRows=await p.$$eval('#mpList [data-act="mpSet"]',e=>e.map(x=>x.textContent)); if(!salmonRows.length||!salmonRows.every(t=>/연어/.test(t))) fail.push('메뉴 검색 '+salmonRows.length);
 const pickKey=await p.$eval('#mpList [data-act="mpSet"]',e=>e.dataset.key); await p.click('#mpList [data-act="mpSet"]'); await p.waitForTimeout(200);
 const got=await p.evaluate(()=>({k:S.plan.days[S.selDay].meals[1].key,sw:Object.values(S.swaps)}));
 if(got.k!==pickKey||!got.sw.includes(pickKey)) fail.push('고른 메뉴가 저장되지 않음');
-await p.click('[data-act="menuPick"][data-k="1"]'); await p.click('[data-act="myMenuNew"]'); await p.waitForTimeout(150);
+await p.click('[data-act="mealMore"][data-k="1"]'); await p.click('#sheetRoot [data-act="menuPick"][data-k="1"]'); await p.click('[data-act="myMenuNew"]'); await p.waitForTimeout(150);
 for(const q of ['흰쌀밥','대구']){ await p.fill('#mmQ',q); await p.waitForTimeout(120); await p.click('#mmRes [data-act="mmAdd"]'); await p.waitForTimeout(120) }
 await p.fill('#mmTitle','내 대구 정식'); await p.click('[data-act="mmSave"]'); await p.waitForTimeout(250);
 const my=await p.evaluate(()=>({n:S.myMenus.length,t:S.myMenus[0]?.title,cur:S.plan.days[S.selDay].meals[1].title,re:normalizeState(JSON.parse(JSON.stringify(S))).myMenus.length}));
 if(my.n!==1||my.t!=='내 대구 정식'||my.cur!=='내 대구 정식'||my.re!==1) fail.push('내 메뉴 저장 '+JSON.stringify(my));
-await p.click('[data-act="menuPick"][data-k="1"]'); await p.waitForTimeout(150); await p.click('[data-act="myMenuDel"]'); await p.waitForTimeout(200);
+await p.click('[data-act="mealMore"][data-k="1"]'); await p.click('#sheetRoot [data-act="menuPick"][data-k="1"]'); await p.waitForTimeout(150); await p.click('[data-act="myMenuDel"]'); await p.waitForTimeout(200);
 const del=await p.evaluate(()=>({n:S.myMenus.length,sw:Object.values(S.swaps).filter(v=>v.startsWith("u:")).length})); if(del.n||del.sw) fail.push('내 메뉴 삭제 '+JSON.stringify(del));
 await p.evaluate(()=>closeSheet());
 // 5. 장보기 목록

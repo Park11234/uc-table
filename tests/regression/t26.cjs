@@ -40,7 +40,7 @@ console.log('2 after replan', await p.evaluate(()=>{S.plan=null;render();const m
 // v1.9.0 U-3: 따로 남기던 안내 표시(SWAP_CLEARED)가 없어지고, '다른 메뉴' 버튼의 알림이 지운 사실과 '되돌리기'를 함께 보인다
 await p.evaluate(()=>{S.tab="plan";SCR=null;S.selDay=0;S.ratings=[{date:today(),slot:"점심",title:"x",foodId:"white_rice",rating:"good"}];setAte(today(),"점심",true);render()});
 const t3=await p.evaluate(()=>curDay().meals[1].title);
-await p.click('[data-act=swapMeal][data-k="1"]'); await p.waitForTimeout(250);
+await p.click('[data-act=mealMore][data-k="1"]'); await p.click('#sheetRoot [data-act=swapMeal][data-k="1"]'); await p.waitForTimeout(250);
 console.log('3 swap clears', await p.evaluate(t3=>[curDay().meals[1].title!==t3, isAte(today(),"점심"), S.ratings.length, document.querySelector('#toasts .t-msg')?.textContent||'', document.querySelector('#toasts .t-act')?.textContent||''],t3));
 await p.click('#toasts .t-act'); await p.waitForTimeout(250);
 console.log('3b swap undo', await p.evaluate(t3=>[curDay().meals[1].title===t3, isAte(today(),"점심"), S.ratings.length],t3));
