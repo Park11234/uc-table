@@ -170,6 +170,17 @@ const SEED=()=>{
     need(r.duckLv==="ban"&&/시판 훈제오리 \d+종 가운데 \d+종/.test(r.duckWhy),`M3 훈제오리는 앱의 시판 제품 발색제 비율로 절대 금지 (${r.duckLv}: ${r.duckWhy.slice(0,90)})`);
     await p.context().close()}
 
+  console.log('== M5 검색 자모 일치');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const ids=q=>FOODS.filter(f=>searchHit(f,q)).map(f=>f.id);
+      const ham=ids("햄"), typing=ids("ㅎㅐ"), mid=ids("해무"), haemul=ids("해물");
+      return {ham:ham.length,hamBad:["pajeon","bajirak_kalguksu","haemultang","sundubu_jjigae"].filter(i=>ham.includes(i)),hamHas:ham.includes("ham"),
+        typing:typing.includes("haemultang"),mid:mid.includes("haemultang"),haemul:haemul.includes("haemultang")}});
+    need(r.hamHas&&!r.hamBad.length,`M5 '햄' 검색에 파전·바지락칼국수·해물탕·순두부찌개 없음 (${r.ham}개, ${r.hamBad.join(",")})`);
+    need(r.typing&&r.mid,`M5 입력 중('ㅎㅐ'·'해무')에는 해물탕을 찾음 (${r.typing}/${r.mid})`);
+    need(r.haemul,"M5 '해물'은 해물탕을 찾음");
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

@@ -1629,7 +1629,11 @@ function srchKeys(f){let v=SRCH_CACHE.get(f.id); if(v) return v;
   const al=(ALIAS[f.id]||[]).map(a=>String(a).normalize("NFC").replace(/\s/g,"").toLowerCase()).filter(Boolean);
   const heads=[...new Set([name,base,...words,...al])];
   v={name,words,al,heads,headJ:heads.map(jamoOf),nameCho:choOf(name),alCho:al.map(choOf)}; SRCH_CACHE.set(f.id,v); return v}
-function searchHit(f,q){
+// v1.11.0 M5: 자모 일치(ㅎㅐㅁ → 해물)는 입력 중일 때만 쓴다. 마지막 글자가 낱자(ㄱ~ㅣ)이거나, 완성 글자로 맞는 음식이 하나도 없을 때('해무' → 해물탕)
+let JAMO_Q={k:null,need:true};
+function jamoNeeded(k){if(/[ㄱ-ㅣ]$/.test(k)) return true; if(JAMO_Q.k===k) return JAMO_Q.need;
+  const need=!FOODS.some(f=>searchHit(f,k,false)); JAMO_Q={k,need}; return need}
+function searchHit(f,q,jamo){
   const k=String(q).normalize("NFC").replace(/\s/g,"").toLowerCase(); if(!k) return false;
   const K=srchKeys(f);
   if(K.heads.includes(k)) return true;
@@ -1640,6 +1644,7 @@ function searchHit(f,q){
   for(const c of new Set([k,kc])) if(isChoQuery(c)&&(K.nameCho.includes(c)||K.alCho.some(a=>a.startsWith(c)))) return true;
   if(!/[ㄱ-ㅣ가-힣]/.test(k)) return false;
   const jk=jamoOf(k); if(jk.length<2) return false;
+  if(jamo===false||(jamo===undefined&&!jamoNeeded(k))) return false;
   return K.headJ.some(n=>n.startsWith(jk));
 }
 // 검색어에 가장 잘 맞는 음식 하나: 정확히 같은 이름 > 검색어를 품은 이름(짧을수록) > 검색어 속 이름(길수록)
