@@ -55,3 +55,27 @@ jobs:
           name: test-logs
           path: .test-out/
           retention-days: 7
+
+  # v1.11.0 M11: 아이폰 사파리와 같은 엔진(WebKit)으로 첫 실행·홈·빠른 기록·음식 검색·백업 불러오기·입력칸 글자 크기를 확인
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: 의존성 설치 (WebKit)
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps webkit
+      - name: WebKit 흐름 점검
+        run: node tests/webkit/webkit.cjs
+      - name: 실패 로그 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit-logs
+          path: .test-out/
+          retention-days: 7
