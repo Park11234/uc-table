@@ -73,6 +73,20 @@ const SEED=()=>{
     need(r.memo&&r.withLogs>0&&r.logs===0,`H1 선택을 끄면 자동 보관본은 남겨 되살릴 수 있음 (${JSON.stringify(r)})`);
     await p.context().close()}
 
+  console.log('== L7·H3 안드로이드 앱 안내와 예전 기록 다시 가져오기');
+  {const p=await open(); const r=await p.evaluate(()=>{SCR=null; openScr("set-about"); return document.querySelector('#main').innerText});
+    need(!/덮어 설치/.test(r),'L7 웹·아이폰에서는 안드로이드 덮어 설치 안내를 보이지 않음');
+    await p.context().close()}
+  {const old=JSON.stringify({app:"uc-table",v:1,profile:{height:"181"},logs:{"2026-09-30":{day:4}},consent:{date:"2026-09-30"},onb:"done"});
+   const p=await open({init:`window.UCTableAndroid={hasMigrated:()=>true,peekMigrated:()=>${JSON.stringify(old)},takeMigrated:()=>""}`});
+    const r=await p.evaluate(()=>{SCR=null; openScr("set-about"); const txt=document.querySelector('#main').innerText; SCR=null; openScr("set-data"); return {txt,btn:!!document.querySelector('#main [data-act=androidRetake]')}});
+    need(/덮어 설치/.test(r.txt),'L7 안드로이드 앱에서는 덮어 설치 안내를 보임');
+    need(r.btn,'H3 안드로이드 앱 설정에 예전 기록 다시 가져오기');
+    if(r.btn){await p.click('#main [data-act=androidRetake]'); await p.waitForTimeout(300);
+      const s=await p.evaluate(()=>({pend:!!PENDING_RESTORE,sheet:document.querySelector('#sheetRoot')?.innerText||""}));
+      need(s.pend&&/불러/.test(s.sheet),`H3 다시 가져오기는 지금 기록과 비교하는 불러오기 화면으로 (${s.sheet.slice(0,40)})`)}
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

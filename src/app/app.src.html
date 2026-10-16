@@ -2541,6 +2541,8 @@ function nudgesHTML(home=false){
 /* v1.9.0 U-8: 3일 넘게 증상 기록이 없으면 알림(사용자가 켠 경우만).
    안드로이드 앱: 앱의 기기 알림(UCTableAndroid.setLogReminder) / 설치한 PWA(크롬): 서비스 워커의 주기적 백그라운드 동기화 + 알림 권한
    / 그 밖(브라우저 탭·내려받은 파일): 앱을 닫으면 알릴 방법이 없어 캘린더 알림을 안내. 어느 경우든 앱 아이콘 배지(지원하는 곳)를 함께 쓴다 */
+// v1.11.0 L7·H3: 안드로이드 앱(WebView 브리지가 있는 경우)에서만 보이는 안내·기능
+const IS_ANDROID=()=>!!window.UCTableAndroid;
 const remindKind=()=>window.UCTableAndroid&&typeof window.UCTableAndroid.setLogReminder==="function"?"android":("serviceWorker" in navigator&&"Notification" in window&&/^https?:$/.test(location.protocol)&&!!navigator.serviceWorker.controller)?"pwa":"none";
 let REM_LAST=null;
 function remindSync(force){
@@ -3484,6 +3486,7 @@ function scrSettingsBody(){
     <button class="lrow" data-act="restorePick"><span class="lic t-rose">${ic("refresh")}</span><span class="lt"><b>백업 파일 불러오기</b></span>${ic("chev","chev")}</button>
     ${listRow({icon:"refresh",tint:"t-rose",title:"복사한 내용 붙여 넣어 불러오기",attr:'data-act="restorePaste"'})}
     <input type="file" id="restore" accept=".json,application/json,text/plain" hidden></div>
+    ${(()=>{try{return IS_ANDROID()&&typeof window.UCTableAndroid.hasMigrated==="function"&&window.UCTableAndroid.hasMigrated()}catch(e){return false}})()?`<div class="list">${listRow({icon:"repeat",tint:"t-warm",title:"예전 버전 기록 다시 가져오기",sub:"1.10.0으로 올릴 때 옮겨 둔 예전 기록을 지금 기록과 비교한 뒤 불러옵니다",attr:'data-act="androidRetake"'})}</div>`:""}
     ${(()=>{const pv=prevSnap(); return pv?`<div class="list"><button class="lrow" data-act="restoreUndo"><span class="lic t-warm">${ic("repeat")}</span><span class="lt"><b>불러오기 전 기록으로 되돌리기</b><small>${esc(pv.label)}에 보관한 기록(증상 ${pv.n}일)</small></span>${ic("chev","chev")}</button></div>`:""})()}
     ${autoBackupHTML()}
     <div class="sec-label">기록 내보내기(CSV · 엑셀에서 열림)</div>
@@ -3534,7 +3537,7 @@ function scrSettingsBody(){
     <div class="card stack"><div class="row between"><span>앱 버전</span><b class="num">${APP_VER}</b></div>
       <div class="row between"><span>음식 자료</span><b class="num">${FOODS.length.toLocaleString()}가지</b></div>
       <div class="row between"><span>음식 자료 마지막 확인 날짜</span><b class="num">${esc(Object.values(ADDED).sort().pop()||"")}</b></div>
-      <p class="hint" style="margin:0">음식마다 넣은 날(확인 날짜)은 음식 정보 맨 아래에 있습니다. 설치한 안드로이드 앱은 자동으로 바뀌지 않으니, 새 버전이 나오면 같은 앱 위에 덮어 설치하십시오(기록은 그대로 남습니다).</p></div>
+      <p class="hint" style="margin:0">음식마다 넣은 날(확인 날짜)은 음식 정보 맨 아래에 있습니다.${IS_ANDROID()?" 설치한 안드로이드 앱은 자동으로 바뀌지 않으니, 새 버전이 나오면 같은 앱 위에 덮어 설치하십시오. 덮어 설치해도 기록은 앱 안에 남고, 앱을 지우면 함께 지워집니다.":""}</p></div>
     <div class="sec-label">앱 안내</div>
     ${infoBody("me")}`;
   return "";
@@ -4266,6 +4269,7 @@ document.addEventListener("click",e=>{
     case "installApp": {const e=BIP; if(!e) break; BIP=null; e.prompt(); e.userChoice?.then(r=>{if(r?.outcome!=="accepted"){toast("설치를 취소했습니다. 나중에 다시 설치할 수 있습니다")} render()}).catch(()=>{}); break}
     case "restoreApply": restoreApply(v); break;
     case "restoreUndoGo": restoreUndoGo(); break;
+    case "androidRetake": {let t=""; try{t=window.UCTableAndroid.peekMigrated()||""}catch(e){} if(!t){alertMsg("옮겨 둔 예전 기록이 없습니다."); break} restoreFromText(t); break}
     case "resetDo": {const all=document.getElementById("rstAll")?.checked!==false; S=DEF(); S.consent={date:today()}; draft=null; SCR=null; closeSheet(); render();
       if(all) wipeLocalCopies().then(()=>toast("모든 기록과 기기 안 보관본을 지웠습니다")); else toast("기록을 지웠습니다. 자동 보관본은 백업 화면에서 되살릴 수 있습니다"); break}
     case "mjEat": {const r=MJ.results[+a.dataset.i]; if(r){addExtra(today(),{name:r.name,amt:null,unit:"",kcal:0,p:0,fi:0,ca:0,noNutri:true,src:"외식"}); save(); toast(`${r.name}${euroReul(r.name)} 오늘 먹은 음식에 넣었습니다(영양 정보 없음)`)} break}
