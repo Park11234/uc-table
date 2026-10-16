@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=ae7d3522b5"></script>
+<script defer src="app.js?v=6f29f7725a"></script>
 </head>
 <body>
 <style>
@@ -545,6 +545,7 @@ sup.ref{font-size:0.75rem;color:var(--accent-deep);font-weight:700;cursor:pointe
 .eaten{font-size:0.8125rem;color:var(--ok);font-weight:700}
 
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 10px;font-size:0.8125rem;font-weight:600;white-space:nowrap}
+.today-card .qtag{margin-top:6px;white-space:normal}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}
 .pill.caution{background:var(--warn-soft);color:var(--warn)}
 .pill.later{background:var(--later-soft);color:var(--later)}
@@ -646,6 +647,9 @@ body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,
 .toast button.t-act{text-decoration:underline;text-underline-offset:3px}
 .toast button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 .toast.out{opacity:0}
+.toasts.top{top:calc(env(safe-area-inset-top,0px) + 10px);bottom:auto}   /* v1.11.0 L4: 끼니 버튼 위를 가리지 않게 */
+.fg-h .fg-n{white-space:nowrap}   /* v1.11.0 L2 */
+.low-t{color:var(--warn-ink,var(--ink));font-size:0.75rem;font-weight:700}   /* v1.11.0 A-15 */
 /* v1.9.0 F-9: 화면이 막 바뀐 직후 같은 자리 버튼은 잠깐 비활성으로 보인다(연타로 다음 화면 버튼이 눌리지 않게) */
 .cool{opacity:.45!important;transition:opacity .15s}
 @media (prefers-reduced-motion: reduce){.toast{transition:none}}

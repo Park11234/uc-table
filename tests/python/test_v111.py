@@ -4,6 +4,8 @@
 - M2: 시판 제품 표시는 데이터를 만들 때 정한다(포장 표시에서 옮긴 과자·사탕·젤리, 환자용 영양식 포함, 이름만 있는 일반 메뉴는 제외)
 - M3: 훈제오리는 햄과 같은 방식(앱에 넣은 시판 훈제오리 가운데 발색제가 든 비율, 절반 이상이면 절대 금지), 햄이 흔히 들어가는 일반 음식에 표시
 - M6: 끼니가 되는 시판 요리(일품요리·국·죽·밥)는 1회 분량이 포장 총량의 15% 이상(반찬·누룽지로 잘못 분류해 1회 40~50g이 되던 것)
+- L9: 근거 확인일 점검은 기한 90일 전부터 미리 알린다(실패는 아님)
+- L11: 대상이 19세 이상이라 급식 질문은 '대학·회사'
 """
 import json, os, re, sys, unittest
 
@@ -104,6 +106,23 @@ class ServingTest(unittest.TestCase):
         self.assertEqual(spec10.kind_of(p), 'porridge')
         dry = next(x for x in cj10.P if x['disp'].startswith('오쌀미X햇반 파로누룽지'))
         self.assertEqual(spec10.kind_of(dry), 'nurungji')
+
+
+class LowItemsTest(unittest.TestCase):
+    def test_stale_soon_warns_before_expiry(self):
+        import datetime as dt
+        sys.path.insert(0, os.path.join(ROOT, 'tools'))
+        import stale_check
+        d = dt.date(2027, 7, 15)          # FODMAP 1회량(2026-09-27 확인)의 기한 2027-09-27이 90일 안
+        self.assertEqual(stale_check.check(d, 365)[0], 0)
+        self.assertGreater(stale_check.soon(d, 365, 90), 0)
+        self.assertEqual(stale_check.soon(dt.date(2026, 10, 17), 365, 90), 0)
+
+    def test_meal_question_adult(self):
+        import qa
+        q = next(x for x in qa.QA if x['id'] == 'school_meal')
+        self.assertIn('대학·회사', q['q'])
+        self.assertNotIn('학교 급식', q['kw'])
 
 
 if __name__ == '__main__':

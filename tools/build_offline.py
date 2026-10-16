@@ -99,8 +99,11 @@ for lid, fn, code in libs:
         shutil.copyfile(lic, os.path.join(vd, os.path.basename(lic)))
 
 # 홈 화면 아이콘 아래 이름은 길면 잘리므로 짧은 이름을 따로 둔다
-man = {"name": "UC TABLE", "short_name": "UC TABLE", "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미). 의료기기가 아닙니다.",
-       "start_url": "./index.html", "scope": "./", "display": "standalone", "orientation": "portrait",
+# v1.11.0 A-12: 화면 방향을 고정하지 않는다(WCAG 1.3.4). W-1: id·분류·바로가기(증상 기록·음식 찾기)
+man = {"id": "./", "name": "UC TABLE", "short_name": "UC TABLE", "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미). 의료기기가 아닙니다.",
+       "start_url": "./index.html", "scope": "./", "display": "standalone", "categories": ["health", "medical", "food"],
+       "shortcuts": [{"name": "오늘 증상 기록", "short_name": "증상 기록", "url": "./index.html?go=log"},
+                     {"name": "음식 찾기", "short_name": "음식 찾기", "url": "./index.html?go=food"}],
        "background_color": "#1F242B", "theme_color": "#2462E6", "lang": "ko",
        "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
@@ -110,7 +113,7 @@ open(os.path.join(PUB, 'manifest.webmanifest'), 'w', encoding='utf-8').write(jso
 # 캐시 이름: 미리 보관하는 파일 전체의 해시(어느 하나라도 바뀌면 새 캐시)
 ASSETS = ["./", "./index.html", "./app.js?v=" + app_hash, "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
           "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html"] + \
-         ["./vendor/" + fn for lid, fn, code in libs]
+         ["./vendor/" + fn for lid, fn, code in libs if fn != 'zxing.min.js']   # v1.11.0 L8: 바코드 라이브러리(336KB)는 처음 쓸 때 받아 보관
 hv = hashlib.sha256()
 for a in ASSETS:
     f = a[2:].split('?')[0] or 'index.html'

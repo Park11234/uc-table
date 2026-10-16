@@ -11,6 +11,8 @@
   python3 tools/stale_check.py --days 180      # 기준 바꾸기
   python3 tools/stale_check.py --today 2027-11-01 --warn   # 날짜를 정해 미리 보기, 찾아도 종료 코드 0
 종료 코드: 오래된 항목이 있으면 1(--warn이면 0)
+v1.11.0 L9: 기한(365일)이 90일 안으로 다가온 항목은 실패가 아니라 '미리 알림'으로 보여 준다(--soon 날수).
+  GitHub Actions에서는 노란 경고(::warning::)로도 남겨, CI가 실패하기 전에 다시 확인할 수 있게 한다.
 """
 import argparse, datetime as dt, os, re, sys
 
@@ -76,11 +78,26 @@ def main(argv=None):
     ap.add_argument('--today', help='기준일(YYYY-MM-DD), 기본은 오늘')
     ap.add_argument('--days', type=int, default=365)
     ap.add_argument('--warn', action='store_true', help='찾아도 종료 코드 0')
+    ap.add_argument('--soon', type=int, default=90, help='이 날수 안에 기한이 오는 것을 미리 알림(실패로 치지 않음, 0이면 끔)')
     a = ap.parse_args(argv)
     today = dt.date.fromisoformat(a.today) if a.today else dt.date.today()
     n, text = check(today, a.days)
     print(text)
+    k = soon(today, a.days, a.soon)
+    if k:
+        until = today + dt.timedelta(days=a.soon)
+        print(f'\n미리 알림: {a.soon}일 안({until}까지)에 확인 기한이 오는 항목 {k}건. '
+              f'목록: python3 tools/stale_check.py --today {until} --warn')
+        if os.environ.get('GITHUB_ACTIONS'):
+            print(f'::warning title=근거 확인일::{a.soon}일 안에 다시 확인할 근거·자료 {k}건(python3 tools/stale_check.py --today {until} --warn)')
     return 0 if (a.warn or n == 0) else 1
+
+
+def soon(today, days=365, ahead=90):
+    """ahead일 뒤에 오래된 것으로 잡히는 항목 수 - 지금 오래된 항목 수(곧 기한이 오는 것)"""
+    if not ahead:
+        return 0
+    return max(0, check(today + dt.timedelta(days=ahead), days)[0] - check(today, days)[0])
 
 
 if __name__ == '__main__':

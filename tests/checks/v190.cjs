@@ -27,7 +27,8 @@ const SEED=()=>{
 (async()=>{
   const b=await chromium.launch();
   const open=async(opt={})=>{const ctx=await b.newContext({viewport:{width:opt.w||390,height:844},reducedMotion:opt.rm?'reduce':'no-preference'}); const p=await ctx.newPage();
-    await p.route(/cdnjs/, r=>{const u=r.request().url(); r.fulfill({path:u.includes('html2canvas')?LIB_H2C:LIB_JSPDF,contentType:'application/javascript'})});
+// v1.11.0 L1: 앱이 CDN 대신 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다 → 점검 페이지 옆에 복사
+    fs_.mkdirSync(path.join(TMP,'vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'vendor','jspdf.umd.min.js'));
     await p.goto('file://'+page); await p.waitForTimeout(300); await p.evaluate(SEED); await p.reload(); await p.waitForTimeout(400); await p.evaluate(()=>scrollTo(0,0)); return p};
 
   console.log('== 접근성');

@@ -33,7 +33,8 @@ fs.writeFileSync(T('pdflong.html'),html);
 const OUT=process.argv[2]||T('long.pdf');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-await p.route('https://cdnjs.cloudflare.com/**', r=>{const u=r.request().url(); const f=u.includes('html2canvas')?LIB_H2C:LIB_JSPDF; r.fulfill({path:f,contentType:'application/javascript'})});
+// v1.11.0 L1: 앱이 CDN 대신 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다 → 점검 페이지 옆에 복사
+    fs_.mkdirSync(path.join(TMP,'vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'vendor','jspdf.umd.min.js'));
 await p.route(/fonts\.g/, r=>r.fulfill({body:'',contentType:'text/css'}));
 await p.goto('file://'+WRAP('pdflong.html'));await p.waitForTimeout(1200);
 await p.evaluate(()=>{S.consent={date:today()};
@@ -45,5 +46,5 @@ await p.click('[data-act=openScr][data-v=pdf]'); await p.click('[data-act=pdf]')
 await p.waitForFunction(()=>window.__pdf,null,{timeout:30000});
 const arr=await p.evaluate(()=>window.__pdf); fs.writeFileSync(OUT,Buffer.from(arr));
 console.log('saved',await p.evaluate(()=>JSON.stringify(window.__saved)),'errors',errs);
-expect(()=>{const s=JSON.parse(__LOG.find(x=>x.startsWith('saved')).match(/\{.*?\}/)[0]); return s.size>100000&&/^진료기록_/.test(s.filename)},'긴 PDF 저장');
+expect(()=>{const s=JSON.parse(__LOG.find(x=>x.startsWith('saved')).match(/\{.*?\}/)[0]); return s.size>100000&&/^uc-table-report-\d{4}-\d\d-\d\d\.pdf$/.test(s.filename)},'긴 PDF 저장(v1.11.0 F-1: 영문 파일 이름)');
 __done(); await b.close();})();

@@ -218,6 +218,35 @@ const SEED=()=>{
     need(r.sync,'M10 자동 백업 폴더에 클라우드 동기화 폴더 안내');
     await p.context().close()}
 
+  console.log('== 낮음 항목(L1~L5·L8·L11·A-12·A-15·W-1·W-2·F-1)');
+  {const PUB=path.join(ROOT,'public'); const man=JSON.parse(fs.readFileSync(path.join(PUB,'manifest.webmanifest'),'utf8')); const sw=fs.readFileSync(path.join(PUB,'sw.js'),'utf8');
+    need(!("orientation" in man),'A-12 매니페스트에 화면 방향 고정 없음');
+    need(man.id==="./"&&Array.isArray(man.shortcuts)&&man.shortcuts.length>=2&&(man.categories||[]).includes("health"),'W-1 매니페스트 id·바로가기·분류');
+    need(!/zxing/.test(sw.match(/const ASSETS=(\[.*?\]);/)[1])&&/html2canvas/.test(sw),'L8 바코드 라이브러리는 미리 보관하지 않음(그림 PDF 라이브러리는 보관)');
+    const p=await open({init:`window.claude={use:async n=>n==="downloads"?{save:async({filename})=>{(window.__fn=window.__fn||[]).push(filename);return {status:"saved"}}}:null}`});
+    const r=await p.evaluate(async()=>{const o={};
+      o.cdn=JSON.stringify(PDF_LIBS)+JSON.stringify(BC_LIB); 
+      o.sc=scaledTxt({fk:1.2,fp:0.8});
+      S.foodQ=""; S.tab="food"; SCR=null; render(); o.hdr=[...document.querySelectorAll('.fg-h .fg-n')].map(x=>x.textContent);
+      o.aria=document.querySelector('#foodRes .fcard')?.getAttribute('aria-label')||"";
+      S.tab="plan"; SCR=null; render(); const b=document.querySelector('[data-act=ateToggle]'); if(b) b.click(); await new Promise(z=>setTimeout(z,150));
+      const t=document.querySelector('#toasts .toast'); o.toastTop=t?t.getBoundingClientRect().top:-1; o.h=innerHeight;
+      UPD=true; render(); o.upd=!!document.querySelector('.upd-banner [data-act=updReload]'); UPD=false;
+      await backup(); await csvExport("logs","save"); o.fn=window.__fn||[];
+      const q=QA.find(x=>x.id==="school_meal"); o.qa=q?q.q:"";
+      return o});
+    need(!/https?:/.test(r.cdn),`L1 라이브러리 경로에 CDN 없음 (${r.cdn.slice(0,120)})`);
+    need(/늘리고 .*줄였습니다\.$/.test(r.sc.trim()),`L3 '…늘리고 …줄였습니다' (${r.sc.trim()})`);
+    need(r.hdr.length&&r.hdr.some(t=>/\d,\d{3}개/.test(t)),`L2 묶음 개수에 천 단위 쉼표 (${r.hdr.join(" / ")})`);
+    need(/, (좋음|주의|다음 단계|피하기|절대 금지), .+/.test(r.aria),`L5 결과 줄 읽기에 종류·양·열량 (${r.aria})`);
+    need(r.toastTop>=0&&r.toastTop<r.h/3,`L4 끼니 '먹음' 알림은 위쪽 (top ${Math.round(r.toastTop)})`);
+    need(r.upd,'W-2 새 버전 안내와 다시 열기 버튼');
+    need(r.fn.length>=2&&r.fn.every(n=>/^uc-table-[a-z]+-\d{4}-\d\d-\d\d\.(json|csv)$/.test(n)),`F-1 파일 이름은 영문 (${r.fn.join(", ")})`);
+    need(/^대학·회사 급식/.test(r.qa),`L11 '대학·회사 급식' (${r.qa})`);
+    const r2=await p.evaluate(()=>{S.tab="me"; SCR=null; openScr("nutri"); const low=document.querySelector('.low-t'); return {low:!!low||!document.querySelector('.bar i.low'), aria:[...document.querySelectorAll('.bar')].map(x=>x.getAttribute('aria-label')).join("|")}});
+    need(r2.low,`A-15 모자람은 글자로도 (${r2.aria.slice(0,80)})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

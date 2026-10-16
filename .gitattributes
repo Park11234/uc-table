@@ -1,0 +1,15 @@
+# v1.11.0 G-12: 줄 끝을 LF로 맞추고, 생성물·외부 라이브러리는 저장소 언어 통계와 비교(diff)에서 뺀다
+* text=auto eol=lf
+*.png binary
+*.gif binary
+*.woff2 binary
+*.jks binary
+src/app/index.html linguist-generated=true -diff
+src/data/generated/** linguist-generated=true -diff
+public/app.js linguist-generated=true -diff
+public/index.html linguist-generated=true
+public/sw.js linguist-generated=true
+docs/evidence.md linguist-generated=true
+vendor/** linguist-vendored=true -diff
+public/vendor/** linguist-vendored=true -diff
+src/app/app.src.html linguist-language=HTML
