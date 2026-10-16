@@ -1,7 +1,7 @@
 {
   "name": "uc-table",
-  "version": "1.9.0",
-  "description": "UC 식단 관리 도우미 — 궤양성 대장염 식단·증상 기록 웹앱(단일 파일, 오프라인 PWA)",
+  "version": "1.10.0",
+  "description": "UC 식단 관리 도우미 — 궤양성 대장염 식단·증상 기록 웹앱(PWA·오프라인 파일·안드로이드 앱)",
   "private": true,
   "scripts": {
     "test": "bash tests/run-all.sh",

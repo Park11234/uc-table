@@ -46,8 +46,6 @@ jobs:
           python3 tools/tone_check.py
       - name: 점검 실행 (Playwright)
         run: npm test
-      - name: 점검의 점검 (일부러 망가뜨린 앱을 점검이 잡는지)
-        run: npm run test:mutation
       - name: 화면 비교 점검 (기준 화면과 픽셀 비교)
         run: node tests/visual/visual.cjs
       - name: 실패 로그 업로드

@@ -27,7 +27,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 음식 판정 | 끼니 메뉴 | 궁금한 점 | 근거 자료 | 자동 점검 | 저장 데이터 손상 퍼징 | 접근성(WCAG 2.2 AA) | 외부 요청 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **1,750종** | **1,174개** | **45문항 · 원문 인용 145건** | **87건** | **Playwright 53개 + 파이썬 57개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
+| **1,771종** | **1,174개** | **51문항 · 원문 인용 169건** | **87건** | **Playwright 54개 + 파이썬 73개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
 
 **기술 스택** — Vanilla JS(HTML 한 파일, 프레임워크 없음) · localStorage · Service Worker(PWA) · html2canvas + jsPDF · Python(음식 데이터 파이프라인) · Playwright · axe-core · ESLint · GitHub Actions / Pages
 
@@ -40,7 +40,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 그래서 이 판단을 세 단계로 자동화하고, 자주 묻는 질문은 원문과 함께 앱에 넣었습니다.
 
 1. **증상 기록 → 지금의 단계**: 증상을 기록하면 SCCAI 점수와 국내 기준으로 저잔사식·이행식·지중해식 중 하나를 고릅니다.
-2. **단계 → 음식별 판정**: 1,750종 각각을 좋음·주의·보류·피하기로 나누고, 아질산염(발색제)을 넣은 가공육은 '절대 금지'로 둡니다. 알레르기·의료진 지시·싫어하는 음식도 함께 반영합니다.
+2. **단계 → 음식별 판정**: 1,771종 각각을 좋음·주의·다음 단계·피하기로 나누고, 아질산염(발색제)을 넣은 가공육은 '절대 금지'로 둡니다. 알레르기·의료진 지시·싫어하는 음식도 함께 반영합니다.
 3. **판정 → 근거**: 모든 판정 문구에 지침·논문 번호가 붙어 있어, 눌러서 출처를 확인할 수 있습니다.
 4. **궁금한 점 → 원문**: 커피·술·영양제처럼 자주 묻는 질문의 답에 학회·병원·국제 지침의 원문 문장을 그대로 붙여, AI 없이도 찾아보고 출처를 대조할 수 있습니다.
 
@@ -54,20 +54,22 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 기능 | 내용 |
 |---|---|
-| **증상 기록** | SCCAI 6개 항목에 혈변 횟수·복통·가스·피로·변 모양·복약·체온·맥박을 더해 4쪽(꼭 답할 질문 5개)으로 기록, 홈의 '평소와 같음' 한 번으로 최근 기록과 같게 저장, 14일 점수 추이와 위험 신호 표시 |
+| **증상 기록** | SCCAI 6개 항목에 혈변 횟수·복통·변 모양·복약·체온·맥박(가스·피로는 선택)을 더해 질문 4쪽과 요약 1쪽(꼭 답할 질문 3개)으로 기록. 바쁠 때는 **빠른 기록**(배변 횟수·급박감·피 세 가지), 홈의 '평소와 같음' 한 번으로 최근 기록과 같게 저장. 피 섞인 변 횟수와 피의 정도가 맞지 않으면 알림. 14일 점수 추이, 위험 신호, **3일 연속 활동기 기준이면 주치의 연락을 고려하라는 안내**(예측이 아님) |
 | **단계 판정** | 아래 기준표에 따라 자동 판정, 직접 고정도 가능 |
-| **식단** | 끼니 메뉴 **1,174개**(아침 226 · 점심 421 · 저녁 422 · 곁들임 105) 중 단계·알레르기·지시 사항·주의 음식을 통과한 것으로 **7일 식단**(아침·점심·저녁) 구성. 체중에 맞춰 밥·단백질 반찬 양을 조절하고 나트륨·칼슘·아침 단백질을 맞춤. 끼니별 **다른 메뉴**로 바꾸거나 **메뉴 고르기**로 직접 선택(메뉴·재료 이름으로 찾기), **내가 만든 메뉴** 저장 |
-| **음식 찾아보기** | 1,750종(뉴케어 등 영양식 39종, 시판 과자·사탕·젤리·초콜릿 83종, 시판 라면 55종, 마트·편의점 제품 17종, CJ제일제당 제품 607종, 다른 회사 가공육 122종, 만두·육포·볶음밥·국·탕·찌개 330종 포함)을 이름·초성·자모로 검색(이름이 같은 음식이 먼저), 판정 이유와 식약처·국가표준식품성분표·제품 표시 영양값. 시판 제품은 확인한 판매처·상품 번호와 포장 표시 그대로의 영양정보·원재료명을 함께 보여 줌. 영양 칸은 1회 분량이 기본이고 100g당으로 바꿀 수 있음 |
-| **궁금한 점** | 커피·술·유제품·채소·과일·붉은 고기·영양음료·엽산·철분·칼슘·유산균·스테로이드·여행 등 45문항. 답마다 대한장연구학회·국내 병원·국제 지침(ECCO·ESPEN·AGA·IOIBD·ACG)의 **원문 문장을 글자 그대로** 위치와 함께 붙이고, 관련 음식의 지금 판정으로 바로 이동 |
-| **외식·편의점 판정** | 메뉴 이름과 재료를 적으면 규칙으로 판정(앱 음식 목록에 없는 메뉴는 조리법·양념을 알 수 없어 가장 좋아도 '주의해서'). 제품은 포장의 원재료명·알레르기 표시와 영양정보 표를 옮겨 적어 검사 |
-| **홈(오늘 끼니)** | 맨 위 '오늘 할 일'(증상 기록·끼니 표시·물)을 줄마다 바로 처리. 첫 화면에 오늘 끼니와 한 줄 요약(열량·단백질·물). 계획한 양과 먹은 양을 한 카드에 막대 두 개로 보여 주고, 모자람 강조는 저녁 7시 뒤에만. '먹음'은 반·전부·더 많이로 골라 합계에 반영 |
+| **식단** | 끼니 메뉴 **1,174개**(아침 226 · 점심 421 · 저녁 422 · 곁들임 105) 중 단계·알레르기·지시 사항·주의 음식을 통과한 것으로 **7일 식단**(아침·점심·저녁) 구성. 체중에 맞춰 밥·단백질 반찬 양을 늘리거나 줄이고(v1.10.0부터 단백질도 양쪽으로) 나트륨·칼슘·아침 단백질을 맞춤. 끼니마다 '먹음'과 **바꾸기**(안 먹음·다른 메뉴·메뉴 고르기) 두 버튼(메뉴·재료 이름으로 찾기), **내가 만든 메뉴** 저장 |
+| **음식 찾아보기** | 1,771종(뉴케어 등 영양식 39종, 시판 과자·사탕·젤리·초콜릿 83종, 시판 라면 55종, 마트·편의점 제품 17종, 판매처 고시·포장 표시에서 옮긴 시판 제품 1,039종, 흔한 외식 메뉴 41종 포함)을 이름·초성·자모로 검색. **지금 먹을 수 있는 음식(좋음·주의)을 맨 앞에**, 일반 음식을 먼저 보이고 시판 제품은 접어 둠. 결과는 한 줄 목록(종류 또는 시판·총 용량, 1회 양·열량), 종류·판정 걸러 보기는 시트 안에서. 음식 정보는 판정 이유 한 줄 + '자세히', 피하는 음식에는 **대신 이것**(지금 먹을 수 있는 비슷한 음식), 자료가 있는 영양값만, **확인 날짜**(그 음식을 앱에 넣은 날). 용량만 다른 같은 제품은 한 음식으로 묶고 다른 용량을 함께 보임 |
+| **궁금한 점** | 커피·술·유제품·채소·과일·붉은 고기·영양음료·엽산·철분·칼슘·유산균·스테로이드·여행, 그리고 v1.10.0의 음식이 무서워 자꾸 줄일 때·외출 때 화장실·학교·회사 급식·가족 식사·식비·유튜브·인터넷 정보 등 51문항. 답마다 대한장연구학회·국내 병원·국제 지침(ECCO·ESPEN·AGA·IOIBD·ACG)의 **원문 문장을 글자 그대로** 위치와 함께 붙이고, 관련 음식의 지금 판정으로 바로 이동 |
+| **외식·편의점 판정** | 메뉴 이름과 재료를 적으면 규칙으로 판정(앱 음식 목록에 없는 메뉴는 조리법·양념을 알 수 없어 가장 좋아도 '주의'). 순두부찌개·돼지국밥·제육덮밥·연어덮밥 같은 흔한 외식 메뉴 41종을 넣었고, '샐러드'·'국밥'처럼 종류가 많은 이름은 어떤 메뉴인지 고르게 하며 고르기 전에는 가장 엄격한 판정. 제품은 포장의 원재료명·알레르기 표시와 영양정보 표를 옮겨 적어 검사하고, **바코드**는 처음 한 번 음식과 연결해 두면 다음부터 바로 찾음(앱 자료에는 바코드 번호가 없음) |
+| **홈(오늘 끼니)** | 맨 위 '오늘 할 일'(증상 기록·끼니 표시·물)을 줄마다 바로 처리하고, 증상 기록 입구는 여기 한 곳. 한 줄 요약(계획·먹은 양·단백질)을 누르면 오늘 영양 화면(모자람 강조는 저녁 7시 뒤에만). '먹음'은 반·전부·더 많이로 골라 합계에 반영 |
 | **영양·목표·보고서** | 먹은 음식과 수분을 BMI에 맞춘 열량 목표(대한비만학회)·단백질 목표(ESPEN)와 비교(나트륨·비타민 D 포함, 자료 없는 음식은 합계에서 빼고 표시). 목표 직접 정하기, 다른 날 기록 가져오기, 최근 7일·30일 보고서. 의도하지 않은 체중 감소는 GLIM 기준으로 알림 |
 | **먹은 음식 추가** | 끼니 칸마다 자주 먹은 음식·★ 즐겨찾기·최근 음식을 먼저. 생것·익힌 뒤·완성된 음식 무게 기준과 FODMAP 1회량(79종, 낮음·중간·높음과 주된 성분)을 함께 표시 |
 | **장보기·알림** | 7일 식단을 살 때 재료로(밥·죽은 생쌀 무게, 손질 전 무게, 완성 음식은 레시피 재료), 식사·증상 기록 시간을 휴대폰 캘린더 알림 파일(.ics)로 |
 | **음식 다시 먹어 보기** | 주의 음식을 3일에 걸쳐 조금씩 다시 시도하며 기록 |
 | **건강 관리 점검 · 진료용 PDF** | 예방접종·검진 확인 목록, 기간별 증상·음식 평가와 '진료 때 물어볼 것'을 담은 PDF(검색·복사가 되는 글자 PDF와 그림 PDF) |
 | **식사–증상 관계** | 먹은 날과 먹지 않은 날의 증상 점수를 비교해 '의심 후보'만 보여 줌(원인이라는 뜻이 아니며 의료진과 상의하도록 안내) |
-| **첫 실행 설정 · 기록 보호** | 동의 뒤 3단계 설정(내 정보·알레르기·오늘 증상), 백업 불러오기, 그냥 시작하기. 두 창에서 열면 덮어쓰기 방지, 백업 뒤 바뀐 날 수 안내, 불러오기 전 비교표와 합치기·되돌리기, 오류 안내 화면 |
+| **첫 실행 설정 · 기록 보호** | 동의 뒤 3단계 설정(내 정보·알레르기·요즘 장 상태와 오늘 증상), 백업 불러오기, 그냥 시작하기. 기록이 없을 때 요즘 상태로 시작 단계를 정함. 두 창에서 열면 덮어쓰기 방지, 백업 뒤 바뀐 날 수 안내, 불러오기 전 비교표와 합치기·되돌리기, 오류 안내 화면 |
+| **백업·내보내기** | 백업 파일 저장·복사·**보내기**(메일·메신저·파일 앱, 아이폰은 이 방법), 진료 PDF 보내기, 증상 기록·먹은 음식 **CSV**(엑셀). 자동 백업: 이 기기 안 보관본(최근 7일)과 PC 크롬·엣지의 **자동 백업 폴더**(기록이 바뀌면 날짜별 파일) |
+| **PC·아이폰** | PC에서는 PC 전용 화면 없이 휴대폰과 같은 화면을 가운데 640px로 띄움. 아이폰은 입력칸 확대 방지(16px)·안전 영역·공유로 저장 |
 
 ### 단계 판정 기준
 
@@ -84,6 +86,8 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 - **SCCAI**(Simple Clinical Colitis Activity Index, 간이 임상 대장염 활동도 지수)는 낮·밤 배변 횟수, 급박감, 혈변 정도, 전반적 상태, 장외 증상 6개 항목의 합입니다[11]. 5점 이상은 재발을 민감도 92%·특이도 93%로 구분하고, 환자가 직접 작성해도 의사 평가와 차이가 작다고 보고됐습니다[15].
 - 기록이 3일 넘게 없어도 단계를 조용히 내리지 않고 마지막 기록의 단계를 쓰면서 홈에서 요즘 증상을 묻습니다. 2주 넘게 없으면 이행식으로 시작합니다(저잔사식까지 내리지 않음, v1.9.0). 단계를 직접 고정해도 위험 신호가 있으면 저잔사식으로 바뀝니다.
+- 증상 기록이 하나도 없으면 첫 실행 때 고른 요즘 장 상태(심함·좋아지는 중·거의 없음·모름)로 시작 단계를 정합니다(모르면 저잔사식, v1.10.0). 기록하면 기록이 우선합니다.
+- 빠른 기록(세 문항)은 빠진 항목을 0점으로 두고 계산해 실제 점수보다 낮을 수 있음을 화면에 밝힙니다.
 
 ## AI 기능을 뺀 이유(v1.7.0)
 
@@ -119,7 +123,7 @@ v1.9.0의 시판 제품은 판매처 고시·포장 표시를 옮긴 기록을 �
 **실제 사용 환경을 점검합니다.** 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,300회)과, 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다.
-앱을 일부러 45가지 방식으로 망가뜨려(나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 47쌍이 실제로 실패하는지도 확인합니다([점검 체계](docs/testing.md)).
+앱을 일부러 54가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 56쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
 
 **기록은 기기 밖으로 나가지 않습니다.** 서버·계정·분석 도구가 없고, 저장은 기기의 localStorage 한 곳입니다.
 같은 앱을 두 창에서 열어도 서로 덮어쓰지 않게 막고, 백업을 불러올 때는 지금 기록과 비교해 합치거나 되돌릴 수 있습니다.
@@ -211,9 +215,9 @@ python3 src/data/build_app.py    # app.src.html의 표시자 자리에 데이터
 python3 tools/build_offline.py   # public/(PWA)과 dist/(단일 파일) 생성
 npm ci && npx playwright install --with-deps chromium   # package-lock.json 그대로 설치
 npm run lint                     # ESLint (경고 0)
-npm run test:py                  # 데이터 생성 코드 단위 점검 57개(파이썬 표준 라이브러리만)
-npm test                         # Playwright 점검 52개(화면 비교는 node tests/visual/visual.cjs)
-npm run test:mutation            # 일부러 망가뜨린 앱 45개를 점검이 잡는지
+npm run test:py                  # 데이터 생성 코드 단위 점검 73개(파이썬 표준 라이브러리만)
+npm test                         # Playwright 점검 53개(화면 비교는 node tests/visual/visual.cjs)
+npm run test:mutation            # 일부러 망가뜨린 앱 54개를 점검이 잡는지(CI는 매주 한 번)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
 python3 tools/tone_check.py      # 앱 문구에 해요체(~요)가 남았는지(앱 문구는 ~입니다·~합니다)
@@ -256,20 +260,23 @@ vendor/       인라인하는 오픈소스(html2canvas, jsPDF)와 라이선스
 - 영양식 39종 가운데 18종은 원재료명을 판매처·제조사 공개 자료에서 글자로 확인하지 못해(표시가 이미지로만 올라와 있음) '확인하지 못한 제품'으로 두고 포장 확인을 안내합니다. 영양값은 26종에 표시값을 넣었고, 나머지는 '자료 없음'으로 보입니다. 특수의료용도식품은 포장 문구대로 의료진과 상담한 뒤 쓰도록 '주의해서', 신장질환자용·경관급식 전용은 '피하기'로 둡니다.
 - 스테비아·알룰로스 같은 감미료가 궤양성 대장염에 미치는 영향은 연구가 부족해, 감미료 제품은 '피하기'가 아니라 '주의해서'로 둡니다(탄산음료는 탄산 때문에 '피하기').
 - 궁금한 점의 답은 자료의 안내를 옮긴 것이고, 자료끼리 다른 곳(예: 술 — 대한장연구학회는 금주, IOIBD는 적은 양을 바꾸라고 권할 근거 부족)은 두 안내를 함께 적었습니다. 개인에게 맞는 결정은 주치의와 상의해야 합니다.
-- v1.9.0의 시판 제품 1,059종은 사용자 요청에 따라 판매처 한 곳에서만 확인했습니다. 포장이 바뀌었을 수 있으니 실제 포장 표시를 함께 확인하십시오. 영양정보가 없는 가공육·육포는 원재료로만 판정하고, 영양정보를 찾지 못한 만두·볶음밥·국은 넣지 않았습니다.
+- v1.9.0의 시판 제품 1,059종(v1.10.0에서 용량만 다른 같은 제품을 묶어 1,039종)은 사용자 요청에 따라 판매처 한 곳에서만 확인했습니다. 포장이 바뀌었을 수 있으니 실제 포장 표시를 함께 확인하십시오. 영양정보가 없는 가공육·육포는 원재료로만 판정하고, 영양정보를 찾지 못한 만두·볶음밥·국은 넣지 않았습니다.
 - 지인의 비공식 의견만 받았고, 체계적인 사용성 평가나 임상 평가는 하지 않았습니다.
-- 안드로이드 크롬 기준으로 만들었고 iOS 사파리는 확인하지 않았습니다. iOS 사파리는 홈 화면에 추가하지 않은 사이트의 저장 데이터를 한동안 쓰지 않으면 지울 수 있으므로, iOS에서는 홈 화면에 추가하고 백업 파일을 자주 만들어 두세요.
+- 안드로이드 크롬 기준으로 만들었고, 아이폰은 실제 기기 대신 화면 크기·입력칸 글자 크기·공유 기능을 점검으로만 확인했습니다. iOS 사파리는 홈 화면에 추가하지 않은 사이트의 저장 데이터를 한동안 쓰지 않으면 지울 수 있으므로, iOS에서는 홈 화면에 추가하고 '백업 파일 보내기'로 자주 보관하세요.
+- 음식의 '확인 날짜'는 그 음식을 앱에 넣은 날입니다(사용자 요청, 1년 지난 것을 다시 확인하라는 점검은 하지 않음). v1.0.0(2026-09-24)과 v1.1.0~v1.8.0(2026-10-13)에 넣은 음식은 저장소 기록에 남은 가장 이른 날짜라, 실제로 넣은 날보다 늦을 수 있습니다.
+- 흔한 외식 메뉴 41종 가운데 연어덮밥·규동·가츠동·텐동·시저샐러드·햄 토스트 6종은 식약처 음식 DB에 같은 이름 자료가 없어 영양값 없이 판정만 합니다. 알레르기 태그는 식당마다 재료가 달라 흔히 들어가는 재료를 넉넉히 붙였습니다.
+- 바코드는 앱 자료에 바코드 번호(GTIN)가 없어, 처음 읽은 바코드를 사용자가 직접 음식과 연결해야 합니다. 카메라 읽기는 BarcodeDetector가 없는 브라우저(아이폰 등)에서 바코드 라이브러리(@zxing/library)를 그때 불러옵니다.
 
 ## English summary
 
 **UC TABLE** (UC 식단 관리 도우미, UC Diet Care Assistant) is an offline-first mobile web app that helps people with ulcerative colitis decide what they can eat *today*.
-Symptom logs are scored (SCCAI plus Korean clinical criteria) to pick a diet phase (low-residue → transition → Mediterranean), and 1,750 foods (including 1,076 packaged products) are
+Symptom logs are scored (SCCAI plus Korean clinical criteria) to pick a diet phase (low-residue → transition → Mediterranean), and 1,771 foods (including 1,056 packaged products and 41 common restaurant dishes) are
 judged by deterministic rules, each linked to one of 87 cited guidelines, papers, and product sources. Nutrition values come from the Korean MFDS food database
 through a reproducible pipeline (rebuild is byte-identical, checked in CI). It is a single HTML file with no framework and stores data only in localStorage.
-Since v1.7.0 the app uses no AI at runtime: 1,174 meal templates built from reviewed components and 45 Q&A entries whose 145 evidence quotes are verified verbatim against the source texts by a unit test.
-v1.9.0 adds a fifth verdict, "never" (absolutely avoid), for processed meats containing sodium nitrite (183 products), 1,059 packaged products copied from one seller listing each with the source shown, a 4-page symptom log with a one-tap "same as usual" entry, a meal-symptom suspect view, a text PDF for clinic visits, and fixes from a pre-launch accessibility/design review. v1.8.0 adds a meals-first home screen, a 3-step first-run setup, multi-tab write protection, backup merge/undo, BMI-based energy targets (KSSO), GLIM weight-loss alerts, FODMAP serving thresholds for 79 foods, and a documented rule for choosing among multiple dish values (FAO/INFOODS).
-Quality checks: 53 Playwright suites (including pixel-level visual regression) and 56 Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,300 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
-PWA update delivery, 44 px touch targets, and mutation checks (45 deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
+Since v1.7.0 the app uses no AI at runtime: 1,174 meal templates built from reviewed components and 51 Q&A entries whose 169 evidence quotes are verified verbatim against the source texts by a unit test.
+v1.10.0 applies a design/developer/user review: one symptom-log entry on home, a quick 3-question log, a meal row with just 'ate' and 'change', a one-line search list with edible foods first and packaged products folded, 'instead try' suggestions, merged pack sizes, an 'added on' date per food, generic ham/sausage as 'never', 41 restaurant dishes, share/CSV export, automatic local and folder backups, barcode linking, and a centered phone-width layout on PC. v1.9.0 adds a fifth verdict, "never" (absolutely avoid), for processed meats containing sodium nitrite (183 products), 1,059 packaged products copied from one seller listing each with the source shown, a 4-page symptom log with a one-tap "same as usual" entry, a meal-symptom suspect view, a text PDF for clinic visits, and fixes from a pre-launch accessibility/design review. v1.8.0 adds a meals-first home screen, a 3-step first-run setup, multi-tab write protection, backup merge/undo, BMI-based energy targets (KSSO), GLIM weight-loss alerts, FODMAP serving thresholds for 79 foods, and a documented rule for choosing among multiple dish values (FAO/INFOODS).
+Quality checks: 54 Playwright suites (including pixel-level visual regression) and 73 Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,300 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
+PWA update delivery, 44 px touch targets, and weekly mutation checks (54 deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
 
 ## 라이선스
 

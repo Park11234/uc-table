@@ -124,10 +124,14 @@
 ```
 src/data/spec1~8.py      음식 정의(이름·분류·단계·태그·분량·별명·조리법). spec8은 영양식과 제품 표시값(LABEL)
 src/data/spec10.py       v1.9.0 시판 제품 1,059종: cj10.py(CJ더마켓 고시)·brand10.py(동원몰 고시·식품안전나라 품목제조보고)·
-                         label10.py(동원몰·랭킹닭컴·아임닭·풀무원샵 포장 표시)를 판정 태그·설명·출처(PSRC)로 바꿈
+                         label10.py(동원몰·랭킹닭컴·아임닭·풀무원샵 포장 표시)를 판정 태그·설명·출처(PSRC)로 바꿈.
+                         v1.10.0: 용량만 다른 같은 제품 18묶음을 대표로(FAM10·IDMAP10), 이름 끝 용량은 SIZE10으로,
+                         절대 금지·늘 피하기 제품의 먹는 방법 문장을 이유만 적은 문장(*_ban)으로
+src/data/spec11.py       v1.10.0 흔한 외식 메뉴 41종(식약처 음식 DB의 같은 이름 행, 없으면 판정만)
+src/data/added.json      v1.10.0 음식마다 확인 날짜(그 음식을 넣은 날). tools/added_dates.py가 관리, 날짜가 없으면 생성이 멈춤
 src/data/templates.py    판정 설명 문장 템플릿(근거 번호 포함)
-src/data/menus.py        끼니 메뉴 1,144개(구성 요소 조합, 레시피 연결, 지중해식 메뉴)
-src/data/qa.py           궁금한 점 45문항과 근거 원문 인용 145건(data/sources/*.txt와 글자 대조)
+src/data/menus.py        끼니 메뉴 1,174개(구성 요소 조합, 레시피 연결, 지중해식 메뉴)
+src/data/qa.py           궁금한 점 51문항과 근거 원문 인용 169건(data/sources/*.txt와 글자 대조)
 src/data/fodmap_serv.py  FODMAP 1회량 79종(낮음·중간·높음, 성분, 근거, 확인 날짜)(v1.8.0)
 src/brand/logo-mono.svg  UC TABLE 로고(tools/brand.cjs가 그림. 같은 스크립트가 public/ 아이콘 PNG도 만듦)(v1.8.0)
         │
@@ -137,7 +141,7 @@ src/brand/logo-mono.svg  UC TABLE 로고(tools/brand.cjs가 그림. 같은 스�
         │                       → generated/gen_out.json (원본 CSV의 행 수·기준일자·SHA-256도 기록)
         │
         └─ build_app.py         src/app/app.src.html의 표시자에 생성 데이터를 넣음
-                                  /*@GEN:foods@*/ /*@GEN:mfds@*/ /*@GEN:micro@*/ /*@GEN:menus@*/ /*@GEN:qa@*/ /*@GEN:dishx@*/ /*@GEN:fserv@*/ /*@GEN:shop@*/ /*@GEN:logo@*/ …
+                                  /*@GEN:foods@*/ /*@GEN:mfds@*/ /*@GEN:micro@*/ /*@GEN:menus@*/ /*@GEN:qa@*/ /*@GEN:dishx@*/ /*@GEN:fserv@*/ /*@GEN:shop@*/ /*@GEN:psize@*/ /*@GEN:pfam@*/ /*@GEN:idmap@*/ /*@GEN:added@*/ /*@GEN:logo@*/ …
                                 → src/app/index.html
 ```
 

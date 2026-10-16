@@ -1,0 +1,35 @@
+name: mutation
+
+# v1.10.0 개발자 12: '점검의 점검'(돌연변이 앱 60여 쌍)은 오래 걸려 매 push가 아니라 매주 한 번과 손으로 실행할 때만 돌린다.
+# 매 push에서는 test.yml(정적 분석·빌드 재현·단위 점검·Playwright 점검·화면 비교)만 돈다.
+on:
+  schedule:
+    - cron: '17 18 * * 0'   # 매주 월요일 03:17(한국 시각)
+  workflow_dispatch:
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 의존성 설치 (package-lock.json 그대로)
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: 점검의 점검 (일부러 망가뜨린 앱을 점검이 잡는지)
+        run: npm run test:mutation
+      - name: 실패 로그 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-logs
+          path: .test-out/mutants/
+          retention-days: 7

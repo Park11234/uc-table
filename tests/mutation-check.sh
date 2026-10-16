@@ -65,6 +65,16 @@ mut={
  'shop_dish.html': rep('if(wBasis(f).k==="dish"){','if(false){'),  # 완성 음식을 재료로 적고 레시피 재료를 안 보여 줌
  # v1.9.0(2026-10-15 발견): 끝낸 '오늘 할 일' 줄이 전역 .done(26px 원) 규칙에 걸려 글자가 세로로 흘러내림
  'done_clash.html':rep('`<div class="task${ok?" is-done":""}">','`<div class="task${ok?" is-done done":""}">'),
+ # v1.10.0 점검 보고서 반영분
+ 'ham_soft.html':  end('FOOD.ham.tags=FOOD.ham.tags.filter(t=>t!=="nitrite");'),   # 일반 햄이 다시 '피하기'(시판 발색제 가공육과 어긋남)
+ 'idmap_off.html': rep('  o=remapIds(o);\n',''),                               # 묶여 빠진 옛 제품 id를 잇지 않음(즐겨찾기·기록이 사라짐)
+ 'broad_off.html': rep('const broadOf=name=>{','const broadOf=()=>null; const _broadOf=name=>{'),  # '샐러드'를 한 음식으로 판정
+ 'pc_full.html':   rep(':root{--phone:640px}',':root{--phone:100vw}'),            # PC에서 휴대폰 화면이 아니라 전체 너비
+ 'toast_top.html': s.replace('</style>','.toasts{top:64px!important;bottom:auto!important}</style>',1),  # 알림이 다시 제목을 가림
+ 'csv_inj.html':   rep("if(/^[=+\\-@\\t\\r]/.test(t)) t=\"'\"+t;",''),          # CSV 수식 막기 빠짐
+ 'migrate_twice.html':rep('typeof window.UCTableAndroid.takeMigrated==="function"&&!localStorage.getItem(KEY)','typeof window.UCTableAndroid.takeMigrated==="function"'),  # 안드로이드 앱이 기록을 매번 덮어씀
+ 'protein_up.html':rep('t.p>tg.p*1.15?Math.max(0.7,tg.p*1.1/t.p):1','1'),       # 단백질 반찬을 늘리기만 함
+ 'later_word.html':rep('later:"다음 단계"','later:"보류"'),                        # '다음 단계'가 다시 '보류'
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -119,7 +129,16 @@ tabs_hit.html tests/regression/t29.cjs
 logo_gone.html tests/regression/t29.cjs
 shop_cook.html tests/checks/v150.cjs
 shop_dish.html tests/checks/v150.cjs
-done_clash.html tests/checks/v190.cjs"
+done_clash.html tests/checks/v190.cjs
+ham_soft.html tests/checks/v1100.cjs
+idmap_off.html tests/checks/v1100.cjs
+broad_off.html tests/checks/v1100.cjs
+pc_full.html tests/checks/v1100.cjs
+toast_top.html tests/checks/v1100.cjs
+csv_inj.html tests/checks/v1100.cjs
+migrate_twice.html tests/checks/v1100.cjs
+protein_up.html tests/checks/v1100.cjs
+later_word.html tests/checks/v1100.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다
