@@ -527,6 +527,7 @@ sup.ref{font-size:0.75rem;color:var(--accent-deep);font-weight:700;cursor:pointe
 .eaten{font-size:0.8125rem;color:var(--ok);font-weight:700}
 
 .pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 10px;font-size:0.8125rem;font-weight:600;white-space:nowrap}
+.today-card .qtag{margin-top:6px;white-space:normal}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}
 .pill.caution{background:var(--warn-soft);color:var(--warn)}
 .pill.later{background:var(--later-soft);color:var(--later)}
@@ -4529,8 +4530,8 @@ function viewLog(){
   return `
   ${storageHTML()}${alertsHTML()}${nudgesHTML()}${msgHTML()}
   <div class="card today-card">
-    ${tl?`<div class="row between"><div><span class="hint">오늘 · ${md(today())}</span><h2>${ACT_TXT[a.stage]}</h2><small class="muted">참고 식단 단계: ${STAGES[a.stage].name} · ${esc(a.label)}</small></div>
-      <div class="score"><b class="num">${a.sc}</b><small>증상 점수${tl.quick?"(빠른 기록)":""}</small></div></div>
+    ${tl?`<div class="row between"><div><span class="hint">오늘 · ${md(today())}</span><h2>${ACT_TXT[a.stage]}</h2><small class="muted">참고 식단 단계: ${STAGES[a.stage].name} · ${esc(a.label)}</small>${tl.quick?`<span class="pill neutral qtag">빠른 기록 · 밤 배변·몸 상태 빠짐</span>`:""}</div>
+      <div class="score"><b class="num">${a.sc}</b><small>증상 점수</small></div></div>
       <button class="btn full" data-act="wizardDate" data-v="${today()}">오늘 기록 고치기</button>`
     :`<div><span class="hint">${md(today())}</span><h2>오늘 증상을 기록해 주십시오</h2><small class="muted">질문 ${WZ_PAGES}쪽 뒤 요약에서 저장합니다(꼭 답할 질문 ${WZ_REQ_N}개)</small></div>
       <button class="btn primary full" data-act="wizard">기록 시작</button>
@@ -4545,13 +4546,13 @@ function viewLog(){
   </div>
   ${Object.keys(S.logs).length>=2?`<div class="card stack"><div class="row between"><h2>증상 점수 추이</h2><span class="hint">최근 14일</span></div>
     <canvas id="logChart" width="640" height="220" style="width:100%;height:auto" role="img" aria-label="최근 14일 증상 점수 변화. 같은 내용은 아래 '최근 기록'에 글자로 있습니다"></canvas>
-    <p class="hint" style="margin:0">${term("sccai","SCCAI")} 점수입니다. 5점 이상이면 활동기 기준입니다${sup([11,15])}.</p></div>`:""}
+    <p class="hint" style="margin:0">${term("sccai","SCCAI")} 점수입니다. 5점 이상이면 활동기 기준입니다${sup([11,15])}.${Object.entries(S.logs).some(([k,l])=>l.quick&&k>=addDays(today(),-13))?" 빈 동그라미는 빠른 기록(밤 배변·몸 상태 빠짐)입니다.":""}</p></div>`:""}
   ${suspectsHTML()}
   <div class="sec-title"><h2>최근 기록</h2><span class="hint">숫자는 증상 점수</span></div>
   <div class="list">
-  ${hist.length?hist.map(k=>{const l=S.logs[k];const ac=activity(l);return `<div class="hwrap"><button class="hrow" data-act="pastDay" data-v="${k}" aria-label="${md(k)} 기록, 증상 점수 ${ac.sc}점">
+  ${hist.length?hist.map(k=>{const l=S.logs[k];const ac=activity(l);return `<div class="hwrap"><button class="hrow" data-act="pastDay" data-v="${k}" aria-label="${md(k)} 기록${l.quick?"(빠른 기록)":""}, 증상 점수 ${ac.sc}점">
       <span class="hdate"><b class="num">${new Date(k+"T00:00:00").getDate()}</b><small>${WD[new Date(k+"T00:00:00").getDay()]}</small></span>
-      <span class="lt"><b>${actText(l,ac)}</b><small>배변 낮 ${l.day}·밤 ${l.night}회${l.bloody?` · 혈변 ${l.bloody}회`:""} · 복통 ${l.pain||0}${+l.stool?` · 변 ${l.stool}형`:""}${+l.medtaken>=2&&+l.medtaken<=3?" · 약 거름":""}</small></span>
+      <span class="lt"><b>${actText(l,ac)}</b><small>${l.quick?`빠른 기록 · 하루 ${l.day}회${l.bloody?` · 혈변 ${l.bloody}회`:""}`:`배변 낮 ${l.day}·밤 ${l.night}회${l.bloody?` · 혈변 ${l.bloody}회`:""} · 복통 ${l.pain||0}${+l.stool?` · 변 ${l.stool}형`:""}${+l.medtaken>=2&&+l.medtaken<=3?" · 약 거름":""}`}</small></span>
       <span class="chip-sc s${ac.stage}">${ac.sc}</span>${ic("chev","chev")}</button>
       <button class="icon-btn hdel" data-act="delLog" data-v="${k}" aria-label="${md(k)} 기록 삭제">${ic("trash")}</button></div>`}).join(""):`<div class="empty">아직 기록이 없습니다<br><span class="hint">오늘 기록을 남기면 여기에 쌓이고, 증상 점수 그래프와 진료용 PDF도 만들어집니다.</span></div>`}
   </div>`;
@@ -5625,6 +5626,8 @@ function showRefs(nums){
 
 /* ===== PDF ===== */
 /* ===== PDF ===== */
+// v1.11.0 H2: 그래프 점. 빠른 기록(밤 배변·몸 상태를 묻지 않음)은 빈 동그라미로 구분한다
+function sccaiPts(from,n){return [...Array(n)].map((_,i)=>{const d=addDays(from,i);const l=S.logs[d];return {d,v:l?sccai(l):null,quick:!!(l&&l.quick)}})}
 // PDF용 SCCAI 선 그래프: 한 계열, 5점 기준선, 기록 없는 날은 끊김
 function drawSccaiChart(cv,from,n,theme){
   const g=cv.getContext("2d"), Z=2, W=cv.width/Z, H=cv.height/Z;
@@ -5633,7 +5636,7 @@ function drawSccaiChart(cv,from,n,theme){
   const C=theme==="print"?{bg:"#fff",grid:"#E7E9ED",mute:"#6A717D",line:"#2F6FED",ink:"#171A1F"}
     :{bg:cv1("--surface","#fff"),grid:cv1("--line","#E7E9ED"),mute:cv1("--muted","#6A717D"),line:cv1("--accent","#2F6FED"),ink:cv1("--ink","#171A1F")};
   const pad={l:34,r:40,t:14,b:30};
-  const pts=[...Array(n)].map((_,i)=>{const d=addDays(from,i);const l=S.logs[d];return {d,v:l?sccai(l):null}});
+  const pts=sccaiPts(from,n);
   const vmax=Math.max(12,...pts.map(p=>p.v||0));
   const x=i=>pad.l+(n<=1?0:i*(W-pad.l-pad.r)/(n-1)), y=v=>pad.t+(1-v/vmax)*(H-pad.t-pad.b);
   g.setTransform(Z,0,0,Z,0,0); g.fillStyle=C.bg; g.fillRect(0,0,W,H);
@@ -5643,7 +5646,9 @@ function drawSccaiChart(cv,from,n,theme){
   g.fillStyle=C.mute; g.textAlign="left"; g.fillText("5점",W-pad.r+4,y(5));
   g.strokeStyle=C.line; g.lineWidth=2; g.lineJoin="round"; g.beginPath(); let on=false;
   pts.forEach((p,i)=>{if(p.v==null){on=false;return} if(!on){g.moveTo(x(i),y(p.v));on=true}else g.lineTo(x(i),y(p.v))}); g.stroke();
-  pts.forEach((p,i)=>{if(p.v==null)return; g.fillStyle=C.bg; g.beginPath(); g.arc(x(i),y(p.v),5,0,7); g.fill(); g.fillStyle=C.line; g.beginPath(); g.arc(x(i),y(p.v),4,0,7); g.fill()});
+  pts.forEach((p,i)=>{if(p.v==null)return; g.fillStyle=C.bg; g.beginPath(); g.arc(x(i),y(p.v),5,0,7); g.fill();
+    if(p.quick){g.strokeStyle=C.line; g.lineWidth=2; g.beginPath(); g.arc(x(i),y(p.v),3.6,0,7); g.stroke()}
+    else{g.fillStyle=C.line; g.beginPath(); g.arc(x(i),y(p.v),4,0,7); g.fill()}});
   const last=[...pts].reverse().find(p=>p.v!=null); if(last){const i=pts.indexOf(last); g.fillStyle=C.ink; g.textAlign="left"; g.font="700 12px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.fillText(String(last.v),Math.min(x(i)+8,W-pad.r+4),y(last.v)-10)}
   g.fillStyle=C.mute; g.font="500 11px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.textBaseline="top";
   [0,Math.floor((n-1)/2),n-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{g.textAlign=i===0?"left":i===n-1?"right":"center"; g.fillText(pts[i].d.slice(5).replace("-","/"),x(i),H-pad.b+8)});
@@ -5711,16 +5716,17 @@ function reportBlocks(){
     const urgentDays=logs.filter(k=>{const d=dangerSignals(S.logs[k]);return !d.severe.length&&d.urgent.length}).length;
     const actDays=logs.filter(k=>activity(S.logs[k]).stage===1).length;
     const ratedBad=rats.filter(r=>r.rating==="bad").length;
+    const qDays=logs.filter(k=>S.logs[k].quick).length;   // v1.11.0 H2: 빠른 기록은 표·그래프에서 따로 표시
     blocks.splice(1,0,`<h2>기간 요약</h2><table><tbody>
       <tr><th>증상 기록</th><td>${logs.length}일 / ${n}일</td><th>평균·최고 SCCAI</th><td>${avg} · ${scs.length?Math.max(...scs):"-"}</td></tr>
       <tr><th>혈변이 있었던 날</th><td>${bloodDays}일</td><th>활동기 기준 해당</th><td>${actDays}일</td></tr>
       <tr><th>중증 위험 신호 / 진료 필요 신호</th><td>${dangerDays}일 / ${urgentDays}일</td><th>'나쁨' 음식 평가</th><td>${ratedBad}건</td></tr>
       <tr><th>약을 거른 날</th><td>${logs.filter(k=>[2,3].includes(+S.logs[k].medtaken)).length}일</td><th>안 먹은 끼니</th><td>${Object.entries(S.skips||{}).filter(([k])=>k>=from&&k<=today()).reduce((a,[,v])=>a+v.length,0)}회</td></tr>
-      <tr><th>무른 변(브리스톨 6–7형)</th><td>${logs.filter(k=>[6,7].includes(+S.logs[k].stool)).length}일</td><th>단단한 변(1–2형)</th><td>${logs.filter(k=>[1,2].includes(+S.logs[k].stool)).length}일</td></tr></tbody></table>`);
-    if(logs.length) blocks.splice(2,0,`<h2>SCCAI 추이</h2><canvas data-chart="sccai" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas><div style="font-size:11px;color:#555;margin-top:4px">점선은 5점(재발·활동기 기준). 기록이 없는 날은 선을 끊었습니다.</div>`);
+      <tr><th>무른 변(브리스톨 6–7형)</th><td>${logs.filter(k=>[6,7].includes(+S.logs[k].stool)).length}일</td><th>단단한 변(1–2형)</th><td>${logs.filter(k=>[1,2].includes(+S.logs[k].stool)).length}일</td></tr></tbody></table>${qDays?`<div class="note">* 빠른 기록 ${qDays}일은 배변 횟수(낮·밤 합계)·급박감·피만 적어, 밤 배변·몸 상태·장 밖 증상이 빠진 SCCAI입니다. 실제보다 낮게 나올 수 있습니다.</div>`:""}`);
+    if(logs.length) blocks.splice(2,0,`<h2>SCCAI 추이</h2><canvas data-chart="sccai" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas><div style="font-size:11px;color:#555;margin-top:4px">점선은 5점(재발·활동기 기준). 기록이 없는 날은 선을 끊었습니다.${qDays?" 빈 동그라미는 빠른 기록(밤 배변·몸 상태 빠짐)입니다.":""}</div>`);
     const head=`<tr><th>날짜</th><th>SCCAI</th><th>낮/밤 배변</th><th>혈변 횟수</th><th>급박감</th><th>혈변 정도</th><th>복통</th><th>변 모양</th><th>약</th><th>가스</th><th>피로</th><th>체온/맥박</th></tr>`;
     if(!logs.length) blocks.push(`<h2>증상 기록</h2><div>기간 내 기록이 없습니다.</div>`);
-    else blocks.push(...packTable(`<h2>증상 기록 (SCCAI: Walmsley 1998, 자가 작성)</h2>`,`<thead>${head}</thead>`,logs.map((k,i)=>{const l=S.logs[k]; const ex=[...(l.extra||[]),...(l.other||[])]; const sub=[ex.length?`<b>기타 증상</b> ${esc(ex.join(", "))}`:"",l.memo?`<b>메모</b> ${esc(l.memo)}`:""].filter(Boolean).join(" &nbsp;·&nbsp; "); const cls=[sub?"hm":"",i%2?"alt":""].filter(Boolean).join(" "); return `<tr class="${cls}"><td class="nw">${k.slice(5)}</td><td>${sccai(l)}</td><td>${l.day}/${l.night}</td><td>${l.bloody??"-"}</td><td>${["없음","서두름","즉시","실금"][l.urg||0]}</td><td>${["없음","약간","가끔 뚜렷","대부분 뚜렷"][l.blood||0]}</td><td>${l.pain||0}/10</td><td>${+l.stool?`${l.stool}형`:"-"}</td><td>${["-","복약","일부 거름","못 먹음","복용 안 함"][+l.medtaken||0]}</td><td>${esc(l.gas||"-")}</td><td>${esc(l.fatigue||"-")}</td><td>${esc(l.temp||"-")}/${esc(l.pulse||"-")}</td></tr>${sub?`<tr class="sub${i%2?" alt":""}"><td colspan="12">${sub}</td></tr>`:""}`}),"",' class="pair"'));
+    else blocks.push(...packTable(`<h2>증상 기록 (SCCAI: Walmsley 1998, 자가 작성)</h2>`,`<thead>${head}</thead>`,logs.map((k,i)=>{const l=S.logs[k]; const ex=[...(l.extra||[]),...(l.other||[])]; const sub=[ex.length?`<b>기타 증상</b> ${esc(ex.join(", "))}`:"",l.memo?`<b>메모</b> ${esc(l.memo)}`:""].filter(Boolean).join(" &nbsp;·&nbsp; "); const cls=[sub?"hm":"",i%2?"alt":""].filter(Boolean).join(" "); return `<tr class="${cls}"><td class="nw">${k.slice(5)}</td><td>${sccai(l)}${l.quick?"*":""}</td><td>${l.quick?`빠른 기록: 하루 ${l.day}`:`${l.day}/${l.night}`}</td><td>${l.bloody??"-"}</td><td>${["없음","서두름","즉시","실금"][l.urg||0]}</td><td>${["없음","약간","가끔 뚜렷","대부분 뚜렷"][l.blood||0]}</td><td>${l.quick?"-":`${l.pain||0}/10`}</td><td>${+l.stool?`${l.stool}형`:"-"}</td><td>${["-","복약","일부 거름","못 먹음","복용 안 함"][+l.medtaken||0]}</td><td>${esc(l.gas||"-")}</td><td>${esc(l.fatigue||"-")}</td><td>${esc(l.temp||"-")}/${esc(l.pulse||"-")}</td></tr>${sub?`<tr class="sub${i%2?" alt":""}"><td colspan="12">${sub}</td></tr>`:""}`}),"",' class="pair"'));
     const fhead=`<tr><th>음식</th><th>좋음</th><th>보통</th><th>나쁨</th><th>마지막 섭취</th></tr>`;
     if(!foods.length) blocks.push(`<h2>음식별 평가</h2><div>기간 내 평가가 없습니다.</div>`);
     else blocks.push(...packTable(`<h2>음식별 평가 (나쁨 많은 순)</h2>`,`<thead>${fhead}</thead>`,foods.map(([id,o])=>`<tr><td>${esc(o.name||id)}</td><td>${o.good}</td><td>${o.ok}</td><td>${o.bad?`<b>${o.bad}</b>`:0}</td><td class="nw">${o.last.slice(5)}</td></tr>`),""));
@@ -6244,8 +6250,9 @@ const csvCell=v=>{let t=v==null?"":String(v); if(/^[=+\-@\t\r]/.test(t)) t="'"+t
 const csvText=rows=>"\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
 function csvRows(kind){
   if(kind==="logs"){const U=["급하지 않음","서둘러야 함","바로 가야 함","참지 못함"],B=["없음","약간","가끔 뚜렷","대부분 뚜렷"],W=["아주 좋음","조금 안 좋음","나쁨","매우 나쁨","최악"];
-    const rows=[["날짜","증상 점수(SCCAI)","빠른 기록","낮 배변","밤 배변","피 섞인 변","급박감","피","몸 상태","복통(0-10)","변 모양","가스","피로","체온","맥박","장 밖 증상","그 밖의 증상","메모"]];
-    for(const d of Object.keys(S.logs).sort()){const l=S.logs[d]; rows.push([d,sccai(l),l.quick?"예":"",l.day,l.night,l.bloody,U[+l.urg]||"",B[+l.blood]||"",l.quick?"":W[+l.well]||"",l.quick?"":l.pain,l.stool||"",l.gas,l.fatigue,l.temp,l.pulse,(l.extra||[]).join(" / "),(l.other||[]).join(" / "),l.memo])}
+    const rows=[["날짜","증상 점수(SCCAI)","빠른 기록","낮 배변","밤 배변","하루 배변 합계","피 섞인 변","급박감","피","몸 상태","복통(0-10)","변 모양","가스","피로","체온","맥박","장 밖 증상","그 밖의 증상","메모"]];
+    // v1.11.0 H2: 빠른 기록은 낮·밤을 나눠 묻지 않으므로 낮·밤 칸을 비우고 하루 합계만 적는다
+    for(const d of Object.keys(S.logs).sort()){const l=S.logs[d]; rows.push([d,sccai(l),l.quick?"예":"",l.quick?"":l.day,l.quick?"":l.night,l.quick?(+l.day||0):(+l.day||0)+(+l.night||0),l.bloody,U[+l.urg]||"",B[+l.blood]||"",l.quick?"":W[+l.well]||"",l.quick?"":l.pain,l.stool||"",l.gas,l.fatigue,l.temp,l.pulse,(l.extra||[]).join(" / "),(l.other||[]).join(" / "),l.memo])}
     return rows}
   const rows=[["날짜","끼니","구분","음식","양(g)","열량(kcal)","단백질(g)","식이섬유(g)","판정(지금 기준)"]]; const r1=v=>Math.round(v*10)/10;
   const days=[...new Set([...Object.keys(S.ateMeals||{}),...Object.keys(S.ate||{}),...Object.keys(S.extras||{})])].sort();
