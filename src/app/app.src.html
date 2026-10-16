@@ -1666,6 +1666,8 @@ function guessFoodId(name){
 const BAN_TAG=[["nitrite","아질산나트륨(발색제)을 넣은 가공육: 앱 기준 절대 금지(가공육은 되도록 먹지 않도록 안내, 대한장연구학회·IOIBD·ECCO)"]];
 const LV_RANK={ok:0,caution:1,later:2,avoid:3,ban:4};
 const badLv=l=>l==="avoid"||l==="later"||l==="ban";   // 식단에서 빼는 판정
+// v1.11.0 M3: 햄·소시지가 흔히 들어가는 일반 음식(김밥·오므라이스·볶음밥, 'hamopt')은 판정은 두고 이 안내를 붙인다
+const HAM_NOTE="햄·소시지가 들어가면 절대 금지입니다. 빼고 드십시오.";
 const AVOID_TAG=[["fried","튀김은 과도한 지방이라 피하도록 안내(길병원)"],["processed","가공육·가공품은 되도록 먹지 않도록 안내(대한장연구학회·길병원)"],["alcohol","술은 증상을 악화시킬 수 있어 피하도록 안내(길병원·대한장연구학회)"],["soda","탄산·가당 음료는 피하도록 안내(길병원·대한장연구학회)"],["choco","초콜릿 같은 단당류 간식은 피하도록 안내(길병원)"],["upf","초가공식품은 피하거나 줄이도록 권고(길병원·AGA)"],["renal","신장질환자용(단백질·전해질 조절) 제품: 의료진이 지시하지 않았다면 피하기"],["tube","경관(튜브) 급식 전용 제품"]];
 const CAUTION_TAG=[["legume","콩류는 증상 악화를 잘 일으키는 음식(길병원)"],["citrus","오렌지·레몬 같은 신 과일은 증상 악화를 잘 일으키는 음식(길병원)"],["juice","과일주스는 증상 악화를 잘 일으키는 음식(길병원)"],["pickled","절인 채소는 증상 악화를 잘 일으키는 음식(길병원)"],["sour","신 음식은 증상 악화를 잘 일으키는 음식(길병원)"],["marg","마가린은 증상 악화 음식(길병원), 트랜스지방은 피하기(IOIBD)"],["sugar","당분이 많은 음식은 증상을 일으키기 쉬움(대한장연구학회·길병원)"],["shell","조개·소라는 증상을 일으키기 쉬운 음식(대한장연구학회)"],["tough","질긴 음식·산나물·해초·견과·팝콘은 증상을 일으키기 쉬움(대한장연구학회)"],["raw","익히지 않은 동물성 식품은 저잔사식 제한(길병원), 먹는다면 신선한 것으로"],["upf2","초가공식품은 줄이도록 권고(AGA)"],["sweetener","감미료로 단맛을 낸 가공식품: 인공감미료 함유 식품은 제한 권고(IOIBD), 인공 감미료는 증상을 일으키기 쉬움(대한장연구학회)"],["polyol","당알코올(자일리톨·솔비톨·말티톨 등)은 흡수가 느려 복부팽만·설사를 일으킬 수 있음(Monash)"],["dz","특정 질환용 영양조제식품(당뇨·암·고혈압): 해당 질환이 있거나 의료진이 권할 때"],["elemental","아미노산 성분영양식: 의료진 지시에 따라 사용"],["unverified","원재료명을 확인하지 못한 제품: 포장의 원재료명 확인"]];
 function foodStatus(f,c=ctx()){
@@ -1711,7 +1713,7 @@ function foodStatus(f,c=ctx()){
   if(c.gasHeavy&&f.fod==="unk"&&hasNut(f,"c")&&f.c>=1) set("caution","가스 유발 성분(FODMAP) 수치가 확인되지 않아 가스가 심할 땐 조금만");
   if(f.tags.includes("caffeine")) set("caution","카페인(앱 설정: 마신 뒤 설사가 늘면 줄이기)");
   if(S.profile.budget==="알뜰"&&f.cost===3) set("caution","가격 부담이 큰 편");
-  return {level:lv,reasons:[...new Set(R.filter(x=>x[0]===lv).map(x=>x[1]))],refs:X};
+  return {level:lv,reasons:[...new Set(R.filter(x=>x[0]===lv).map(x=>x[1]))],refs:X,note:f.tags.includes("hamopt")&&lv!=="ban"?HAM_NOTE:""};
 }
 // 길병원 저잔사식 하루 과일 양(대략의 무게)[39]
 const FRUIT_CAP={banana:50,applesauce:100,peach:100,melon:100,mandarin:120,/*@GEN:cap@*/};
@@ -2060,7 +2062,7 @@ function mjJudge(){
     // 앱 음식 목록에 같은 이름이 있으면 그 음식 판정을, 없으면 이름·재료의 단어로만 검사하고 '주의'보다 낮게 두지 않는다
     const lv=f?rc.level:(rc.level==="ok"?"caution":rc.level);
     const why=f?`앱 음식 목록의 '${f.name}' 판정입니다.`:(it.ingr.length?"앱 음식 목록에 없는 메뉴라 적어 주신 이름과 재료로 앱 규칙만 검사했습니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.":"앱 음식 목록에 없는 메뉴라 이름의 단어로만 검사했습니다. 재료를 적으면 더 정확해집니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.");
-    return {name:it.name,conf:it.conf,level:lv,why,refs:f?f.refs.slice(0,3):[],rules:rc.reasons,override:false,food:f?f.id:null};
+    return {name:it.name,conf:it.conf,level:lv,why,refs:f?f.refs.slice(0,3):[],rules:rc.reasons,override:false,food:f?f.id:null,ham:!!(f&&f.tags.includes("hamopt")&&lv!=="ban")};
   });
   MJ.step="done"; render();
 }
@@ -3184,6 +3186,7 @@ function viewMenuJudge(){
       <div class="row between"><b>${esc(r.name)}</b><span class="pill ${r.level}">${LV[r.level]}</span></div>
       <p>${esc(r.why)}${sup(r.refs)}</p>
       ${r.rules.length?`<p class="${r.override?"crit-t":"warn-t"}">앱 판정 근거: ${esc(r.rules.join(" · "))}</p>`:""}
+      ${r.ham?`<p class="crit-t"><span aria-hidden="true">✕ </span>${esc(HAM_NOTE)}</p>`:""}
       ${r.broad?`<div class="mj-broad" role="group" aria-label="${esc(r.name)} 어떤 메뉴인지 고르기"><p class="hint" style="margin:0 0 6px">어떤 ${esc(r.name)}입니까?</p><div class="chips">${r.broad.map(([id,l])=>`<button class="chip" data-act="mjPick" data-i="${i}" data-v="${id}">${esc(FOOD[id].name)} <span class="pill ${l}">${LV[l]}</span></button>`).join("")}</div></div>`:""}
       <div class="row">${r.food?`<button class="btn sm" data-act="foodInfo" data-id="${r.food}">음식 정보</button>`:""}<button class="btn sm" data-act="mjEat" data-i="${i}">먹은 메뉴로 기록</button><button class="btn sm ghost" data-act="mjOk" data-i="${i}">판정이 이상합니다</button></div>
     </div>`).join("")}</div>
@@ -3373,6 +3376,7 @@ function showFood(id){
   const alts=badLv(s.level)?altFoods(f):[]; const fam=PFAM[id];
   openSheet(`<div class="row" style="gap:14px">${fIcon(id,"lg")}<div style="flex:1"><h2>${esc(f.name)}</h2><span class="pill ${s.level}">${LV[s.level]}</span>${isProd(f)?`<span class="hint fsize">시판${PSIZE[id]?` · 총 ${esc(PSIZE[id])}`:""}</span>`:""}</div><button class="star" data-act="favToggle" data-v="${id}" aria-pressed="${favOn(id)}" aria-label="${esc(f.name)} 즐겨찾기">${favOn(id)?"★":"☆"}</button></div>
    ${s.reasons.length?`<p class="${badLv(s.level)?"crit-t":"warn-t"} why-sum">${esc(s.reasons[0])}${s.reasons.length>1?` <span class="muted">외 ${s.reasons.length-1}가지</span>`:""}</p>`:`<p class="why-sum">${esc(firstSent(f.why))}</p>`}
+   ${s.note?`<p class="crit-t ham-note"><span aria-hidden="true">✕ </span>${esc(s.note)}</p>`:""}
    <details class="why-more"><summary>판정 이유와 근거 자세히</summary>
      ${s.reasons.length>1?`<ul class="why-list">${s.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>`:""}
      <p>${esc(f.why)}${sup([...(f.refs||[]),...(s.refs||[])])}</p>${chk?`<p class="hint" style="margin:4px 0 0">근거 확인 ${esc(chk)}</p>`:""}</details>

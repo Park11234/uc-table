@@ -154,6 +154,22 @@ const SEED=()=>{
     need(r.nWrong===0,`M1 나쁜 판정 음식 ${r.n}건(1~3단계)의 대안에 과자·사탕·초콜릿·양념·영양식·시판·엉뚱한 음료 없음 (${r.nWrong}: ${r.wrong.join(" / ")})`);
     await p.context().close()}
 
+  console.log('== M3 햄이 들어갈 수 있는 음식·훈제오리');
+  {const p=await open();
+    const r=await p.evaluate(()=>{S.stageMode="3"; const out={};
+      for(const id of ["gimbap","omurice","veg_fried_rice","kimchi_fried_rice"]){SCR=null; S.tab="food"; render(); showFood(id); const sh=document.querySelector('#sheetRoot')?.innerText||"";
+        out[id]={note:sh.includes(HAM_NOTE),lv:foodStatus(FOOD[id]).level}; closeSheet()}
+      SCR=null; S.tab="food"; render(); showFood("udon"); const plain=(document.querySelector('#sheetRoot')?.innerText||"").includes(HAM_NOTE); closeSheet();
+      MJ={step:"edit",items:[{name:"김밥",ingr:[],cook:""}],results:[],err:"",text:""}; mjJudge(); S.tab="food"; S.foodMode="eatout"; SCR=null; render();
+      const mj=document.querySelector('#main')?.innerText||""; const duck=FOOD.smoked_duck;
+      return {out,plain,mjNote:MJ.results[0]&&MJ.results[0].ham===true,mjTxt:mj.includes(HAM_NOTE),note:HAM_NOTE,duckLv:foodStatus(duck).level,duckWhy:duck.why}});
+    need(r.note==="햄·소시지가 들어가면 절대 금지입니다. 빼고 드십시오.",`M3 안내 문장 (${r.note})`);
+    need(Object.values(r.out).every(x=>x.note&&x.lv!=="ban"),`M3 김밥·오므라이스·볶음밥 정보에 안내, 판정은 그대로 (${JSON.stringify(r.out)})`);
+    need(!r.plain,'M3 햄과 관계없는 음식(우동)에는 안내 없음');
+    need(r.mjNote,'M3 외식 판정 김밥에도 같은 안내');
+    need(r.duckLv==="ban"&&/시판 훈제오리 \d+종 가운데 \d+종/.test(r.duckWhy),`M3 훈제오리는 앱의 시판 제품 발색제 비율로 절대 금지 (${r.duckLv}: ${r.duckWhy.slice(0,90)})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

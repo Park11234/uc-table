@@ -14,6 +14,13 @@
 튜플: (id, 이름, 분류, 자료, 시작 단계, 태그, 1회량, 별명, 그림, 근거 문장 열쇠, FODMAP, 과일 상한, 먹는 방법, 가격)
 """
 import re
+from brand10 import P as _BRAND
+
+# v1.11.0 M3: 훈제오리도 햄과 같은 방식으로 정한다 — 앱에 넣은 시판 훈제오리 가운데 아질산나트륨(발색제)이 든 제품이
+# 절반 이상이면 '절대 금지'(nitrite), 아니면 가공육 '피하기'. 숫자는 근거 문장에도 그대로 쓴다
+_DUCK = [p for p in _BRAND if re.search(r'훈제\s*오리|오리\s*훈제', p['name'])]
+DUCK_N, DUCK_TOT = sum(1 for p in _DUCK if p['nit']), len(_DUCK)
+DUCK_BAN = DUCK_TOT > 0 and DUCK_N * 2 >= DUCK_TOT
 
 EO = [
  # ---- 찌개·국밥·해장국 ----
@@ -71,8 +78,8 @@ EO = [
   ["주꾸미볶음", "쭈꾸미볶음", "쭈꾸미", "주꾸미", "쭈삼"], "🐙", ["spicy", "tough_sea"], None, None, "", 2),
  ("duck_bulgogi", "오리불고기", "요리", "D:오리불고기", 3, ["spicy", "fatty", "soy"], [150, "인분"],
   ["오리불고기", "오리주물럭", "오리양념구이"], "🍗", ["spicy", "poultry_fat"], None, None, "", 2),
- ("smoked_duck", "훈제오리", "단백질", "D:훈제오리", 9, ["processed", "fatty", "salty"], [100, "인분"],
-  ["훈제오리", "오리훈제", "훈제오리고기"], "🍗", ["processed", "smoked_duck"], None, None, "", 2),
+ ("smoked_duck", "훈제오리", "단백질", "D:훈제오리", 9, (["nitrite"] if DUCK_BAN else []) + ["processed", "fatty", "salty"], [100, "인분"],
+  ["훈제오리", "오리훈제", "훈제오리고기"], "🍗", ["smoked_duck"], None, None, "", 2),
  ("mapa_tofu", "마파두부", "요리", "D:마파두부", 3, ["spicy", "soy", "pork", "fatty"], [200, "인분"],
   ["마파두부", "마파두부덮밥", "마파덮밥"], "🌶️", ["spicy", "tofu_ok"], None, None, "", 1),
  ("yusanseul", "유산슬", "요리", "D:유산슬", 2, ["shrimp", "squid", "pork", "tough", "gil"], [200, "인분"],
@@ -112,7 +119,9 @@ EO = [x[:7] + ([a for a in dict.fromkeys(x[7]) if re.sub(r'\s', '', a) != re.sub
 
 # 이 메뉴들에만 쓰는 근거 문장
 T11 = {
-    'smoked_duck': ("훈제오리는 소금에 절여 훈연한 식육가공품이고, 제품에 따라 아질산나트륨(발색제)을 넣기도 합니다. 시판 제품은 원재료명을 확인하십시오.", [37, 3]),
+    'smoked_duck': ("훈제오리는 소금에 절여 훈연한 식육가공품입니다. 앱에 넣은 시판 훈제오리 %d종 가운데 %d종에 아질산나트륨(발색제)이 들어 있어 %s. "
+                    "발색제를 넣지 않은 제품도 가공육이라 '피하기'입니다. 가공육은 궤양성 대장염 재발 위험과 연관됐고, 대한장연구학회는 육가공품을 되도록 먹지 않도록 안내합니다."
+                    % (DUCK_TOT, DUCK_N, "햄처럼 앱 기준 '절대 금지'입니다" if DUCK_BAN else "제품마다 원재료명을 확인해야 합니다"), [7, 37, 3, 50]),
 }
 
 # 원래 다른 음식에 붙어 있던 별명 가운데 이 메뉴가 더 맞는 것(옛 음식에서 뺀다)
