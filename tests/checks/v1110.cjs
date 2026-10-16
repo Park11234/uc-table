@@ -87,6 +87,22 @@ const SEED=()=>{
       need(s.pend&&/불러/.test(s.sheet),`H3 다시 가져오기는 지금 기록과 비교하는 불러오기 화면으로 (${s.sheet.slice(0,40)})`)}
     await p.context().close()}
 
+  console.log('== H5 면역을 누르는 약과 날음식');
+  {const p=await open();
+    const r=await p.evaluate(()=>{S.stageMode="3"; const raw=FOODS.filter(f=>f.tags.includes("raw")); const lv=meds=>{S.profile.meds=meds; const c=ctx(); return raw.map(f=>foodStatus(f,c).level)};
+      const none=lv([]), asa=lv(["asa"]), bio=lv(["bio"]), ster=lv(["steroid"]), jak=lv(["jak"]), imm=lv(["immuno"]);
+      S.profile.meds=["bio"]; const f0=raw.find(f=>/회/.test(f.name))||raw[0]; const st=foodStatus(f0,ctx());
+      SCR=null; S.tab="food"; render(); showFood(f0.id); const sheet=document.querySelector('#sheetRoot')?.innerHTML||"";
+      S.profile.meds=[]; const back=foodStatus(f0,ctx()).level;
+      return {n:raw.length,none,asa,bio,ster,jak,imm,reason:st.reasons.join("|"),ref89:/data-refs="[^"]*\b89\b/.test(sheet),back}});
+    const allAvoid=a=>a.every(l=>l==="avoid"||l==="ban"); const noneAvoid=a=>!a.some(l=>l==="avoid"||l==="ban");
+    need(r.n>=10&&noneAvoid(r.none)&&noneAvoid(r.asa),`H5 약이 없거나 메살라진만이면 날음식은 피하기 아님 (${r.n}종)`);
+    need(allAvoid(r.bio)&&allAvoid(r.ster)&&allAvoid(r.jak)&&allAvoid(r.imm),`H5 스테로이드·면역조절제·생물학적 제제·JAK 억제제면 날음식 모두 피하기`);
+    need(/면역/.test(r.reason)&&/CDC|질병통제/.test(r.reason),`H5 이유에 면역·근거 기관 (${r.reason.slice(0,80)})`);
+    need(r.ref89,'H5 음식 정보 근거에 새 근거 번호(89)');
+    need(r.back!=="avoid",'H5 약을 지우면 바로 원래 판정');
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();
