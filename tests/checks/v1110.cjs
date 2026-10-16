@@ -50,6 +50,29 @@ const SEED=()=>{
     need(r.inCircle==="증상 점수"&&r.tag,`L6 '빠른 기록'은 점수 원 밖 표시 (${r.inCircle}, 표시 ${r.tag})`);
     await p.context().close()}
 
+  console.log('== H1 전체 초기화 범위');
+  const H1SEED=async(p)=>{await p.evaluate(async()=>{S.logs[addDays(today(),-1)]={...BLANK_LOG(),day:3,memo:"비밀메모"}; save(); await autoRun();
+      const old=JSON.parse(backupJSON()); await idb("snaps","readwrite",st=>st.put({date:addDays(today(),-3),at:new Date().toISOString(),n:9,json:JSON.stringify(old)}));
+      localStorage.setItem(PREV_KEY,JSON.stringify({at:new Date().toISOString(),s:S})); localStorage.setItem(KEY+".broken.123","비밀메모"); AUTO.snaps=null});};
+  const RESET=async(p,keepSnaps)=>{await p.evaluate(()=>{const b=document.createElement('button'); b.dataset.act='reset'; document.body.appendChild(b); b.click()}); await p.waitForTimeout(200);
+      const ck=await p.evaluate(()=>{const c=document.querySelector('#sheetRoot #rstAll'); return c?c.checked:null});
+      if(keepSnaps) await p.evaluate(()=>{const c=document.querySelector('#sheetRoot #rstAll'); if(c) c.checked=false});
+      await p.click('#sheetRoot [data-act=resetDo]'); await p.waitForTimeout(1500); return ck};
+  const H1STATE=p=>p.evaluate(async()=>{const all=(await idb("snaps","readonly",st=>st.getAll()))||[];
+      return {memo:all.some(x=>/비밀메모/.test(x.json)), withLogs:all.filter(x=>x.n>0).length, prev:localStorage.getItem(PREV_KEY)!==null, broken:Object.keys(localStorage).filter(k=>k.startsWith(KEY+".broken.")).length,
+        logs:Object.keys(S.logs).length, wiped:window.__wiped||0}});
+  {const p=await open({init:`window.UCTableAndroid={wipeOld:()=>{window.__wiped=(window.__wiped||0)+1; return true}}`});
+    await H1SEED(p); const ck=await RESET(p,false); const r=await H1STATE(p);
+    need(ck===true,`H1 확인 창에 '자동 보관본까지 모두 지우기' 선택(기본 켬) (${ck})`);
+    need(!r.memo&&r.withLogs===0&&!r.prev&&r.broken===0&&r.logs===0,`H1 초기화 뒤 보관본·불러오기 전 기록·손상 사본 없음 (${JSON.stringify(r)})`);
+    need(r.wiped===1,`H1 안드로이드 앱이면 예전 저장소 지우기 호출 (${r.wiped})`);
+    await p.reload(); await p.ready(); await p.waitForTimeout(300);
+    const r2=await H1STATE(p); need(!r2.memo&&r2.logs===0,`H1 새로고침 뒤에도 되살아나지 않음 (${JSON.stringify(r2)})`);
+    await p.context().close()}
+  {const p=await open(); await H1SEED(p); await RESET(p,true); const r=await H1STATE(p);
+    need(r.memo&&r.withLogs>0&&r.logs===0,`H1 선택을 끄면 자동 보관본은 남겨 되살릴 수 있음 (${JSON.stringify(r)})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();
