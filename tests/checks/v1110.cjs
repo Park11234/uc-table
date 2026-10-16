@@ -196,6 +196,28 @@ const SEED=()=>{
     need(r.sw.length&&r.sw.every(t=>/안 먹음·바꾸기/.test(t)),`M9 끼니 줄 버튼 '안 먹음·바꾸기' (${r.sw.join(",")})`);
     await p.context().close()}
 
+  console.log('== M10 백업 암호화·동기화 폴더 안내');
+  {const p=await open();
+    const r=await p.evaluate(async()=>{const d=addDays(today(),-2); S.logs[d].memo="비밀메모-처방약"; save();
+      SCR=null; openScr("set-data"); await new Promise(z=>setTimeout(z,300)); render(); const before=document.querySelector('#main').innerText;
+      await encSet("correct-horse-1"); SCR=null; openScr("set-data"); const after=document.querySelector('#main').innerText;
+      const plain=backupJSON(); const out=await encWrap(plain); const obj=JSON.parse(out);
+      restoreFromText(out); await new Promise(z=>setTimeout(z,100)); const ask=!!document.querySelector('#sheetRoot input[type=password]');
+      document.querySelector('#encPw').value="wrong-pass-0"; document.querySelector('[data-act=encRestore]').click(); await new Promise(z=>setTimeout(z,2500));
+      const wrongMsg=document.querySelector('#sheetRoot')?.innerText||""; const stillAsk=!!document.querySelector('#encPw');
+      document.querySelector('#encPw').value="correct-horse-1"; document.querySelector('[data-act=encRestore]').click(); await new Promise(z=>setTimeout(z,2500));
+      const okSheet=document.querySelector('#sheetRoot')?.innerText||""; const pend=PENDING_RESTORE&&PENDING_RESTORE.logs[d]&&PENDING_RESTORE.logs[d].memo;
+      closeSheet(); await encOff(); const offOut=await encWrap(plain);
+      return {before:/암호화/.test(before)&&/꺼짐/.test(before),after:/켜짐/.test(after),hasMemo:out.includes("비밀메모"),obj:{enc:obj.enc,kdf:obj.kdf,iter:obj.iter,salt:!!obj.salt,iv:!!obj.iv},ask,
+        wrong:/비밀번호가 맞지 않/.test(wrongMsg)&&stillAsk,ok:/백업 불러오기/.test(okSheet),pend,off:offOut===plain,sync:/동기화/.test(before)}});
+    need(r.before&&r.after,`M10 백업 화면에 암호화 켜기·켜짐 표시 (${r.before}/${r.after})`);
+    need(!r.hasMemo&&r.obj.enc==="AES-GCM-256"&&r.obj.kdf==="PBKDF2-SHA256"&&r.obj.iter===310000&&r.obj.salt&&r.obj.iv,`M10 암호화 백업에 메모 평문 없음, AES-GCM·PBKDF2 31만 회 (${JSON.stringify(r.obj)})`);
+    need(r.ask&&r.wrong,`M10 불러올 때 비밀번호를 묻고, 틀리면 거절 (${r.ask}/${r.wrong})`);
+    need(r.ok&&r.pend==="비밀메모-처방약",`M10 맞는 비밀번호면 비교 화면으로 (${r.ok}/${r.pend})`);
+    need(r.off,'M10 암호화를 끄면 원래대로');
+    need(r.sync,'M10 자동 백업 폴더에 클라우드 동기화 폴더 안내');
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

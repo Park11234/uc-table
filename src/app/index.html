@@ -5252,7 +5252,7 @@ function scrSettingsBody(){
       <div><b>${STAGES[3].name}</b> · 하루 배변 3회 이하, 혈변·급박감 없음(국내 관해 기준)${sup([38])}</div>
       <div><b>${STAGES[2].name}</b> · 두 경우 사이</div>
       <div class="muted">활동도 판정은 위 기준을, 식단 단계로 잇는 방식은 악화기 질감 조절 권고${sup([13])}와 증상에 따라 점차 일반식으로 옮겨 가라는 안내${sup([36])}를 따른 앱 설계입니다. 실제 활동도는 주치의 판단을 따르십시오.</div></div>`;
-  if(n==="set-data") return `<p class="hint pad">브라우저는 저장 공간이 부족하면 저장된 기록을 지울 수 있고, 아이폰 사파리는 앱을 한동안 열지 않아도 지울 수 있습니다.${isIOS()&&!isStandalone()?" 아이폰은 사파리에서 '홈 화면에 추가'한 앱으로 쓰면, 그 앱을 쓴 날을 따로 세어 이렇게 지워지지 않을 것이라고 WebKit(사파리 개발팀)이 안내했습니다(2020).":""} 2주에 한 번은 백업 파일을 저장하거나 백업 내용을 복사해 두십시오. 모든 기록은 이 기기의 브라우저에만 저장됩니다. 사이트 데이터를 지우거나 휴대폰을 바꾸면 사라집니다. 백업에는 건강 기록이 암호화되지 않은 채 들어 있으니 다른 사람과 공유하지 마십시오.</p>
+  if(n==="set-data") return `<p class="hint pad">브라우저는 저장 공간이 부족하면 저장된 기록을 지울 수 있고, 아이폰 사파리는 앱을 한동안 열지 않아도 지울 수 있습니다.${isIOS()&&!isStandalone()?" 아이폰은 사파리에서 '홈 화면에 추가'한 앱으로 쓰면, 그 앱을 쓴 날을 따로 세어 이렇게 지워지지 않을 것이라고 WebKit(사파리 개발팀)이 안내했습니다(2020).":""} 2주에 한 번은 백업 파일을 저장하거나 백업 내용을 복사해 두십시오. 모든 기록은 이 기기의 브라우저에만 저장됩니다. 사이트 데이터를 지우거나 휴대폰을 바꾸면 사라집니다. 백업 암호화를 켜지 않으면 백업에 건강 기록이 그대로 들어 있으니 다른 사람과 공유하지 마십시오.</p>
     <div class="card stack">
       <div class="row between"><span>저장 위치</span><b>${esc(storeWhere().l)}</b></div>
       <p class="hint" style="margin:0">${WHERE_NOTE()}</p>
@@ -5269,6 +5269,7 @@ function scrSettingsBody(){
     <input type="file" id="restore" accept=".json,application/json,text/plain" hidden></div>
     ${(()=>{try{return IS_ANDROID()&&typeof window.UCTableAndroid.hasMigrated==="function"&&window.UCTableAndroid.hasMigrated()}catch(e){return false}})()?`<div class="list">${listRow({icon:"repeat",tint:"t-warm",title:"예전 버전 기록 다시 가져오기",sub:"1.10.0으로 올릴 때 옮겨 둔 예전 기록을 지금 기록과 비교한 뒤 불러옵니다",attr:'data-act="androidRetake"'})}</div>`:""}
     ${(()=>{const pv=prevSnap(); return pv?`<div class="list"><button class="lrow" data-act="restoreUndo"><span class="lic t-warm">${ic("repeat")}</span><span class="lt"><b>불러오기 전 기록으로 되돌리기</b><small>${esc(pv.label)}에 보관한 기록(증상 ${pv.n}일)</small></span>${ic("chev","chev")}</button></div>`:""})()}
+    ${encCardHTML()}
     ${autoBackupHTML()}
     <div class="sec-label">기록 내보내기(CSV · 엑셀에서 열림)</div>
     <div class="list">${listRow({icon:"chart",tint:"t-rose",title:"증상 기록 CSV",sub:`${Object.keys(S.logs).length}일치 · 날짜별 점수와 항목`,attr:`data-act="csvLogs" data-mode="${SHARE_OK?"share":"save"}"`})}
@@ -6160,6 +6161,14 @@ document.addEventListener("click",e=>{
     case "readyShare": {const r=READY; if(!r) break; shareFile(r.filename,r.blob,r.type,r.title).then(x=>{closeSheet(); if(x==="saved") toast("공유를 지원하지 않아 파일로 저장했습니다"); else if(x==="shared") toast("공유했습니다")}); break}
     case "readySave": {const r=READY; if(!r) break; DL.save({filename:r.filename,data:r.blob}).then(()=>toast("파일로 저장했습니다"),()=>{}); break}
     case "backupShare": backupShare(); break;
+    case "encOpen": encSheet(); break;
+    case "encSave": {const a1=$("#encP1")?.value||"", a2=$("#encP2")?.value||""; const er=$("#encErr");
+      if(a1.length<8){if(er) er.textContent="8자 이상으로 정해 주십시오."; break} if(a1!==a2){if(er) er.textContent="두 번 넣은 비밀번호가 다릅니다."; break}
+      if(er) er.textContent=""; encSet(a1).then(()=>{closeSheet(); render(); toast("백업 암호화를 켰습니다. 이제 백업 파일·자동 백업은 이 비밀번호로만 열립니다")}).catch(()=>{if(er) er.textContent="암호화를 켜지 못했습니다."}); break}
+    case "encOffAsk": openSheet(`<h2>백업 암호화 끄기</h2><p class="hint">앞으로 만드는 백업은 암호화하지 않습니다. 이미 만든 암호화 백업은 그 비밀번호로 계속 열 수 있습니다.</p><div class="grid2" style="margin-top:12px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="encOffGo">끄기</button></div>`); break;
+    case "encOffGo": encOff().then(()=>{closeSheet(); render(); toast("백업 암호화를 껐습니다")}); break;
+    case "encRestore": {const pw=$("#encPw")?.value||""; const er=$("#encErr"); const o=PENDING_ENC; if(!o) break; if(er) er.textContent="푸는 중입니다…";
+      encUnwrap(o,pw).then(t=>{PENDING_ENC=null; closeSheet(); restoreFromText(t)}).catch(()=>{if(er) er.textContent="비밀번호가 맞지 않거나 파일이 손상됐습니다."}); break}
     case "folderPick": folderPick(); break;
     case "bcOpen": BC={code:"",q:"",scan:false,err:"",stop:null}; openSheet(bcSheet()); break;
     case "bcScan": BC.err=""; BC.scan=true; bcRender(); break;
@@ -6289,7 +6298,7 @@ async function shareFile(filename,data,type,title){
   await DL.save({filename,data:blob}); return "saved";
 }
 async function backupShare(){
-  try{const r=await shareFile(`식단기록_백업_${today()}.json`,backupJSON(),"application/json","식단 기록 백업");
+  try{const r=await shareFile(`식단기록_백업_${today()}.json`,await backupOut(),"application/json","식단 기록 백업");
     if(r==="shared"||r==="saved"){S.lastBackup=today(); S.chgDays=[]; render(); toast(r==="shared"?"백업 파일을 보냈습니다. 받은 곳에 잘 보관하십시오":"백업 파일을 저장했습니다")}}
   catch(e){alertMsg("백업을 보내지 못했습니다. '백업 내용 복사'를 이용해 주십시오.")}
 }
@@ -6364,6 +6373,43 @@ const IDB_NAME="uc-table-auto";
 function idbOpen(){return new Promise((res,rej)=>{try{const r=indexedDB.open(IDB_NAME,1); r.onupgradeneeded=()=>{const db=r.result; if(!db.objectStoreNames.contains("snaps")) db.createObjectStore("snaps",{keyPath:"date"}); if(!db.objectStoreNames.contains("kv")) db.createObjectStore("kv")}; r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
 async function idb(store,mode,fn){const db=await idbOpen(); return new Promise((res,rej)=>{const t=db.transaction(store,mode); const rq=fn(t.objectStore(store)); t.oncomplete=()=>{db.close(); res(rq&&"result" in rq?rq.result:undefined)}; t.onerror=t.onabort=()=>{db.close(); rej(t.error)}})}
 const AUTO={folder:null,perm:"",last:"",busy:false,t:null,snaps:null};
+/* ===== v1.11.0 M10: 백업 비밀번호 암호화(선택) =====
+   PBKDF2-SHA256 31만 회로 비밀번호에서 AES-GCM 256 열쇠를 만든다. 열쇠는 이 기기 브라우저 저장소(IndexedDB)에 꺼낼 수 없는
+   형태(non-extractable CryptoKey)로만 두고, 비밀번호는 저장하지 않는다. 켜 두면 백업 파일 저장·보내기·백업 내용 복사·자동 백업
+   폴더에 쓰는 내용을 암호화한다(소금값·초기값은 파일에 같이 적어, 다른 기기에서는 비밀번호만으로 푼다).
+   이 기기 안 자동 보관본·CSV·진료용 PDF는 암호화하지 않는다 */
+const ENC_ITER=310000;
+const ENC_OK=()=>{try{return !!(window.crypto&&crypto.subtle&&window.indexedDB)}catch(e){return false}};
+const ENC={key:null,salt:"",iter:ENC_ITER,ready:false};
+const b64=u8=>{let s=""; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s)};
+const unb64=t=>Uint8Array.from(atob(String(t)),c=>c.charCodeAt(0));
+async function encDerive(pw,salt,iter){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(String(pw).normalize("NFC")),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",hash:"SHA-256",salt,iterations:iter},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function encLoad(){if(ENC.ready||!ENC_OK()) return ENC;
+  try{const x=await idb("kv","readonly",st=>st.get("bkKey")); if(x&&x.key){ENC.key=x.key; ENC.salt=x.salt; ENC.iter=+x.iter||ENC_ITER}}catch(e){} ENC.ready=true; return ENC}
+async function encSet(pw){const salt=crypto.getRandomValues(new Uint8Array(16)); const key=await encDerive(pw,salt,ENC_ITER);
+  await idb("kv","readwrite",st=>st.put({key,salt:b64(salt),iter:ENC_ITER,at:today()},"bkKey")); Object.assign(ENC,{key,salt:b64(salt),iter:ENC_ITER,ready:true})}
+async function encOff(){try{await idb("kv","readwrite",st=>st.delete("bkKey"))}catch(e){} Object.assign(ENC,{key:null,salt:"",iter:ENC_ITER,ready:true})}
+// 켜져 있으면 백업 글을 암호문 봉투(JSON)로 바꾼다
+async function encWrap(plain){await encLoad(); if(!ENC.key) return plain; const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},ENC.key,new TextEncoder().encode(plain)));
+  return JSON.stringify({app:"uc-table",enc:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ENC.iter,salt:ENC.salt,iv:b64(iv),ct:b64(ct)})}
+async function encUnwrap(o,pw){const key=await encDerive(pw,unb64(o.salt),+o.iter||ENC_ITER);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.ct)))}
+const isEncBackup=o=>!!o&&typeof o==="object"&&o.app==="uc-table"&&typeof o.enc==="string"&&typeof o.ct==="string";
+const backupOut=async()=>encWrap(backupJSON());
+const SYNC_RE=/onedrive|google ?drive|내 드라이브|my drive|구글 ?드라이브|원드라이브|icloud|dropbox|드롭박스|mybox|네이버 ?클라우드/i;
+function encSheet(){openSheet(`<h2>백업 비밀번호 정하기</h2>
+  <p class="hint">이 비밀번호로 백업 파일·백업 내용 복사·공유·자동 백업 폴더의 내용을 암호화합니다. 비밀번호는 앱에 저장하지 않습니다. <b>잊으면 그 백업은 누구도 되살릴 수 없습니다.</b> 종이 등 앱 밖에 적어 두십시오.</p>
+  <div class="stack"><label class="f" for="encP1">비밀번호(8자 이상)<input type="password" id="encP1" autocomplete="new-password" minlength="8"></label>
+  <label class="f" for="encP2">한 번 더<input type="password" id="encP2" autocomplete="new-password" minlength="8"></label></div>
+  <p class="crit-t" id="encErr" role="alert"></p>
+  <div class="grid2" style="margin-top:12px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="encSave">암호화 켜기</button></div>`)}
+let PENDING_ENC=null;
+function encAsk(o){PENDING_ENC=o; openSheet(`<h2>암호화된 백업</h2><p class="hint">백업을 만들 때 정한 비밀번호를 넣어 주십시오.</p>
+  <label class="f" for="encPw">비밀번호<input type="password" id="encPw" autocomplete="current-password"></label>
+  <p class="crit-t" id="encErr" role="alert"></p>
+  <div class="grid2" style="margin-top:12px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="encRestore">불러오기</button></div>`)}
 const FOLDER_OK=()=>typeof window.showDirectoryPicker==="function"&&window.isSecureContext&&!isIOS();
 function autoSoon(){clearTimeout(AUTO.t); AUTO.t=setTimeout(autoRun,5000)}
 async function autoRun(){ if(LOAD_FAIL||STALE||!S.consent) return; const json=backupJSON();
@@ -6375,24 +6421,34 @@ async function folderWrite(json,ask){ if(!FOLDER_OK()||AUTO.busy) return false; 
   try{ const h=AUTO.folder||await idb("kv","readonly",st=>st.get("folder")); if(!h) return false; AUTO.folder=h;
     let p=await h.queryPermission({mode:"readwrite"}); if(p!=="granted"&&ask) p=await h.requestPermission({mode:"readwrite"});
     AUTO.perm=p; if(p!=="granted"){ if(!ask) setTimeout(()=>{try{render()}catch(e){}},0); return false }
-    const fh=await h.getFileHandle(`식단기록_자동백업_${today()}.json`,{create:true}); const w=await fh.createWritable(); await w.write(json||backupJSON()); await w.close();
+    const out=await encWrap(json||backupJSON());   // v1.11.0 M10: 암호화를 켜 두면 폴더에도 암호문만
+    const fh=await h.getFileHandle(`식단기록_자동백업_${today()}.json`,{create:true}); const w=await fh.createWritable(); await w.write(out); await w.close();
     for await (const [name] of h.entries()){const m=/^식단기록_자동백업_(\d{4}-\d{2}-\d{2})\.json$/.exec(name); if(m&&m[1]<addDays(today(),-30)) try{await h.removeEntry(name)}catch(e){}}
     AUTO.last=new Date().toISOString(); const was=S.lastBackup===today()&&!(S.chgDays||[]).length; if(!was){S.lastBackup=today(); S.chgDays=[]; S.autoBk={name:h.name,last:AUTO.last}; save()} return true }
   catch(e){ return false } finally{ AUTO.busy=false } }
 async function folderPick(){ if(!FOLDER_OK()){alertMsg("이 브라우저는 폴더에 자동으로 저장할 수 없습니다. PC의 크롬·엣지에서 쓸 수 있습니다."); return}
   try{ const h=await window.showDirectoryPicker({id:"uc-table-backup",mode:"readwrite",startIn:"documents"}); await idb("kv","readwrite",st=>st.put(h,"folder")); AUTO.folder=h;
-    S.autoBk={name:h.name,last:""}; save(); const ok=await folderWrite(null,true); render(); toast(ok?`'${h.name}' 폴더에 백업 파일을 저장했습니다. 이제 기록이 바뀌면 자동으로 저장합니다`:"폴더 저장 허락을 받지 못했습니다") }
+    S.autoBk={name:h.name,last:""}; save(); const ok=await folderWrite(null,true); render(); toast(ok?`'${h.name}' 폴더에 백업 파일을 저장했습니다. 이제 기록이 바뀌면 자동으로 저장합니다`:"폴더 저장 허락을 받지 못했습니다");
+    await encLoad(); if(ok&&SYNC_RE.test(h.name)&&!ENC.key) alertMsg(`'${h.name}' 폴더는 클라우드와 동기화되는 폴더로 보입니다. 건강 기록이 클라우드에도 올라가니, 데이터 백업 화면에서 '백업 비밀번호 암호화'를 켜 두기를 권합니다.`) }
   catch(e){ if(e?.name!=="AbortError") alertMsg("폴더를 고르지 못했습니다.") } }
 async function folderOff(){ try{await idb("kv","readwrite",st=>st.delete("folder"))}catch(e){} AUTO.folder=null; AUTO.perm=""; S.autoBk=null; save(); render(); toast("자동 백업 폴더를 껐습니다. 이미 저장한 파일은 그대로 있습니다") }
 async function snapList(){ try{ AUTO.snaps=((await idb("snaps","readonly",st=>st.getAll()))||[]).map(x=>({date:x.date,at:x.at,n:x.n})).sort((a,b)=>a.date<b.date?1:-1) }catch(e){ AUTO.snaps=[] } return AUTO.snaps }
 async function snapRestore(date){ try{ const x=await idb("snaps","readonly",st=>st.get(date)); if(!x) return; restoreFromText(x.json) }catch(e){ alertMsg("보관본을 읽지 못했습니다.") } }
+function encCardHTML(){
+  if(!ENC_OK()) return "";
+  if(!ENC.ready){encLoad().then(()=>{if(SCR?.name==="set-data") render()})}
+  const on=!!ENC.key;
+  return `<div class="sec-label">백업 암호화</div><div class="card stack enc-card">
+    <div class="row between"><b>백업 비밀번호 암호화</b><span class="pill ${on?"ok":"neutral"}">${on?"켜짐":"꺼짐"}</span></div>
+    <p class="hint" style="margin:0">켜면 백업 파일 저장·보내기·백업 내용 복사·자동 백업 폴더에 쓰는 내용을 비밀번호로 암호화합니다(AES-GCM 256). 클라우드 동기화 폴더(OneDrive·구글 드라이브·iCloud)나 메일에 보관한다면 켜 두십시오. 비밀번호를 잊으면 그 백업은 되살릴 수 없습니다. 이 기기 안 자동 보관본·CSV·진료용 PDF는 암호화하지 않습니다.</p>
+    ${on?`<div class="grid2"><button class="btn" data-act="encOpen">비밀번호 바꾸기</button><button class="btn" data-act="encOffAsk">끄기</button></div>`:`<button class="btn primary full" data-act="encOpen">비밀번호 정하고 켜기</button>`}</div>`}
 function autoBackupHTML(){
   if(AUTO.snaps===null){snapList().then(()=>{if(SCR?.name==="set-data") render()}); }
   const sn=AUTO.snaps||[];
   const folder=FOLDER_OK()?(S.autoBk?`<div class="card stack"><div class="row between"><span>${ic("folder")} 자동 백업 폴더</span><b>${esc(S.autoBk.name||"")}</b></div>
       <p class="hint" style="margin:0">기록이 바뀌면 이 폴더에 날짜별 백업 파일(최근 30일)을 씁니다.${S.autoBk.last?` 마지막 저장 ${esc(new Date(S.autoBk.last).toLocaleString("ko-KR"))}.`:""}${AUTO.perm&&AUTO.perm!=="granted"?" <b>브라우저가 다시 허락을 묻고 있어 지금은 저장하지 못합니다.</b>":""}</p>
       <div class="grid2">${AUTO.perm&&AUTO.perm!=="granted"?`<button class="btn primary" data-act="folderResume">자동 백업 이어 하기</button>`:`<button class="btn" data-act="folderNow">지금 저장</button>`}<button class="btn" data-act="folderOff">끄기</button></div></div>`
-    :listRow({icon:"folder",tint:"t-warm",title:"자동 백업 폴더 정하기(PC)",sub:"한 번 고르면 기록이 바뀔 때마다 그 폴더에 백업 파일을 저장합니다",attr:'data-act="folderPick"'}))
+    :listRow({icon:"folder",tint:"t-warm",title:"자동 백업 폴더 정하기(PC)",sub:"한 번 고르면 기록이 바뀔 때마다 그 폴더에 백업 파일을 저장합니다. OneDrive·구글 드라이브·iCloud 같은 동기화 폴더면 클라우드에도 올라가니 암호화를 켜 두십시오",attr:'data-act="folderPick"'}))
     :isIOS()?`<p class="hint pad">아이폰·아이패드는 폴더에 자동으로 저장할 수 없습니다. '백업 파일 보내기'로 파일 앱(iCloud Drive)이나 메일에 2주에 한 번 보관하십시오.</p>`:"";
   return `<div class="sec-label">자동 백업</div>${folder.startsWith("<button")?`<div class="list">${folder}</div>`:folder}
     <div class="card stack"><b>이 기기 안 자동 보관본(최근 7일)</b><p class="hint" style="margin:0">기록이 바뀐 날마다 하나씩 브라우저 안 다른 저장소에 둡니다. 기록이 손상되거나 실수로 초기화했을 때 되살릴 수 있습니다. 사이트 데이터를 지우거나 기기를 바꾸면 함께 사라지니 백업 파일은 따로 보관하십시오.</p>
@@ -6407,11 +6463,11 @@ async function csvExport(kind,mode){
 }
 async function backup(){
   if(!DL){alertMsg("이 화면에서는 파일 저장을 쓸 수 없습니다. '백업 내용 복사'를 이용해 주십시오.");return}
-  try{await DL.save({filename:`식단기록_백업_${today()}.json`,data:backupJSON()}); S.lastBackup=today(); S.chgDays=[]; render(); toast("백업 파일을 저장했습니다")}
+  try{await DL.save({filename:`식단기록_백업_${today()}.json`,data:await backupOut()}); S.lastBackup=today(); S.chgDays=[]; render(); toast(ENC.key?"암호화한 백업 파일을 저장했습니다":"백업 파일을 저장했습니다")}
   catch(e){if(e?.code!=="declined") alertMsg("백업을 저장하지 못했습니다. '백업 내용 복사'를 이용해 주십시오.")}
 }
 async function backupCopy(){
-  const txt=backupJSON();
+  const txt=await backupOut();
   try{await navigator.clipboard.writeText(txt); S.lastBackup=today(); S.chgDays=[]; render(); toast("백업 내용을 복사했습니다. 메모 앱 등에 붙여 넣어 보관하십시오")}
   catch(e){openSheet(`<h2>백업 내용</h2><p class="hint">자동 복사가 안 됩니다. 아래 내용을 길게 눌러 모두 선택해 복사한 뒤, 메모 앱 등에 붙여 넣어 보관하십시오.</p><textarea id="bkText" readonly style="min-height:160px" aria-label="백업 내용">${esc(txt)}</textarea><button class="btn primary full" data-act="bkMark" style="margin-top:10px">복사해서 보관했습니다</button>`)}
 }
@@ -6429,7 +6485,8 @@ async function wipeLocalCopies(){
   LOAD_RAW="";
   try{if(window.UCTableAndroid&&typeof window.UCTableAndroid.wipeOld==="function") window.UCTableAndroid.wipeOld()}catch(e){}
   AUTO.folder=null; AUTO.perm="";
-  try{await idb("snaps","readwrite",st=>st.clear()); await idb("kv","readwrite",st=>st.delete("folder"))}catch(e){}
+  try{await idb("snaps","readwrite",st=>st.clear()); await idb("kv","readwrite",st=>st.delete("folder")); await idb("kv","readwrite",st=>st.delete("bkKey"))}catch(e){}
+  Object.assign(ENC,{key:null,salt:"",iter:ENC_ITER,ready:true});
   AUTO.snaps=null;
 }
 /* 합치기(v1.9.0 F-7): 날짜 단위가 아니라 항목 단위로 합친다. 예전에는 같은 날짜가 있으면 백업 쪽을 통째로 버렸다.
@@ -6472,6 +6529,7 @@ function mergeCore(cur,bk){
 }
 function mergeStates(cur,bk){return normalizeState(mergeCore(cur,bk).m)}
 function restoreFromText(txt){
+  { let raw=null; try{raw=JSON.parse(String(txt).trim())}catch(e){} if(isEncBackup(raw)){ if(!ENC_OK()){alertMsg("이 브라우저는 암호화된 백업을 풀 수 없습니다. 최신 크롬·사파리·엣지에서 열어 주십시오."); return} encAsk(raw); return } }
   let cand;
   try{cand=normalizeState(JSON.parse(String(txt).trim()))}catch(e){alertMsg(e?.message==="newer backup"?"더 최신 버전 앱에서 만든 백업입니다. 앱을 새로고침한 뒤 다시 시도해 주십시오.":"올바른 백업 내용이 아닙니다. 파일이나 붙여 넣은 내용을 확인해 주십시오."); closeSheet(); return}
   PENDING_RESTORE=cand;
