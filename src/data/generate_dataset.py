@@ -509,6 +509,13 @@ out['psrc']={}
 for i,v in PSRC10.items():
     assert i in IDX, i
     out['psrc'][i]=v
+# v1.11.0 M2: 시판 제품 표시(앱의 isProd는 이 목록만 본다). 원재료·포장 영양정보·판매처 자료가 있거나,
+# 값을 제품 포장 표시(출처 'L:')에서 옮겼거나, 환자용 영양식(ons)인 음식. 출처 'N:'(이름만 있는 일반 메뉴, 예: 떡꼬치)은 시판이 아님
+PROD=set(out['ingr'])|set(out['plabel'])|set(out['psrc'])
+for x in L:
+    if str(x[3]).startswith('L:') or 'ons' in x[5]: PROD.add(x[0])
+assert 'tteokkochi' not in PROD and all(i in IDX for i in PROD)
+out['prod']=' '.join(sorted(PROD))
 # 식약처 원본 CSV 기록(데이터 기준일자·행 수·SHA-256)
 for key,fn in [('raw','raw.csv'),('dish','dish.csv'),('proc','proc.csv'),('prep','prep.csv')]:
     fp=os.path.join(MFDS,fn); d=pd.read_csv(fp,dtype=str)

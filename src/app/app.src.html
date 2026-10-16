@@ -944,6 +944,7 @@ const PFAM=/*@GEN:pfam@*/;     // v1.10.0 용량만 다른 같은 제품: 대표
 const IDMAP=/*@GEN:idmap@*/;   // v1.10.0 묶여 빠진 옛 id → 대표 id(옛 기록·즐겨찾기를 잇는다)
 // v1.10.0 확인 날짜 = 그 음식을 앱에 넣은 날(사용자 요청). 날짜별로 묶어 둔 것을 id → 날짜로 편다
 const ADDED=(g=>{const o={}; for(const [d,ids] of Object.entries(g)) for(const i of ids.split(" ")) o[i]=d; return o})(/*@GEN:added@*/);
+const PROD=new Set(/*@GEN:prod@*/.split(" "));   // v1.11.0 M2: 시판 제품 id(데이터를 만들 때 정함, isProd가 이것만 봄)
 const PSRC=/*@GEN:psrc@*/;   // v1.9.0 시판 식품의 확인한 곳: [자료, 번호, 확인일(, 식약처 원장 번호)] — 한 곳에서만 확인
 // 고시 영양정보를 글로(표시 그대로). 마트 식품(spec9)은 글, CJ더마켓 식품은 숫자 배열[기준량,단위,총량,총 단위,열량,나트륨,탄수화물,당류,지방,트랜스지방,포화지방,콜레스테롤,단백질,식이섬유]
 function plabelText(id){const v=PLABEL[id]; if(!Array.isArray(v)) return v||"";
@@ -3194,8 +3195,9 @@ function viewFoodSearch(c,q,list,rows){
   <div id="foodRes">${foodResHTML(c,q,list,rows)}</div>`;
 }
 const FMORE=new Set();   // '더 보기'를 누른 묶음(화면을 벗어나면 다시 접힘)
-/* v1.10.0 개발자 6: 시판 제품(판매처·포장 표시에서 옮긴 것)인지. 검색 결과에서 일반 음식 뒤에 접어 둔다 */
-const isProd=f=>!!(PSRC[f.id]||INGR[f.id]||PLABEL[f.id]);
+/* v1.10.0 개발자 6: 시판 제품인지. 검색 결과에서 일반 음식 뒤에 접어 둔다.
+   v1.11.0 M2: 데이터를 만들 때 정한 목록(PROD)만 본다. 원재료·포장 영양정보·판매처 자료가 있는 제품, 포장 표시에서 값을 옮긴 과자·사탕·젤리, 환자용 영양식 */
+const isProd=f=>PROD.has(f.id);
 /* v1.10.0 디자인 4·5: 결과 한 줄에 종류(또는 시판·총 용량)와 1회 양·열량 */
 function fMeta(f){const sv=SERV[f.id]; const parts=[isProd(f)?(PSIZE[f.id]?`시판 · 총 ${PSIZE[f.id]}`:"시판"):f.cat];
   if(sv){const u=/잔|컵|캔|병|팩/.test(sv[1])?"ml":"g"; parts.push(`1회 ${sv[0]}${u}${hasNut(f,"k")?` · ${Math.round(f.k*sv[0]/100)}kcal`:""}`)}
@@ -3276,19 +3278,88 @@ function dishSrcHTML(f){const x=DISHX[f.id]; if(!x) return ""; const [how,n,lo,h
   const [t,r]=L[how]||["",[]];
   return `<p class="hint" style="margin:0 0 6px">값 종류: ${t}.${lo!=null&&hi!=null&&hi>lo?` 같은 이름의 식약처 자료 ${n}건은 100g(ml)당 ${lo}~${hi}kcal로 조리법·재료 양에 따라 다릅니다.`:""}${borrow?" 식이섬유는 같은 음식의 재료량 계산값 평균을 빌려 썼습니다.":""}${sup(r)}</p>`}
 /* v1.10.0 사용자 1: '피하기·절대 금지·다음 단계' 음식에 '대신 이것' — 지금 조건에서 좋음·주의인 비슷한 일반 음식 3가지.
-   자주 찾는 음식은 직접 고른 것(ALT)을 먼저, 그 밖은 같은 종류 아이콘·분류·이름 글자가 겹치는 음식 */
+   v1.11.0 M1: 직접 고른 목록(ALT, 과자·음료는 묶음 ALT_GRP)을 먼저 보이고, 모자라면 같은 쓰임(밥·면·국·반찬·채소·과일 등)의
+   일반 음식 가운데 모양(덮밥·국·전 등)이나 주재료(돼지·소·닭·생선 등)가 겹치는 것만 고른다. 과자·사탕·초콜릿·양념·음료·
+   환자용 영양식·시판 제품은 저절로 고르지 않고, 맞는 음식이 없으면 칸을 숨긴다 */
 const ALT={ham:["chicken_breast","egg_boiled","tofu"],budae_jjigae:["doenjang_jjigae","egg_soup","bugeo_guk"],hotdog:["steamed_mandu","castella","sweet_potato"],
   ham_toast:["white_bread","rolled_omelet","castella"],sundae:["steamed_mandu","pork_tenderloin","rice_cake"],sundae_gukbap:["seolleongtang","gomtang","dwaeji_gukbap"],
   fried_chicken:["chicken_breast","chicken_porridge","duck_lean"],yangnyeom_chicken:["chicken_breast","jjimdak","chicken_porridge"],nuggets:["chicken_breast","egg_boiled","tofu"],
   donkatsu:["pork_tenderloin","bulgogi","fish_jeon"],katsudon:["gyudon","bulgogi","omurice"],tendon:["white_fish","egg_steamed","omurice"],tangsuyuk:["pork_tenderloin","bulgogi","japchae"],
   ramen:["udon","kalguksu","rice_noodle_soup"],jjamppong:["udon","kalguksu","rice_noodle_soup"],coffee:["barley_tea","lf_milk","soy_milk"],soda:["barley_tea","sikhye","lf_milk"],
-  smoked_duck:["duck_lean","chicken_breast","pork_tenderloin"],chicken_sausage:["chicken_breast","egg_boiled","tofu"]};
+  smoked_duck:["duck_lean","chicken_breast","pork_tenderloin"],chicken_sausage:["chicken_breast","egg_boiled","tofu"],
+  fried:["steamed_mandu","potato","bulgogi"],corn:["potato","pumpkin","sweet_potato"],pizza:["veg_sandwich","white_bread","dinner_roll"],hamburger:["veg_sandwich","bulgogi","white_bread"],
+  tteokkochi:["rice_cake","jeolpyeon","kkultteok"],rabokki:["tteokbokki","rice_cake","jeolpyeon"],goguma_matang:["sweet_potato","potato","pumpkin"],
+  kkanpunggi:["chicken_breast","jjimdak","bulgogi"],kkanso_shrimp:["shrimp","white_fish","egg_steamed"],carbonara:["cream_pasta","pasta","udon"]};
+const ALT_GRP={choco:["castella","rice_cake","banana"],sweet:["castella","rice_cake","banana"],candy:["banana","canned_peach","applesauce"],chips:["potato","sweet_potato","rice_cake"],
+  milk:["lf_milk","soy_milk","drink_yogurt"],juice:["apple_juice","applesauce","banana"],drink:["barley_tea","solomon_tea","chamomile"]};
+// 음식 모양: 이름으로 가른다(앞에서부터 처음 맞는 것). '국수'는 국보다, '전'은 떡보다 먼저 본다
+const ALT_FORM=[["죽",/죽$|죽\(|미음|누룽지/],["면",/국수/],["국",/국밥|국$|국\(|찌개|전골|해장국|개장|샤브|훠궈|탕$|탕\(/],
+  ["밥",/밥$|밥\(|덮밥|라이스|규동|가츠동|텐동|김밥|초밥|비빔밥|볶음밥/],["면",/면|우동|라멘|파스타|스파게티|짬뽕|쌀국수|팟타이|모밀|수제비|까르보나라|잡채$/],
+  ["빵",/빵|토스트|샌드위치|버거|피자|와플|케이크|카스텔라|크로플|도넛|츄러스|스콘|머핀|베이글|바게트|크로와상|치아바타|브레드|호떡|핫케이크|타르트|휘낭시에/],
+  ["만두",/만두|교자/],["전",/전$|전\(|부침|땡/],["떡",/떡(?!갈비)|백설기|절편|인절미|송편|볶이/],["튀김",/튀김|까스|가스|치킨|너겟|탕수육|깐풍|깐쇼/],
+  ["구이",/구이|스테이크|불고기|떡갈비/],["조림",/조림|찜$|찜\(|찜닭/],["볶음",/볶음|제육|닭갈비/],["나물",/나물|무침|생채/],
+  ["김치",/김치|깍두기|소박이|장아찌|피클|단무지|동치미/],["샐러드",/샐러드|포케|월남쌈/],["회",/회$|회\(|물회|육회/]];
+const ALT_MAIN=new Set(["죽","밥","면","빵","만두","떡"]);
+function altForm(f){const n=f.name; if(/맛탕/.test(n)) return "튀김"; for(const [k,re] of ALT_FORM) if(re.test(n)) return k; return ""}
+// 끼니에서의 쓰임. snack·drink·sauce·ons는 저절로 고르지 않는다(snack·drink는 묶음 목록만)
+function altRole(f){const i=foodIc(f.id), t=f.tags||[], c=f.cat;
+  if(c==="영양식") return "ons";
+  if(i==="f_cup"||i==="f_bottle") return "drink";
+  if(i==="f_snack"||t.some(x=>x==="snack"||x==="candy"||x==="choco")) return "snack";
+  const fm=altForm(f);
+  if(c==="기타") return fm==="빵"?"snack":(fm==="면"||t.includes("instant"))?"main":fm==="튀김"?"side":"sauce";
+  if(c==="지방") return ["f_bean","f_fruit"].includes(i)?"nut":"sauce";
+  if(c==="유제품") return /버터/.test(f.name)?"sauce":"dairy";
+  if(c==="과일") return "fruit"; if(c==="채소") return "veg"; if(c==="단백질") return "protein";
+  if(ALT_MAIN.has(fm)) return "main"; if(fm==="국") return "soup";
+  return c==="곡류"?"main":"side"}
+const ALT_PT=["pork","beef","chicken","fish","shrimp","squid","crab","clam"];
+const ALT_FAM={pork:"meat",beef:"meat",chicken:"meat",duck:"meat",fish:"sea",shrimp:"sea",squid:"sea",crab:"sea",clam:"sea",egg:"egg",bean:"bean"};
+// 이름에 주재료가 드러나면 그것만(시판 '치킨' 제품에 소고기 육수 표시가 있어도 닭으로)
+const ALT_NK=[["chicken",/닭|치킨|삼계/],["pork",/돼지|돈육|돈가스|제육|삼겹|목살|보쌈|족발/],["beef",/소고기|쇠고기|한우|비프|차돌|육회|육포|소갈비|소불고기/],["duck",/오리고기|오리불고기|훈제오리/],
+  ["fish",/생선|연어|고등어|참치|명태|동태|북어|황태|갈치|삼치|꽁치|가자미|광어|우럭|조기|대구|장어|멸치|어묵/],["shrimp",/새우|해물/],["squid",/오징어|낙지|주꾸미|문어|해물/],["crab",/게살|꽃게|대게|크랩/],["clam",/조개|바지락|홍합|전복|가리비|꼬막|해물/]];
+// 주재료: 이름 → 없으면 고기·해산물 표시(새우는 이름에 있을 때만, 김치·나물의 새우젓은 빼고). 채소는 주재료를 보지 않는다. 달걀·두부(콩)는 이름으로
+function altProt(f){const t=f.tags||[], n=f.name; if(f.cat==="채소") return new Set();
+  let s=new Set(ALT_NK.filter(([,re])=>re.test(n)).map(([k])=>k));
+  const mix=/팟타이|유산슬|양장피|짬뽕/.test(n);   // 고기와 해산물이 함께 주재료인 음식
+  if(!s.size){s=new Set(t.filter(x=>ALT_PT.includes(x)&&(x!=="shrimp"||mix)));
+    if(!mix&&["pork","beef","chicken"].some(x=>s.has(x))) for(const x of ["fish","shrimp","squid","crab","clam"]) s.delete(x)}   // 고기 음식의 굴소스·멸치 등 해산물 표시는 주재료가 아님
+  if(!s.size&&t.includes("egg")&&/달걀|계란|메추리알|에그|오므라이스/.test(n)) s.add("egg");
+  if(t.includes("soy")&&/두부|콩(?!나물)/.test(n)) s.add("bean");
+  return s}
+function altGrp(f,role){const t=f.tags||[];
+  if(role==="drink") return (t.includes("lactose")||t.includes("dairy"))?"milk":t.includes("juice")?"juice":"drink";
+  if(role==="snack") return t.includes("choco")?"choco":(t.includes("candy")||/젤리|캔디|사탕|구미/.test(f.name))?"candy":/칩|깡|팝콘|스낵/.test(f.name)?"chips":t.includes("sugar")?"sweet":"chips";
+  return ""}
+const ALT_SIDE=new Set(["protein","side","veg"]), ALT_ICON=new Set(["veg","fruit","protein","dairy","side","nut"]);
+const altPlain=n=>String(n).replace(/\(.*?\)/g,"").replace(/[^가-힣]/g,"");
+// 직접 고른 목록을 쓸 음식: 그 음식 자체, 또는 시판 제품이면 이름에 든 일반 음식(가장 긴 이름) → 발색제 가공육은 햄 → 라면류는 라면
+function altKey(f){if(ALT[f.id]) return f.id; if(!isProd(f)) return "";
+  const pn=altPlain(f.name); let k0="", n0=0;
+  for(const k of Object.keys(ALT)){const b=altPlain(FOOD[k]?.name||""); if(b.length>=2&&b.length>n0&&pn.includes(b)){k0=k; n0=b.length}}
+  if(k0) return k0; const t=f.tags||[];
+  if((f.cat==="단백질"||altRole(f)==="side")&&(t.includes("nitrite")||/햄|소시지|베이컨|후랑크|프랑크|런천|스팸/.test(f.name))) return "ham";
+  if(f.cat==="기타"&&(altForm(f)==="면"||t.includes("instant"))) return "ramen"; return ""}
+const altOk=(a,b)=>a===b||(a==="protein"&&b==="side")||(a==="side"&&(b==="protein"||b==="veg"))||(a==="veg"&&b==="side");
 function altFoods(f,c=ctx()){
   const st=statusOf(c); const good=g=>g&&g.id!==f.id&&!isProd(g)&&["ok","caution"].includes(st(g).level);
-  const out=(ALT[f.id]||[]).map(i=>FOOD[i]).filter(good);
-  if(out.length<3){const ic0=foodIc(f.id); const nm=new Set(f.name.replace(/[^가-힣]/g,""));
-    const sc=g=>(foodIc(g.id)===ic0?2:0)+(g.cat===f.cat?1:0)+[...new Set(g.name.replace(/[^가-힣]/g,""))].filter(ch=>nm.has(ch)).length*0.6+(st(g).level==="ok"?0.5:0);
-    const pool=FOODS.filter(g=>good(g)&&!out.includes(g)&&(foodIc(g.id)===ic0||g.cat===f.cat)).map(g=>[sc(g),g]).sort((a,b)=>b[0]-a[0]||a[1].name.localeCompare(b[1].name,"ko"));
+  const role=altRole(f); const out=[];
+  for(const i of [...(ALT[altKey(f)]||[]),...(ALT_GRP[altGrp(f,role)]||[])]){const g=FOOD[i]; if(good(g)&&!out.includes(g)) out.push(g)}
+  if(out.length<3&&!["snack","drink","sauce","ons"].includes(role)){
+    // 시판 제품은 상표·광고 말을 빼고 이름 끝 낱말(예: '햇반 라이스플랜 12곡 잡곡밥' → 잡곡밥)로 비교
+    const fm=altForm(f), PF=altProt(f), ic0=foodIc(f.id); const PN=isProd(f)?altPlain((f.name.match(/[가-힣]+/g)||[""]).pop()):altPlain(f.name), NM=new Set(PN);
+    const FF=new Set([...PF].map(k=>ALT_FAM[k]));
+    const sc=g=>{const gr=altRole(g); if(!altOk(role,gr)) return -1; const PG=altProt(g); const both=[...PF].filter(k=>PG.has(k)).length;
+      const fam=!both&&[...PG].some(k=>FF.has(ALT_FAM[k]));   // 같은 무리(고기끼리·해산물끼리)
+      if(ALT_SIDE.has(role)&&(PF.size?!(both||fam):PG.size)) return -1;   // 반찬·채소·고기는 주재료가 같은 무리여야(고기 반찬에 나물을 권하지 않음)
+      const lv=st(g).level, same=fm&&fm===altForm(g), gn=altPlain(g.name), ch=Math.min(3,[...new Set(gn)].filter(x=>NM.has(x)).length);
+      const two=[...gn].some((x,i)=>i<gn.length-1&&PN.includes(gn.slice(i,i+2)));   // 이어진 두 글자가 같음(감자전·감자)
+      if((role==="main"||role==="soup")&&!same&&!two) return -1;   // 밥·면·국은 모양이 같거나 이름이 두 글자 이어서 겹쳐야(군만두에 김밥을 권하지 않음)
+      const sd=ALT_SIDE.has(role);   // 반찬·고기는 주재료가, 밥·면·국은 모양이 먼저
+      return (same?(sd?1.5:3):0)+(both?(sd?3+(both>1?0.5:0):Math.min(2,both)*1.5):0)+(fam?0.8:0)+(ALT_ICON.has(role)&&foodIc(g.id)===ic0?1:0)+(g.cat===f.cat?0.5:0)
+        +(two?0.8:0)+ch*0.2+(lv==="ok"?0.3:0)-(PF.size&&PG.size&&!both&&!fam?1:0)-(!PF.size&&PG.size&&!ALT_SIDE.has(role)?0.5:0)};
+    // 점수가 같으면 재료가 단순한 음식(표시가 적은 것)을 먼저
+    const pool=FOODS.filter(g=>good(g)&&!out.includes(g)).map(g=>[sc(g),g]).filter(x=>x[0]>=1.5).sort((a,b)=>b[0]-a[0]||a[1].tags.length-b[1].tags.length||a[1].name.localeCompare(b[1].name,"ko"));
     for(const [,g] of pool){if(out.length>=3) break; out.push(g)}}
   return out.slice(0,3)}
 const firstSent=t=>{const m=String(t||"").match(/^.+?[.!?](?=\s|$)/); return m?m[0]:String(t||"")};

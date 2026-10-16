@@ -116,6 +116,44 @@ const SEED=()=>{
     need(r.b1.includes(r.tell),`8번 하루 알림도 같은 문장 (${r.b1.slice(0,90)})`);
     await p.context().close()}
 
+  console.log('== M2 시판 제품 표시');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const brand=f=>f.src&&f.src.kind==="L";
+      const snk=FOODS.filter(f=>brand(f)&&f.cat!=="영양식"&&f.tags.some(t=>["snack","candy","choco"].includes(t)));
+      const ons=FOODS.filter(f=>f.tags.includes("ons"));
+      const gen=["crackers","potato_chips","milk_chocolate","gummy","tteokkochi","castella"].map(i=>FOOD[i]).filter(Boolean);
+      return {nSnk:snk.length,snkProd:snk.filter(isProd).length,nOns:ons.length,onsProd:ons.filter(isProd).length,
+        genProd:gen.filter(isProd).map(f=>f.name),nGen:gen.length,meta:fMeta(FOOD.goraebap),nProd:FOODS.filter(isProd).length}});
+    need(r.nSnk>=52&&r.snkProd===r.nSnk,`M2 시판 과자·사탕·젤리 ${r.nSnk}종이 모두 시판 (${r.snkProd})`);
+    need(r.nOns>=26&&r.onsProd===r.nOns,`M2 환자용 영양식 ${r.nOns}종이 모두 시판 (${r.onsProd})`);
+    need(r.nGen===6&&!r.genProd.length,`M2 일반 음식(크래커·감자칩·밀크초콜릿·구미 젤리·떡꼬치·카스텔라)은 시판 아님 (${r.genProd.join(",")})`);
+    need(/^시판/.test(r.meta),`M2 목록 한 줄에 '시판' (고래밥: ${r.meta})`);
+    await p.context().close()}
+
+  console.log('== M1 대신 이것');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const BADT=["snack","candy","choco"];
+      const bad=g=>isProd(g)||g.tags.some(t=>BADT.includes(t))||["sauce","ons"].includes(altRole(g));
+      const pick=(id,st)=>{const c={...ctx(),stage:st,fiberStage:st}; const f=FOOD[id]; return {lv:foodStatus(f,c).level,a:altFoods(f,c).map(g=>g.id)}};
+      const sushi=pick("sushi",1), choco=pick("milk_chocolate",1), walnut=pick("nuts",1), honey=pick("honey",1);
+      const wrong=[]; let n=0;
+      for(const st of [1,2,3]){const c={...ctx(),stage:st,fiberStage:st};
+        for(const f of FOODS){const s=foodStatus(f,c); if(!badLv(s.level)) continue; n++;
+          for(const g of altFoods(f,c)){const role=altRole(g); if(bad(g)||(role==="drink"&&altRole(f)!=="drink")) wrong.push(`${st}:${f.name}→${g.name}`)}}}
+      S.stageMode="1"; SCR=null; S.tab="food"; render(); showFood("honey"); const hb=!!document.querySelector('#sheetRoot .alt-box');
+      const jeyuk=pick("jeyuk",1).a.map(i=>[...altProt(FOOD[i])]), mandu=pick("fried_mandu",3).a, rm=pick("rm_jjajjaroni",1).a, kimchi=pick("yeolmu_kimchi",1).a.map(i=>FOOD[i]);
+      return {sushi,choco,walnut,honey,wrong:wrong.slice(0,12),nWrong:wrong.length,n,hb,jeyuk,mandu,rm,kimchi:kimchi.map(g=>[g.cat,altForm(g),g.name])}});
+    need(r.sushi.a.length&&!r.sushi.a.some(i=>/goraebap/.test(i)),`M1 초밥 대안에 고래밥 없음 (${r.sushi.lv}: ${r.sushi.a.join(",")})`);
+    need(!r.choco.a.some(i=>["gummy","mygummy","vitamin_mygummy","aishe_plum"].includes(i)),`M1 초콜릿 대안에 젤리 없음 (${r.choco.a.join(",")})`);
+    need(!r.walnut.a.some(i=>/kkumteuri/.test(i)),`M1 호두 대안에 왕꿈틀이 없음 (${r.walnut.a.join(",")})`);
+    need(!r.honey.a.length&&!r.hb,`M1 꿀(양념)은 대안 칸을 숨김 (${r.honey.a.join(",")})`);
+    need(r.jeyuk.length&&r.jeyuk.every(k=>k.includes("pork")),`M1 제육볶음 대안은 돼지고기 (${JSON.stringify(r.jeyuk)})`);
+    need(r.mandu.length&&!r.mandu.includes("gimbap"),`M1 군만두 대안에 김밥 없음 (${r.mandu.join(",")})`);
+    need(r.rm.length&&r.rm.every(i=>["udon","kalguksu","rice_noodle_soup"].includes(i)),`M1 시판 라면은 순한 국수로 (${r.rm.join(",")})`);
+    need(r.kimchi.length&&r.kimchi.every(([c,fm])=>c==="채소"&&fm==="김치"),`M1 열무김치 대안은 맵지 않은 김치 (${r.kimchi.map(x=>x[2]).join(",")})`);
+    need(r.nWrong===0,`M1 나쁜 판정 음식 ${r.n}건(1~3단계)의 대안에 과자·사탕·초콜릿·양념·영양식·시판·엉뚱한 음료 없음 (${r.nWrong}: ${r.wrong.join(" / ")})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

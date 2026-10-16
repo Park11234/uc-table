@@ -9,6 +9,7 @@ app.src.html에는 화면·판정 규칙·식단 코드가 모두 들어 있고,
   /*@GEN:ingr@*/   시판 과자·라면·마트 식품 원재료명(포장 표시)  ← generated/gen_out.json
   /*@GEN:plabel@*/ 마트 시판 식품 포장 영양정보(표시 그대로)    ← generated/gen_out.json
   /*@GEN:psrc@*/   CJ더마켓 시판 식품의 확인한 상품 번호·확인일 ← generated/gen_out.json
+  /*@GEN:prod@*/   v1.11.0 시판 제품 id 목록(띄어쓰기로 이음)         ← generated/gen_out.json
   /*@GEN:cjt@*/    CJ더마켓 시판 식품에 되풀이되는 설명 문장     ← generated/gen_out.json
   /*@GEN:menus@*/  오프라인 예시 식단 메뉴                 ← menus.py build()
   /*@GEN:qa@*/     궁금한 점(Q&A)과 근거 원문 인용          ← qa.py build()
@@ -65,6 +66,7 @@ def render():
         'ingr': js(o.get('ingr', {})),
         'plabel': js(o.get('plabel', {})),
         'psrc': js(o.get('psrc', {})),
+        'prod': js(o.get('prod', '')),
         'cjt': js(o.get('cjt', [])),
         'menus': js(build_menus()),
         'qa': js(build_qa()),
