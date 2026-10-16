@@ -632,6 +632,8 @@ body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,
 .toasts.top{top:calc(env(safe-area-inset-top,0px) + 10px);bottom:auto}   /* v1.11.0 L4: 끼니 버튼 위를 가리지 않게 */
 .fg-h .fg-n{white-space:nowrap}   /* v1.11.0 L2 */
 .low-t{color:var(--warn-ink,var(--ink));font-size:0.75rem;font-weight:700}   /* v1.11.0 A-15 */
+.gloss-all summary{cursor:pointer;min-height:44px;display:flex;align-items:center}   /* v1.11.0 U-2: 용어 풀이 모음 */
+.gloss-dl{margin:6px 0 0}.gloss-dl dt{font-weight:700;margin-top:10px}.gloss-dl dd{margin:2px 0 0;color:var(--muted);font-size:0.875rem}
 /* v1.9.0 F-9: 화면이 막 바뀐 직후 같은 자리 버튼은 잠깐 비활성으로 보인다(연타로 다음 화면 버튼이 눌리지 않게) */
 .cool{opacity:.45!important;transition:opacity .15s}
 @media (prefers-reduced-motion: reduce){.toast{transition:none}}
@@ -1038,6 +1040,9 @@ const ALLERGY_OPTS=[["egg","알류(달걀 등)"],["dairy","우유"],["buckwheat"
 const ALLERGY_EXTRA=[["fish","생선 전반"],["sesame","참깨"],["nut","기타 견과류"]];
 const ALLERGY_ALL=[...ALLERGY_OPTS,...ALLERGY_EXTRA];
 const allergyLabel=a=>(ALLERGY_ALL.find(o=>o[0]===a)||[a,a])[1];
+/* v1.11.0 F-13: 검사 수치·약 메모 — 진료 때 받은 검사 결과와 약을 바꾼 날을 적어 두고 진료용 PDF에 함께 보인다(기기 안에만, 판정에는 쓰지 않음) */
+const LAB_KINDS=[["crp","CRP","mg/L"],["calpro","대변 칼프로텍틴","μg/g"],["hb","혈색소","g/dL"],["alb","알부민","g/dL"],["med","약 바꿈",""],["etc","기타",""]];
+const labOf=k=>LAB_KINDS.find(x=>x[0]===k)||LAB_KINDS[5];
 const MED_OPTS=[["asa","메살라진(5-ASA)"],["ssz","설파살라진"],["steroid","스테로이드(코티코스테로이드)"],["immuno","면역조절제"],["bio","생물학적 제제"],["jak","JAK 억제제"],["iron","철분제"],["chol","콜레스티라민"]];
 // 약물-영양소 상호작용: 서울아산병원 궤양성대장염식[36], ESPEN[1]
 const MED_NUTRI={
@@ -1051,7 +1056,9 @@ const ORDER_OPTS=[
  ["highprotein","고단백 식사"],["ons","영양 보충음료 병행"],["liquid","유동식·죽 위주"],["fluid","하루 수분 목표량 지정"]
 ];
 const SLOTS=["아침","점심","저녁"];
-const STAGES={1:{name:"저잔사식",desc:"섬유가 적은 음식을 부드럽게 조리해 조금씩"},2:{name:"이행식",desc:"익힌 채소·부드러운 음식을 조금씩 늘립니다"},3:{name:"지중해식",desc:"통곡물·콩류·생채소까지 넓힙니다"}};
+const STAGES={1:{name:"저잔사식",plain:"섬유를 줄인 식사",desc:"섬유가 적은 음식을 부드럽게 조리해 조금씩"},2:{name:"이행식",plain:"조금씩 늘리는 식사",desc:"익힌 채소·부드러운 음식을 조금씩 늘립니다"},3:{name:"지중해식",plain:"골고루 먹는 식사",desc:"통곡물·콩류·생채소까지 넓힙니다"}};
+// v1.11.0 U-2: 쉬운 말을 먼저, 용어는 괄호로(예: 섬유를 줄인 식사(저잔사식))
+const stg=n=>STAGES[n]?`${STAGES[n].plain}(${STAGES[n].name})`:"";
 
 /* 예시 식단 템플릿: 요리는 RECIPES(만개의레시피·모두의레시피)에서만 고름. 단계·조건에 맞는 것만 씀 */
 const TPL={
@@ -1253,7 +1260,9 @@ const DEF=()=>({
   // v1.9.0
   seen:[], remindLog:false,
   // v1.10.0
-  stageInit:null, autoBk:null, barcodes:{}
+  stageInit:null, autoBk:null, barcodes:{},
+  // v1.11.0 F-13: 검사 수치·약 메모
+  labs:[]
 });
 const CARE_IDS=["flu","vaccine","mood","bone","skin","cervix","smoke"];
 const BACKUP_V=1;
@@ -1316,6 +1325,7 @@ function normalizeState(o){
   s.okMenus=arr(o.okMenus).map(tx).filter(Boolean);
   s.barcodes={}; for(const [k,v] of Object.entries(obj(o.barcodes)||{})) if(/^\d{8,14}$/.test(k)&&obj(v)&&typeof v.id==="string"&&FOOD[v.id]) s.barcodes[k]={id:v.id,date:isDate(v.date)?v.date:""};
   { const ab=obj(o.autoBk); s.autoBk=ab&&typeof ab.name==="string"?{name:ab.name.slice(0,120),last:typeof ab.last==="string"?ab.last:""}:null }
+  s.labs=arr(o.labs).filter(x=>obj(x)&&isDate(x.date)&&LAB_KINDS.some(k=>k[0]===x.k)).map(x=>({date:x.date,k:x.k,v:tx(x.v).slice(0,20),note:tx(x.note).slice(0,120)})).slice(-500);
   { const si=obj(o.stageInit); s.stageInit=si&&[1,2,3].includes(+si.s)&&isDate(si.date)?{s:+si.s,date:si.date,pick:[1,2,3,9].includes(+si.pick)?+si.pick:+si.s}:null }
   // 내가 만든 메뉴: 끼니·이름·식품(음식 사전에 있는 것만, 1~8가지, 1~2000g)
   s.myMenus=arr(o.myMenus).filter(u=>obj(u)&&/^[a-z0-9]{1,20}$/.test(String(u.id))&&["B","L","D"].includes(u.slot)&&typeof u.title==="string"&&u.title.trim())
@@ -1476,7 +1486,7 @@ function currentStage(){
   const o=latestLog(3650);
   if(o){const a=activity(o); const old=o.date<addDays(today(),-14); const st=old?Math.min(a.stage,2):a.stage;
     return {stage:st,src:old?`2주 넘게 기록이 없어 마지막 기록(${md(o.date)})보다 한 단계 부드럽게 보고 있습니다`:`마지막 기록(${md(o.date)})의 단계를 그대로 쓰고 있습니다`,score:a.sc,stale:true,last:o.date,changed:st!==a.stage}}
-  const si=S.stageInit; if(si&&[1,2,3].includes(si.s)) return {stage:si.s,src:`아직 증상 기록이 없어 처음에 고른 요즘 상태(${md(si.date)})로 ${STAGES[si.s].name} 단계에서 시작합니다`,stale:true,init:true};
+  const si=S.stageInit; if(si&&[1,2,3].includes(si.s)) return {stage:si.s,src:`아직 증상 기록이 없어 처음에 고른 요즘 상태(${md(si.date)})로 ${stg(si.s)} 단계에서 시작합니다`,stale:true,init:true};
   return {stage:1,src:"아직 증상 기록이 없어 가장 부드러운 단계로 시작합니다",stale:true};
 }
 function dangerSignals(l){
@@ -1698,7 +1708,7 @@ function foodStatus(f,c=ctx()){
   if(f.tags.includes("spicy")) set(c.stage<3?"avoid":"caution",c.stage<3?"맵고 자극적인 음식은 피하도록 안내(대한장연구학회·길병원)":"맵고 자극적인 음식은 증상을 일으키기 쉬워 관해기에도 조금만(대한장연구학회·길병원)");
   if(f.tags.includes("medical")&&!orderOn("ons")) set("caution","특수의료용도식품: 사용 전 의사·임상영양사와 상담(제품 표시)");
   if(orderOn("liquid")&&!f.tags.includes("liq")) set("later","의료진 지시: 유동식·죽 위주");
-  if(f.ms!==9&&f.ms>c.stage) set("later",`${STAGES[f.ms].name} 단계부터 권장`);
+  if(f.ms!==9&&f.ms>c.stage) set("later",`${stg(f.ms)} 단계부터 권장`);
   else if(c.fiberStage===1&&f.fi>0){
     const mg=maxLowFiberG(f);
     if(mg<30) set("later",`섬유가 많아(100g당 ${f.fi}g) ${orderOn("lowres")?"저잔사 지시 중":"저잔사식 단계"}에는 제외`);
@@ -2386,7 +2396,35 @@ const GLOSS={
  med:["지중해식","생선·올리브유·채소·과일·통곡물 위주로 먹는 식사 방식입니다. 궤양성 대장염 환자에게도 권고됩니다.",[2,4]],
  remission:["관해(관해기)","증상이 거의 없어진 안정된 상태입니다. 국내 기준으로 하루 배변 3회 이하이고 혈변·급박감이 없는 경우입니다.",[38]],
  active:["활동기","설사·혈변 같은 증상이 활발한 시기입니다.",[38,15]],
- urg:["급박감","변이 마려우면 참기 어려워 바로 화장실에 가야 하는 느낌입니다.",[11]]
+ urg:["급박감","변이 마려우면 참기 어려워 바로 화장실에 가야 하는 느낌입니다.",[11]],
+ // v1.11.0 U-2: 화면에 나오는 전문용어 풀이를 늘림(8개 → 30개 이상)
+ fructan:["프럭탄","밀·양파·마늘 등에 많은 올리고당입니다. 장에서 발효돼 가스·복부팽만을 늘릴 수 있는 FODMAP의 한 종류입니다.",[20]],
+ gos:["갈락토올리고당(GOS)","콩·렌틸콩 같은 콩류에 많은 올리고당입니다. 가스를 늘릴 수 있는 FODMAP의 한 종류입니다.",[20]],
+ lactose:["유당","우유에 든 당입니다. 몸에서 잘 분해하지 못하면(유당불내증) 설사·가스가 생길 수 있어 락토프리 우유를 씁니다.",[20]],
+ polyol:["당알코올","자일리톨·솔비톨·말티톨처럼 설탕 대신 쓰는 단맛 성분입니다. 많이 먹으면 복부팽만·설사를 일으킬 수 있습니다.",[47]],
+ upf:["초가공식품","공장에서 여러 첨가물(감미료·유화제 등)을 넣어 만든 가공식품입니다. 염증성 장질환 지침은 줄이도록 권고합니다.",[2,3]],
+ processed:["가공육","햄·소시지·베이컨처럼 소금에 절이거나 훈연한 고기 제품입니다. 대한장연구학회는 되도록 먹지 않도록 안내합니다.",[37,3]],
+ nitrite:["발색제(아질산나트륨)","가공육의 색을 붉게 유지하는 첨가물입니다. 앱은 이것이 든 가공육을 '절대 금지'로 봅니다.",[37,3,50]],
+ ons:["영양 보충 음료(특수의료용도식품)","식사로 부족한 열량·단백질을 채우도록 만든 음료입니다. 쓰기 전에 의사·임상영양사와 상담합니다.",[1]],
+ bmi:["체질량지수(BMI)","몸무게(kg)를 키(m)의 제곱으로 나눈 값입니다. 마름·보통·과체중을 가르는 데 씁니다.",[73]],
+ kpk:["체중 1kg당 열량","하루에 필요한 열량을 몸무게 1kg에 몇 kcal로 잡는지 나타낸 값입니다.",[73]],
+ refuse:["폐기율","껍질·씨·뼈처럼 먹지 않고 버리는 부분이 차지하는 비율입니다. 손질 전 무게를 계산할 때 씁니다.",[64]],
+ fooddb:["국가표준식품성분표(DB)","농촌진흥청이 음식 재료마다 영양 성분을 분석해 공개한 자료입니다.",[64]],
+ monash:["Monash 대학 FODMAP 자료","FODMAP을 처음 연구한 호주 Monash 대학이 음식별로 먹는 양에 따른 FODMAP을 시험해 공개한 자료입니다.",[20]],
+ calpro:["대변 칼프로텍틴","대변에서 재는 장 염증 수치입니다. 높을수록 장에 염증이 많다는 뜻이라 진료에서 경과를 볼 때 씁니다.",[]],
+ crp:["CRP","피검사로 재는 몸의 염증 수치입니다.",[38]],
+ hb:["혈색소(헤모글로빈)","피에서 산소를 나르는 성분입니다. 피가 계속 나면 낮아져 빈혈이 생길 수 있습니다.",[38]],
+ asa:["메살라진(5-ASA)","궤양성 대장염에 가장 먼저 쓰는 먹는 약·좌약입니다. 면역을 크게 누르지 않습니다.",[40]],
+ steroid:["스테로이드","염증을 빨리 가라앉히는 약입니다. 오래 쓰면 부작용이 있어 짧게 씁니다. 면역을 누릅니다.",[40]],
+ immuno:["면역조절제","아자티오프린처럼 면역 반응을 낮춰 재발을 막는 약입니다.",[40]],
+ bio:["생물학적 제제","주사·정맥으로 맞는 항체 약(인플릭시맙 등)입니다. 특정 염증 물질을 막습니다.",[40]],
+ jak:["JAK 억제제","염증 신호를 막는 먹는 약(토파시티닙 등)입니다. 면역을 누릅니다.",[]],
+ relapse:["재발","좋아졌던 증상이 다시 나빠지는 것입니다.",[38]],
+ kasid:["대한장연구학회(KASID)","장 질환을 연구하는 국내 학회입니다. 환자용 식이 안내서를 냅니다.",[37]],
+ ecco:["ECCO","유럽 크론병·대장염 학회입니다. 염증성 장질환 진료지침을 냅니다.",[50]],
+ espen:["ESPEN","유럽 임상영양대사학회입니다. 염증성 장질환 영양 지침을 냅니다.",[1]],
+ ioibd:["IOIBD","염증성 장질환 국제 연구 기구입니다. 2020년에 식이 권고를 냈습니다.",[3]],
+ glim:["GLIM 기준","체중 감소·근육량 같은 기준으로 영양불량을 판단하는 국제 기준입니다.",[1]]
 };
 const term=(k,label)=>`<button class="term" data-act="term" data-v="${k}">${label||GLOSS[k][0]}</button>`;
 /* ===== 화면 구조 ===== */
@@ -2400,7 +2438,7 @@ const LOGO_H=`<span class="logo">${LOGO.replace("<svg ",'<svg aria-hidden="true"
 const TAB_TITLE={plan:LOGO_H,log:"증상 기록",food:"음식 찾아보기",me:"내 정보"};
 const SCR_TITLE={meal:"끼니 상세",wizard:"증상 기록",reintro:"음식 다시 먹어 보기",pdf:"진료용 PDF",
  "set-profile":"기본 정보","set-weight":"몸무게 기록","set-orders":"의료진 지시 사항","set-allergy":"알레르기·유당","set-meds":"복용 중인 약",
- "set-diet":"식성·예산","set-trig":"개인 주의 음식","set-stage":"식단 단계","set-data":"데이터 백업","set-refs":"참고문헌","set-remind":"알림","set-about":"앱 정보 · 화면 설정",care:"건강 관리 점검",qa:"궁금한 점",past:"지난 날 기록","set-privacy":"개인정보 처리 안내",
+ "set-diet":"식성·예산","set-labs":"검사 수치·약 메모","set-trig":"개인 주의 음식","set-stage":"식단 단계","set-data":"데이터 백업","set-refs":"참고문헌","set-remind":"알림","set-about":"앱 정보 · 화면 설정",care:"건강 관리 점검",qa:"궁금한 점",past:"지난 날 기록","set-privacy":"개인정보 처리 안내",
  nutri:"오늘 영양·수분",report:"주간·월간 영양 보고서","set-goals":"목표 직접 정하기","set-home":"홈 화면에 설치",asks:"진료 때 물어볼 것"};
 let ORD_TXT="", OTH_TXT="", W_TXT=null;
 // 키보드가 올라온 뒤 초점 입력칸이 하단 고정 막대(다음 버튼·탭)에 가리면 그만큼 화면을 올린다
@@ -2499,7 +2537,7 @@ function viewPlan(){
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
   <div class="hero">
-    <div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${STAGES[cs.stage].name}. 눌러서 자세히 보기">${STAGES[cs.stage].name} 단계${ic("chev","chev")}</button></div>
+    <div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div>
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
   ${note?`<div class="banner info">${esc(note)}</div>`:""}
@@ -3154,8 +3192,30 @@ function statusOf(c){
   if(FS_CACHE.sig!==sig) FS_CACHE={sig,m:new Map()};
   return f=>{let r=FS_CACHE.m.get(f.id); if(!r){r=foodStatus(f,c); FS_CACHE.m.set(f.id,r)} return r};
 }
+/* v1.11.0 F-5: 영어 음식 이름(banana·milk·coffee 등)은 한글 이름으로 바꿔 찾고, 결과가 없으면 비슷한 이름(자모 편집 거리 1~2)을 '혹시 ○○?'로 권한다 */
+const ENG_Q={banana:"바나나",milk:"우유",coffee:"커피",rice:"밥",porridge:"죽",congee:"죽",egg:"달걀",eggs:"달걀",chicken:"닭",beef:"소고기",pork:"돼지고기",duck:"오리",fish:"생선",
+  salmon:"연어",tuna:"참치",mackerel:"고등어",cod:"대구",shrimp:"새우",crab:"게",squid:"오징어",octopus:"문어",oyster:"굴",clam:"조개",tofu:"두부",yogurt:"요거트",yoghurt:"요거트",
+  cheese:"치즈",butter:"버터","soy milk":"두유",soymilk:"두유",latte:"라떼",tea:"차","green tea":"녹차",juice:"주스",water:"물",bread:"빵",toast:"토스트",cake:"케이크",cookie:"쿠키",
+  chocolate:"초콜릿",candy:"사탕",jelly:"젤리",icecream:"아이스크림","ice cream":"아이스크림",pizza:"피자",hamburger:"햄버거",burger:"버거",sandwich:"샌드위치",pasta:"파스타",spaghetti:"스파게티",
+  noodle:"면",noodles:"국수",ramen:"라면",udon:"우동",sushi:"초밥",dumpling:"만두",dumplings:"만두",kimchi:"김치",soup:"국",stew:"찌개",salad:"샐러드",oatmeal:"오트밀",oats:"귀리",cereal:"시리얼",
+  apple:"사과",pear:"배",peach:"복숭아",grape:"포도",grapes:"포도",strawberry:"딸기",orange:"오렌지",tangerine:"귤",watermelon:"수박",melon:"멜론",kiwi:"키위",blueberry:"블루베리",mango:"망고",
+  pineapple:"파인애플",avocado:"아보카도",tomato:"토마토",potato:"감자","sweet potato":"고구마",carrot:"당근",pumpkin:"호박",zucchini:"애호박",spinach:"시금치",cabbage:"양배추",onion:"양파",
+  garlic:"마늘",cucumber:"오이",mushroom:"버섯",broccoli:"브로콜리",eggplant:"가지",radish:"무",seaweed:"미역",nuts:"견과",almond:"아몬드",walnut:"호두",peanut:"땅콩","peanut butter":"땅콩버터",
+  honey:"꿀",sugar:"설탕",salt:"소금","olive oil":"올리브유",ham:"햄",sausage:"소시지",bacon:"베이컨",beer:"맥주",wine:"와인",alcohol:"술",soda:"탄산음료",cola:"콜라",coke:"콜라",
+  "lactose free":"락토프리","lactose-free":"락토프리",protein:"단백질",steak:"스테이크",curry:"카레",omelet:"오믈렛",omelette:"오믈렛",pancake:"팬케이크",waffle:"와플",donut:"도넛",bagel:"베이글"};
+function engQuery(q){const k=String(q||"").trim().toLowerCase().replace(/\s+/g," "); if(!/^[a-z][a-z \-']*$/.test(k)) return "";
+  return ENG_Q[k]||ENG_Q[k.replace(/es$/,"")]||ENG_Q[k.replace(/s$/,"")]||""}
+function jamoDist(a,b,max){if(Math.abs(a.length-b.length)>max) return max+1; let prev=[...Array(b.length+1).keys()];
+  for(let i=1;i<=a.length;i++){const cur=[i]; let mn=i; for(let j=1;j<=b.length;j++){const v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); cur.push(v); if(v<mn) mn=v}
+    if(mn>max) return max+1; prev=cur} return prev[b.length]}
+function suggestFoods(q){const k=String(q||"").normalize("NFC").replace(/\s/g,"").toLowerCase(); if(!/^[가-힣]{2,}$/.test(k)) return [];
+  const jk=jamoOf(k); const max=jk.length>=7?2:1; const best=new Map();
+  for(const f of FOODS){const K=srchKeys(f); for(let i=0;i<K.heads.length;i++){const h=K.heads[i]; if(!/^[가-힣]+$/.test(h)) continue;
+    const d=jamoDist(jk,K.headJ[i],max); if(d<=max){const o=best.get(f.id); if(!o||d<o.d) best.set(f.id,{f,d})}}}
+  return [...best.values()].sort((a,b)=>a.d-b.d||isProd(a.f)-isProd(b.f)||a.f.name.length-b.f.name.length).slice(0,3).map(x=>x.f)}
+let FS_ENG="";   // 영어로 찾은 한글 이름(안내 문장에 씀)
 function foodSearchData(){
-  const c=ctx(); const q=S.foodQ.trim(); const st=statusOf(c); const qt=QTAG[q.replace(/\s/g,"")]||[];
+  const c=ctx(); const q0=S.foodQ.trim(); const eq=engQuery(q0); FS_ENG=eq; const q=eq||q0; const st=statusOf(c); const qt=QTAG[q.replace(/\s/g,"")]||[];
   const list=FOODS.filter(f=>!q||searchHit(f,q)||f.cat.includes(q)||qt.some(t=>f.tags.includes(t)));
   const order=LV_RANK;
   const rows=list.map(f=>({f,s:st(f),r:searchRank(f,q)})).sort((a,b)=>order[a.s.level]-order[b.s.level]||a.r-b.r);
@@ -3253,11 +3313,12 @@ function foodResHTML(c,q,list,rows){
   const rc=!q&&c.stage<3&&lvf==="전체"&&cat==="전체"?remCount(c):null;
   const nNow=shown.filter(r=>r.s.level==="ok"||r.s.level==="caution").length;
   return `
-  ${q&&!list.length?`<div class="card note-card"><span class="lic t-plain">${ic("info")}</span><span class="lt"><b>목록에 없는 음식입니다</b><small>${qas.length?"아래 관련 질문을 보거나, ":""}외식 메뉴라면 외식 판정에서 재료와 함께 검사해 보십시오.</small></span></div>`:""}
+  ${FS_ENG&&q?`<p class="hint pad eng-note">영어 '${esc(S.foodQ.trim())}'를 '${esc(FS_ENG)}'(으)로 찾았습니다.</p>`:""}
+  ${q&&!list.length?(()=>{const sg=suggestFoods(q); return `<div class="card note-card"><span class="lic t-plain">${ic("info")}</span><span class="lt"><b>목록에 없는 음식입니다</b>${sg.length?`<span class="sugg">혹시 ${sg.map(f=>`<button class="linkish" data-act="foodQSet" data-v="${esc(f.name)}">${esc(f.name)}</button>`).join(", ")}을(를) 찾으십니까?</span>`:""}<small>${qas.length?"아래 관련 질문을 보거나, ":""}외식 메뉴라면 외식 판정에서 재료와 함께 검사해 보십시오.</small></span></div>`})():""}
   ${qas.length?`<div class="fgroup"><h2 class="fg-h">관련 질문<span class="hint">${qas.length}개</span></h2><div class="list">${qas.map(qaRowHTML).join("")}</div></div>`:""}
   ${q?"":`<button class="card note-card qa-entry" data-act="qaGo" data-v=""><span class="lic t-warm">${ic("info")}</span><span class="lt"><b>궁금한 점 ${QA.length}가지</b><small>커피·술·유제품·영양제·여행 등 자주 묻는 질문과 근거 원문</small></span>${ic("chev","chev")}</button>`}
   <div class="ftools" role="group" aria-label="걸러 보기"><button class="chip filt" data-act="filterOpen" aria-haspopup="dialog">${ic("filter")} 걸러 보기${filtered?` <b class="num">${(cat!=="전체")+(lvf!=="전체")}</b>`:""}</button>${cat!=="전체"?`<button class="chip on" data-act="cat" data-v="전체" aria-label="종류 ${esc(cat)} 걸러 보기 지우기">${esc(cat)} ×</button>`:""}${lvf!=="전체"?`<button class="chip on" data-act="lvFilter" data-v="전체" aria-label="판정 ${esc(LVN[lvf])} 걸러 보기 지우기">${esc(LVN[lvf])} ×</button>`:""}</div>
-  ${rc?`<div class="card note-card"><span class="lic t-sage">${ic("info")}</span><span class="lt"><b>지금(${STAGES[c.stage].name} 단계) 먹을 수 있는 음식은 ${nNow.toLocaleString()}개입니다</b><small>장을 쉬게 하는 단계라 고를 수 있는 음식이 적습니다. 증상이 가라앉아 관해기(지중해식 단계)가 되면 좋음 ${rc.ok.toLocaleString()}개·주의 ${rc.caution.toLocaleString()}개로 늘어납니다. '${LV.later}'로 보이는 음식은 그때 다시 볼 수 있습니다.</small></span></div>`:""}
+  ${rc?`<div class="card note-card"><span class="lic t-sage">${ic("info")}</span><span class="lt"><b>지금(${stg(c.stage)} 단계) 먹을 수 있는 음식은 ${nNow.toLocaleString()}개입니다</b><small>장을 쉬게 하는 단계라 고를 수 있는 음식이 적습니다. 증상이 가라앉아 관해기(지중해식 단계)가 되면 좋음 ${rc.ok.toLocaleString()}개·주의 ${rc.caution.toLocaleString()}개로 늘어납니다. '${LV.later}'로 보이는 음식은 그때 다시 볼 수 있습니다.</small></span></div>`:""}
   ${list.length&&!shown.length&&filtered?`<div class="card note-card"><span class="lic t-plain">${ic("info")}</span><span class="lt"><b>고른 조건에 맞는 음식이 없습니다</b><small>${q?`'${esc(q)}' 검색 결과 ${list.length}개가 있습니다. `:""}걸러 보기를 지워 보십시오.</small></span></div>`:""}
   ${top.length?`<div class="fgroup"><h2 class="fg-h">${top[0].r===0?"검색어와 같은 음식":"검색어로 시작하는 음식"}</h2><div class="fgrid">${top.map(card).join("")}</div></div>`:""}
   ${favs.length?grp("fav",`<span class="fg-t"><span aria-hidden="true">★</span> 즐겨찾기</span>`,favs,"즐겨찾기"):""}
@@ -3286,7 +3347,7 @@ function fservHTML(id){const x=FSERV[id]; if(!x) return "";
   const cell=(c,cls,l,first)=>`<div class="${cls}"><b>${c?(c[0]!=null?`${c[0]}g${first?"까지":"부터"}`:esc(c[1]||"")):"확인 안 됨"}</b>${l}${c&&c[0]!=null&&c[1]?`<br><small class="muted">${esc(c[1])}</small>`:""}</div>`;
   return `<div class="why-card inset"><b>먹는 양에 따른 FODMAP(Monash 신호등 방식)</b>
     ${has?`<div class="fsv" role="img" aria-label="FODMAP 낮음 ${x.lo?.[0]??"확인 안 됨"}, 중간 ${x.mid?.[0]??"확인 안 됨"}, 높음 ${x.hi?.[0]??"확인 안 됨"}">${cell(x.lo,"lo","낮음",true)}${cell(x.mid,"mid","중간")}${cell(x.hi,"hi","높음")}</div>`:`<p class="hint" style="margin:6px 0 0">양에 따른 수치는 공개 자료에서 확인하지 못했습니다.</p>`}
-    ${x.grp.length?`<p class="hint" style="margin:4px 0 0">주된 FODMAP: ${x.grp.map(g=>GRP_L[g]||g).join("·")}</p>`:""}
+    ${x.grp.length?`<p class="hint" style="margin:4px 0 0">주된 FODMAP: ${x.grp.map(g=>GLOSS[{fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g]]?term({fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g],GRP_L[g]||g):(GRP_L[g]||g)).join("·")}</p>`:""}
     <p class="hint" style="margin:4px 0 0">${x.src==="fe"?"Monash 앱 결과를 옮긴 2차 자료":"Monash 대학 자료"} · 확인 ${esc(x.chk)}${sup(x.refs)}. 같은 음식이라도 시험할 때마다 값이 달라질 수 있어 참고용입니다.</p></div>`}
 const fservNote=id=>{const x=FSERV[id]; return x&&x.lo&&x.lo[0]!=null?`<p class="hint" style="margin:0 0 6px">FODMAP: ${x.lo[0]}g까지 낮음${x.mid&&x.mid[0]!=null?` · ${x.mid[0]}g부터 중간`:""}${x.hi&&x.hi[0]!=null?` · ${x.hi[0]}g부터 높음`:""}${sup(x.refs)}</p>`:""};
 function dishSrcHTML(f){const x=DISHX[f.id]; if(!x) return ""; const [how,n,lo,hi,borrow]=x;
@@ -3416,7 +3477,7 @@ function showFood(id){
 /* v1.8.0 목표값이 어떻게 정해졌는지(BMI 구분·kg당 열량·직접 정한 목표) */
 function targetNoteHTML(tg){
   const b=tg.bmi; const L={k:"열량",p:"단백질",ca:"칼슘",na:"나트륨",water:"수분"};
-  let h=b?`BMI ${b.bmi}(${b.cat})이라 열량은 체중 1kg당 ${tg.kpk}kcal로 잡았습니다${sup([73])}${b.over?" · 대한비만학회는 과체중·비만의 체중 유지 열량을 가벼운 활동 기준 20–25kcal/kg로 안내합니다":b.low?" · 저체중은 35kcal/kg로 안내됩니다":""}.`:`키를 넣으면 BMI에 맞춰 열량 목표를 조절합니다${sup([73])}.`;
+  let h=b?`${term("bmi","체질량지수(BMI)")} ${b.bmi}(${b.cat})이라 열량은 ${term("kpk","체중 1kg당")} ${tg.kpk}kcal로 잡았습니다${sup([73])}${b.over?" · 대한비만학회는 과체중·비만의 체중 유지 열량을 가벼운 활동 기준 20–25kcal/kg로 안내합니다":b.low?" · 저체중은 35kcal/kg로 안내됩니다":""}.`:`키를 넣으면 BMI에 맞춰 열량 목표를 조절합니다${sup([73])}.`;
   h+=` 단백질은 체중 1kg당 ${tg.pk}g${sup([1])}.`;
   if(tg.custom.length) h+=` 직접 정한 목표: ${tg.custom.map(k=>L[k]).join("·")}.`;
   return `<p class="hint" style="margin:0 0 8px">${h}</p>`;
@@ -3490,7 +3551,7 @@ function viewMe(){
   ${nudgesHTML()}
   <button class="card profile" data-act="openScr" data-v="set-profile">
     <span class="avatar">${ic("user")}</span>
-    <span class="lt"><b>${prof||"기본 정보를 입력해 주십시오"}</b><small>${STAGES[cs.stage].name} 단계 · ${S.stageMode==="auto"?(cs.score!=null&&!cs.stale?`증상 점수 ${cs.score}점 기준`:"증상 기록으로 자동"):"직접 선택"}</small></span>${ic("chev","chev")}
+    <span class="lt"><b>${prof||"기본 정보를 입력해 주십시오"}</b><small>${stg(cs.stage)} 단계 · ${S.stageMode==="auto"?(cs.score!=null&&!cs.stale?`증상 점수 ${cs.score}점 기준`:"증상 기록으로 자동"):"직접 선택"}</small></span>${ic("chev","chev")}
   </button>
   <div class="sec-label">기본</div>
   <div class="list">
@@ -3502,6 +3563,7 @@ function viewMe(){
     ${listRow({icon:"steth",tint:"t-warm",title:"의료진 지시 사항",right:`${S.orders.checked.length+S.orders.other.length}개`,attr:'data-act="openScr" data-v="set-orders"'})}
     ${listRow({icon:"alert",tint:"t-warm",title:"알레르기·유당",right:`${alN}개${p.lactose?" · 유당":""}`,attr:'data-act="openScr" data-v="set-allergy"'})}
     ${listRow({icon:"pill",tint:"t-rose",title:"복용 중인 약",right:`${p.meds.length+(p.medOther?1:0)}개`,attr:'data-act="openScr" data-v="set-meds"'})}
+    ${listRow({icon:"chart",tint:"t-rose",title:"검사 수치·약 메모",sub:"CRP·칼프로텍틴·혈색소, 약을 바꾼 날",right:`${(S.labs||[]).length}개`,attr:'data-act="openScr" data-v="set-labs"'})}
     ${listRow({icon:"dislike",tint:"t-plain",title:"식성·예산",right:esc(p.budgetMonth!==""?`월 ${p.budgetMonth}만원 · ${p.budget}`:p.budget),attr:'data-act="openScr" data-v="set-diet"'})}
     ${listRow({icon:"ban",tint:"t-coral",title:"개인 주의 음식",right:`${S.triggers.length}개`,attr:'data-act="openScr" data-v="set-trig"'})}
   </div>
@@ -3550,6 +3612,7 @@ function scrSettingsBody(){
     <div class="sec-label">그 밖의 알레르기</div>
     <div class="list">${ALLERGY_EXTRA.map(([v,l])=>swRow(l,`data-act="allergyT" data-v="${v}"`,p.allergies.includes(v))).join("")}
       <div class="lrow static"><label class="f" for="p_allergyOther" style="flex:1">직접 입력(쉼표로 구분)<input type="text" id="p_allergyOther" value="${esc(p.allergyOther)}"></label></div></div>`;
+  if(n==="set-labs") return labsHTML();
   if(n==="set-meds") return `<div class="list">${MED_OPTS.map(([v,l])=>swRow(l,`data-act="medT" data-v="${v}"`,p.meds.includes(v))).join("")}
     <div class="lrow static"><label class="f" for="p_medOther" style="flex:1">기타 약 이름<input type="text" id="p_medOther" value="${esc(p.medOther)}"></label></div></div>
     <p class="hint pad">스테로이드·설파살라진·콜레스티라민은 흡수를 방해하는 영양소를 영양 탭에서 알려 주고, 식단을 만들 때 반영합니다${sup([36,1])}.</p>`;
@@ -3562,7 +3625,7 @@ function scrSettingsBody(){
       <label class="mini-sw"><input type="checkbox" class="sw" data-act="trigNever" data-k="${k}" ${t.never?"checked":""} ${(t.sym||[]).includes("allergy")?"disabled":""}> 다시 시험하지 않기</label></span>
       <button class="icon-btn" data-act="delTrig" data-k="${k}" aria-label="${esc(t.name)} 삭제">${ic("trash")}</button></div>`).join(""):`<div class="empty">주의 음식이 없습니다</div>`}</div>
     <button class="btn ghost full" data-act="trigPick">${ic("plus")} 목록에서 음식 골라 추가</button>`;
-  if(n==="set-stage") return `<div class="list">${[["auto","증상 기록으로 자동","최근 기록으로 판정"],["1",STAGES[1].name,STAGES[1].desc],["2",STAGES[2].name,STAGES[2].desc],["3",STAGES[3].name,STAGES[3].desc]].map(([v,l,s])=>`<button class="lrow" data-act="stageMode" data-v="${v}"><span class="lt"><b>${l}</b><small>${s}</small></span>${String(S.stageMode)===v?`<span class="done">${ic("check")}</span>`:""}</button>`).join("")}</div>
+  if(n==="set-stage") return `<div class="list">${[["auto","증상 기록으로 자동","최근 기록으로 판정"],["1",stg(1),STAGES[1].desc],["2",stg(2),STAGES[2].desc],["3",stg(3),STAGES[3].desc]].map(([v,l,s])=>`<button class="lrow" data-act="stageMode" data-v="${v}"><span class="lt"><b>${l}</b><small>${s}</small></span>${String(S.stageMode)===v?`<span class="done">${ic("check")}</span>`:""}</button>`).join("")}</div>
     <div class="card stack small">
       <div><b>${STAGES[1].name}</b> · SCCAI 5점 이상${sup([15])}, 혈변 하루 4회 이상${sup([12])}, 또는 하루 5회 이상 배변과 혈변${sup([38])}</div>
       <div><b>${STAGES[3].name}</b> · 하루 배변 3회 이하, 혈변·급박감 없음(국내 관해 기준)${sup([38])}</div>
@@ -3636,6 +3699,9 @@ function scrSettingsBody(){
       <div class="row between"><span>음식 자료</span><b class="num">${FOODS.length.toLocaleString()}가지</b></div>
       <div class="row between"><span>마지막으로 음식을 넣은 날</span><b class="num">${esc(Object.values(ADDED).sort().pop()||"")}</b></div>
       <p class="hint" style="margin:0">음식마다 넣은 날(확인 날짜)은 음식 정보 맨 아래에 있습니다.${IS_ANDROID()?" 설치한 안드로이드 앱은 자동으로 바뀌지 않으니, 새 버전이 나오면 같은 앱 위에 덮어 설치하십시오. 덮어 설치해도 기록은 앱 안에 남고, 앱을 지우면 함께 지워집니다.":""}</p></div>
+    <div class="sec-label">어려운 말 풀이</div>
+    <details class="card gloss-all"><summary><b>앱에 나오는 용어 ${Object.keys(GLOSS).length}개</b></summary>
+      <dl class="gloss-dl">${Object.entries(GLOSS).sort((a,b)=>a[1][0].localeCompare(b[1][0],"ko")).map(([k,g])=>`<dt>${esc(g[0])}</dt><dd>${esc(g[1])}${sup(g[2])}</dd>`).join("")}</dl></details>
     <div class="sec-label">앱 안내</div>
     ${infoBody("me")}`;
   return "";
@@ -3937,7 +4003,7 @@ function renderShop(){const {days,groups,recs,dishes}=shopData(); const done=new
   const box=(k,body)=>`<label class="lrow shop"><input type="checkbox" data-shop="${esc(k)}" ${done.has(k)?"checked":""}><span class="lt">${body}</span></label>`;
   const any=SHOP_ORDER.some(c=>groups[c])||recs.length||dishes.length;
   openSheet(`<h2>일주일 장보기 목록</h2>
-   <p class="hint" style="margin:6px 0 0">${days.length?`${md(days[0].date)}~${md(days[days.length-1].date)} `:""}예시 식단을 살 때 재료로 바꿔 모았습니다(안 먹음으로 표시한 끼니는 뺍니다). 밥·죽처럼 익힌 무게로 적힌 것은 국가표준식품성분 DB 10.4의 생것·익힌 것 수분으로 생것 무게를 계산했고, 손질 전 무게는 같은 DB의 폐기율로 계산했습니다${sup([64,80])}. 완성 음식은 레시피 재료를 원문 그대로(레시피 1번 분량) 적었습니다. 양은 어림값입니다.</p>
+   <p class="hint" style="margin:6px 0 0">${days.length?`${md(days[0].date)}~${md(days[days.length-1].date)} `:""}예시 식단을 살 때 재료로 바꿔 모았습니다(안 먹음으로 표시한 끼니는 뺍니다). 밥·죽처럼 익힌 무게로 적힌 것은 국가표준식품성분 DB 10.4의 생것·익힌 것 수분으로 생것 무게를 계산했고, 손질 전 무게는 같은 DB의 ${term("refuse","폐기율(버리는 부분의 비율)")}로 계산했습니다${sup([64,80])}. 완성 음식은 레시피 재료를 원문 그대로(레시피 1번 분량) 적었습니다. 양은 어림값입니다.</p>
    ${SHOP_ORDER.filter(c=>groups[c]).map((c,i)=>`<div class="sec-label">${i?"":"재료 · "}${c}</div><div class="list">${groups[c].map(x=>{const [a,b]=shopAmt(x); return box("i:"+x.name,`<b>${esc(x.name)}</b><small>${a}${b?` · ${esc(b)}`:""}</small>`)}).join("")}</div>`).join("")}
    ${recs.length?`<div class="sec-label">레시피 재료 · 레시피 1번 분량</div><div class="list">${recs.map(x=>box("r:"+x.id,`<b>${esc(x.r.name)}</b><small>이번 주 ${x.n}끼${x.dishes.length?` · 식단 ${esc(shopDishG(x.dishes))}`:""}</small><small class="ingr">${esc(x.r.ingr)}</small>${x.main.length?`<small class="muted">주재료(${esc(x.main.join("·"))})는 위 '재료' 무게로 사십시오</small>`:""}${x.notes.length?`<small class="muted">바꿔 만들 점: ${esc(x.notes.map(n=>`${n.t}${n.found&&!n.t.includes(n.found)?`(${n.found})`:""}`).join(", "))}</small>`:""}`)).join("")}</div>`:""}
    ${dishes.length?`<div class="sec-label">레시피 없는 음식</div><div class="list">${dishes.map(([id,g])=>box("d:"+id,`<b>${esc(FOOD[id].name)}</b><small>${shopG(g)} · 완성된 음식 무게(사거나 평소대로 만드십시오)</small>`)).join("")}</div>`:""}
@@ -4140,6 +4206,9 @@ function reportBlocks(){
     const fhead=`<tr><th>음식</th><th>좋음</th><th>보통</th><th>나쁨</th><th>마지막 섭취</th></tr>`;
     if(!foods.length) blocks.push(`<h2>음식별 평가</h2><div>기간 내 평가가 없습니다.</div>`);
     else blocks.push(...packTable(`<h2>음식별 평가 (나쁨 많은 순)</h2>`,`<thead>${fhead}</thead>`,foods.map(([id,o])=>`<tr><td>${esc(o.name||id)}</td><td>${o.good}</td><td>${o.ok}</td><td>${o.bad?`<b>${o.bad}</b>`:0}</td><td class="nw">${o.last.slice(5)}</td></tr>`),""));
+    // v1.11.0 F-13: 기간 안의 검사 수치·약 메모
+    { const lb=(S.labs||[]).filter(x=>x.date>=from&&x.date<=today()).sort((a,b)=>a.date<b.date?-1:1);
+      if(lb.length) blocks.push(...packTable(`<h2>검사 수치·약 메모 (환자가 적은 것)</h2>`,`<thead><tr><th>날짜</th><th>종류</th><th class="n">수치</th><th>메모</th></tr></thead>`,lb.map(x=>{const [,l,u]=labOf(x.k); return `<tr><td class="nw">${x.date.slice(5)}</td><td>${esc(l)}</td><td class="n">${x.v!==""?`${esc(x.v)}${u?" "+u:""}`:"-"}</td><td>${esc(x.note||"")}</td></tr>`}),"")) }
     const mealDays=[...new Set([...Object.keys(S.ate||{}),...Object.keys(S.skips||{}),...Object.keys(S.ateMeals||{})])].filter(k=>k>=from&&k<=today()).sort();
     if(mealDays.length){const cell=(d,sl)=>isSkipped(d,sl)?"안 먹음":isAte(d,sl)?esc(ateMenu(d,sl)?.t||S.ratings.find(r=>r.date===d&&r.slot===sl)?.title||"먹음"):"-";
       blocks.push(...packTable(`<h2>식사 기록</h2>`,`<colgroup><col style="width:13%">${SLOTS.map(()=>"<col>").join("")}</colgroup><thead><tr><th>날짜</th>${SLOTS.map(sl=>`<th>${sl}</th>`).join("")}</tr></thead>`,mealDays.map(d=>`<tr><td>${d.slice(5)}</td>${SLOTS.map(sl=>`<td>${cell(d,sl)}</td>`).join("")}</tr>`),`<div class="note">메뉴 이름(또는 '먹음')은 환자가 먹었다고 표시한 끼니이며, 메뉴 이름은 표시 당시 앱 식단 기준입니다. '안 먹음'은 건너뛴 끼니, '-'는 표시가 없는 끼니입니다.</div>`,' class="fx"'))}
@@ -4478,6 +4547,15 @@ document.addEventListener("click",e=>{
     case "readySave": {const r=READY; if(!r) break; DL.save({filename:r.filename,data:r.blob}).then(()=>toast("파일로 저장했습니다"),()=>{}); break}
     case "backupShare": backupShare(); break;
     case "encOpen": encSheet(); break;
+    case "labAdd": labSheet(); break;
+    case "labSave": {const d=$("#labDate")?.value||"", k=$("#labKind")?.value||"etc", vr=String($("#labVal")?.value||"").trim().replace(",","."), note=String($("#labNote")?.value||"").trim(); const er=$("#labErr");
+      const num=["crp","calpro","hb","alb"].includes(k);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>today()){if(er) er.textContent="날짜를 확인해 주십시오."; break}
+      if(num&&!(vr!==""&&isFinite(+vr)&&+vr>=0&&+vr<100000)){if(er) er.textContent="검사 수치를 숫자로 적어 주십시오."; break}
+      if(!num&&!vr&&!note){if(er) er.textContent="수치나 메모 가운데 하나는 적어 주십시오."; break}
+      S.labs=[...(S.labs||[]),{date:d,k,v:vr.slice(0,20),note:note.slice(0,120)}]; save(); closeSheet(); render(); toast("적었습니다. 진료용 PDF에 함께 나옵니다"); break}
+    case "labDel": {const i=+v; if(!(S.labs||[])[i]) break; withUndo(["labs"],()=>{S.labs=S.labs.filter((_,j)=>j!==i)},"지웠습니다"); break}
+    case "foodQSet": {S.foodQ=v; const el=$("#foodQ"); if(el) el.value=v; refreshFoodRes(); break}
     case "updReload": location.reload(); break;
     case "encSave": {const a1=$("#encP1")?.value||"", a2=$("#encP2")?.value||""; const er=$("#encErr");
       if(a1.length<8){if(er) er.textContent="8자 이상으로 정해 주십시오."; break} if(a1!==a2){if(er) er.textContent="두 번 넣은 비밀번호가 다릅니다."; break}
@@ -4752,6 +4830,17 @@ async function folderPick(){ if(!FOLDER_OK()){alertMsg("이 브라우저는 폴�
 async function folderOff(){ try{await idb("kv","readwrite",st=>st.delete("folder"))}catch(e){} AUTO.folder=null; AUTO.perm=""; S.autoBk=null; save(); render(); toast("자동 백업 폴더를 껐습니다. 이미 저장한 파일은 그대로 있습니다") }
 async function snapList(){ try{ AUTO.snaps=((await idb("snaps","readonly",st=>st.getAll()))||[]).map(x=>({date:x.date,at:x.at,n:x.n})).sort((a,b)=>a.date<b.date?1:-1) }catch(e){ AUTO.snaps=[] } return AUTO.snaps }
 async function snapRestore(date){ try{ const x=await idb("snaps","readonly",st=>st.get(date)); if(!x) return; restoreFromText(x.json) }catch(e){ alertMsg("보관본을 읽지 못했습니다.") } }
+function labsHTML(){const L=(S.labs||[]).map((x,i)=>({x,i})).sort((a,b)=>a.x.date<b.x.date?1:a.x.date>b.x.date?-1:b.i-a.i);
+  return `<p class="hint pad">진료 때 받은 검사 결과와 약을 바꾼 날을 적어 두면 진료용 PDF에 함께 나옵니다. 이 기기 안에만 저장되고, 앱은 수치를 해석하거나 판정에 쓰지 않습니다. ${term("crp","CRP")}·${term("calpro","대변 칼프로텍틴")}·${term("hb","혈색소")}</p>
+   <button class="btn primary full" data-act="labAdd">${ic("plus")} 검사 수치·약 메모 적기</button>
+   ${L.length?`<div class="list">${L.map(({x,i})=>{const [,l,u]=labOf(x.k); return `<div class="lrow static"><span class="lic t-plain">${ic(x.k==="med"?"pill":"chart")}</span><span class="lt"><b>${md(x.date)} · ${esc(l)}${x.v!==""?` ${esc(x.v)}${u?" "+u:""}`:""}</b>${x.note?`<small>${esc(x.note)}</small>`:""}</span><button class="btn sm ghost" data-act="labDel" data-v="${i}" aria-label="${md(x.date)} ${esc(l)} 지우기">지우기</button></div>`}).join("")}</div>`:`<p class="hint pad">아직 적은 것이 없습니다.</p>`}`}
+function labSheet(){openSheet(`<h2>검사 수치·약 메모</h2><div class="stack">
+  <label class="f" for="labDate">날짜<input type="date" id="labDate" value="${today()}" max="${today()}"></label>
+  <label class="f" for="labKind">종류<select id="labKind">${LAB_KINDS.map(([k,l,u])=>`<option value="${k}">${l}${u?` (${u})`:""}</option>`).join("")}</select></label>
+  <label class="f" for="labVal">수치(검사일 때)<input type="text" inputmode="decimal" id="labVal" placeholder="예: 3.2" autocomplete="off"></label>
+  <label class="f" for="labNote">메모(선택)<input type="text" id="labNote" maxlength="120" placeholder="예: 메살라진 하루 4g으로 늘림" autocomplete="off"></label>
+  <p class="crit-t" id="labErr" role="alert"></p></div>
+  <div class="grid2" style="margin-top:12px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="labSave">저장</button></div>`)}
 function encCardHTML(){
   if(!ENC_OK()) return "";
   if(!ENC.ready){encLoad().then(()=>{if(SCR?.name==="set-data") render()})}
@@ -4837,6 +4926,7 @@ function mergeCore(cur,bk){
   m.triggers=byKey(m.triggers||[],B.triggers||[],t=>String(t.name).trim());
   m.myMenus=byKey(m.myMenus||[],B.myMenus||[],x=>x.slot+"|"+x.title);
   m.qs=byKey(m.qs||[],B.qs||[],q=>q.id);
+  m.labs=byKey(m.labs||[],B.labs||[],x=>[x.date,x.k,x.v,x.note].join("|"));
   m.favs=[...new Set([...(m.favs||[]),...(B.favs||[])])].slice(0,80);
   m.okMenus=[...new Set([...(m.okMenus||[]),...(B.okMenus||[])])];
   if(m.reintro&&B.reintro){m.reintro.history=byKey(m.reintro.history||[],B.reintro.history||[],h=>JSON.stringify(h)); if(!m.reintro.active&&B.reintro.active) m.reintro.active=B.reintro.active}

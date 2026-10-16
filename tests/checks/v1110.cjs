@@ -247,6 +247,52 @@ const SEED=()=>{
     need(r2.low,`A-15 모자람은 글자로도 (${r2.aria.slice(0,80)})`);
     await p.context().close()}
 
+  console.log('== F-5 오타·영어 검색');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const run=q=>{S.foodQ=q; const d=foodSearchData(); return {n:d.list.length,ids:d.list.map(f=>f.id),eng:FS_ENG}};
+      const ban=run("banana"), milk=run("Milk"), cof=run("coffee");
+      const sg=q=>suggestFoods(q).map(f=>f.name);
+      S.foodQ="바나니"; S.tab="food"; SCR=null; render(); const btn=document.querySelector('#foodRes [data-act=foodQSet]'); const txt=document.querySelector('#foodRes')?.innerText||"";
+      if(btn) btn.click(); const after=S.foodQ;
+      return {ban,milk,cof,s1:sg("바나니"),s2:sg("떡뽁이"),s3:sg("쵸콜릿"),s4:sg("바니나"),txt:/혹시/.test(txt),after}});
+    need(r.ban.ids.includes("banana")&&r.ban.eng==="바나나",`F-5 'banana' → 바나나 (${r.ban.n}개)`);
+    need(r.milk.ids.includes("milk")&&r.cof.ids.includes("coffee"),`F-5 'Milk'·'coffee' (${r.milk.n}/${r.cof.n})`);
+    need(r.s1.includes("바나나")&&r.s4.includes("바나나")&&r.s2.includes("떡볶이")&&r.s3.some(n=>/초콜릿/.test(n)),`F-5 오타 '혹시' (${r.s1}|${r.s2}|${r.s3}|${r.s4})`);
+    need(r.txt&&r.after==="바나나",`F-5 '혹시 바나나'를 누르면 그 이름으로 다시 찾음 (${r.after})`);
+    await p.context().close()}
+
+  console.log('== U-2 쉬운 말 먼저·용어 풀이');
+  {const p=await open();
+    const r=await p.evaluate(()=>{S.stageMode="1"; S.tab="plan"; SCR=null; render(); const chip=document.querySelector('.cal-head .chip-btn')?.innerText||"";
+      SCR=null; openScr("set-stage"); const st=document.querySelector('#main').innerText; SCR=null; openScr("set-about"); const ab=document.querySelector('#main').innerText;
+      const f=FOODS.find(x=>FSERV[x.id]&&FSERV[x.id].grp.includes("fructan")); SCR=null; S.tab="food"; render(); showFood(f.id); const fb=!!document.querySelector('#sheetRoot .term[data-v=fructan]'); closeSheet();
+      return {n:Object.keys(GLOSS).length,chip,st:/섬유를 줄인 식사\(저잔사식\)/.test(st)&&/골고루 먹는 식사\(지중해식\)/.test(st),ab:/앱에 나오는 용어 \d+개/.test(ab),fb,
+        later:foodStatus(FOOD.brown_rice,{...ctx(),stage:1,fiberStage:1}).reasons.join("|")}});
+    need(r.n>=30,`U-2 용어 풀이 30개 이상 (${r.n})`);
+    need(/섬유를 줄인 식사/.test(r.chip),`U-2 홈 단계 표시는 쉬운 말 (${r.chip.trim()})`);
+    need(r.st,'U-2 식단 단계 설정은 쉬운 말(용어)');
+    need(r.ab,'U-2 앱 정보에 용어 풀이 모음');
+    need(r.fb,'U-2 음식 정보의 FODMAP 성분(프럭탄)은 풀이 단추');
+    await p.context().close()}
+
+  console.log('== F-13 검사 수치·약 메모');
+  {const p=await open();
+    const r=await p.evaluate(async()=>{SCR=null; openScr("set-labs"); document.querySelector('[data-act=labAdd]').click();
+      document.querySelector('#labKind').value="crp"; document.querySelector('#labVal').value="abc"; document.querySelector('[data-act=labSave]').click();
+      const err=document.querySelector('#labErr')?.textContent||"";
+      document.querySelector('#labVal').value="3,2"; document.querySelector('[data-act=labSave]').click();
+      document.querySelector('[data-act=labAdd]').click(); document.querySelector('#labKind').value="med"; document.querySelector('#labNote').value="메살라진 하루 4g"; document.querySelector('[data-act=labSave]').click();
+      const list=document.querySelector('#main').innerText; const n=S.labs.length;
+      const bl=reportBlocks(); const div=document.createElement('div'); div.innerHTML=bl.blocks.join(""); const rep=div.innerText;
+      const bk=JSON.parse(backupJSON()); const back=normalizeState(bk).labs.length;
+      S.labs=[]; const mg=mergeStates(S,bk).labs.length;
+      return {err,n,list:/CRP 3\.2 mg\/L/.test(list)&&/메살라진 하루 4g/.test(list),rep:/검사 수치·약 메모/.test(rep)&&/3\.2 mg\/L/.test(rep),back,mg}});
+    need(/숫자/.test(r.err),`F-13 수치가 숫자가 아니면 안내 (${r.err})`);
+    need(r.n===2&&r.list,`F-13 검사 수치·약 메모 저장·목록 (${r.n})`);
+    need(r.rep,'F-13 진료용 PDF에 검사 수치·약 메모');
+    need(r.back===2&&r.mg===2,`F-13 백업·합치기에도 들어감 (${r.back}/${r.mg})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

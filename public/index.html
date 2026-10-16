@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=6f29f7725a"></script>
+<script defer src="app.js?v=0821d47079"></script>
 </head>
 <body>
 <style>
@@ -650,6 +650,8 @@ body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,
 .toasts.top{top:calc(env(safe-area-inset-top,0px) + 10px);bottom:auto}   /* v1.11.0 L4: 끼니 버튼 위를 가리지 않게 */
 .fg-h .fg-n{white-space:nowrap}   /* v1.11.0 L2 */
 .low-t{color:var(--warn-ink,var(--ink));font-size:0.75rem;font-weight:700}   /* v1.11.0 A-15 */
+.gloss-all summary{cursor:pointer;min-height:44px;display:flex;align-items:center}   /* v1.11.0 U-2: 용어 풀이 모음 */
+.gloss-dl{margin:6px 0 0}.gloss-dl dt{font-weight:700;margin-top:10px}.gloss-dl dd{margin:2px 0 0;color:var(--muted);font-size:0.875rem}
 /* v1.9.0 F-9: 화면이 막 바뀐 직후 같은 자리 버튼은 잠깐 비활성으로 보인다(연타로 다음 화면 버튼이 눌리지 않게) */
 .cool{opacity:.45!important;transition:opacity .15s}
 @media (prefers-reduced-motion: reduce){.toast{transition:none}}
