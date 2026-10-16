@@ -942,6 +942,9 @@ const PLABEL=/*@GEN:plabel@*/;   // 마트 시판 식품의 포장 영양정보(
 const PSIZE=/*@GEN:psize@*/;   // v1.10.0 시판 제품 용량(이름 끝에서 떼어 따로 보임)
 const PFAM=/*@GEN:pfam@*/;     // v1.10.0 용량만 다른 같은 제품: 대표 id → [[id, 용량, 자료, 번호, 확인일], …]
 const IDMAP=/*@GEN:idmap@*/;   // v1.10.0 묶여 빠진 옛 id → 대표 id(옛 기록·즐겨찾기를 잇는다)
+// v1.11.0 M8: 저장소에 올린 날로 추정한 날짜(넣은 날 기록이 없음)는 '그 이전'으로 보인다(tools/added_dates.py 참고)
+const ADDED_EST={"2026-09-24":["2026-09-24 이전(첫 공개판)","처음 공개한 앱에 이미 있던 음식입니다. 정확히 넣은 날은 기록이 없습니다."],
+  "2026-10-13":["2026-10-13 이전(v1.1~v1.8)","v1.1~v1.8 사이에 넣은 음식입니다. 정확히 넣은 날은 기록이 없어 그 뒤 처음 올린 날로 적었습니다."]};
 // v1.10.0 확인 날짜 = 그 음식을 앱에 넣은 날(사용자 요청). 날짜별로 묶어 둔 것을 id → 날짜로 편다
 const ADDED=(g=>{const o={}; for(const [d,ids] of Object.entries(g)) for(const i of ids.split(" ")) o[i]=d; return o})(/*@GEN:added@*/);
 const PROD=new Set(/*@GEN:prod@*/.split(" "));   // v1.11.0 M2: 시판 제품 id(데이터를 만들 때 정함, isProd가 이것만 봄)
@@ -2496,7 +2499,7 @@ function viewPlan(){
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
   ${note?`<div class="banner info">${esc(note)}</div>`:""}
-  ${alertsHTML()}${(()=>{const r=isToday?remindDue():null; return r?`<div class="banner info"><strong>${esc(r.sum)} 시간입니다</strong><br>${r.k==="log"?"아래 '오늘 할 일'에서 증상을 기록해 주십시오.":"아래 끼니에서 '먹음'을 누르거나, 먹지 않았으면 '바꾸기'에서 '안 먹음'을 골라 주십시오."}</div>`:""})()}${isToday?"":nudgesHTML(true)}${msgHTML()}
+  ${alertsHTML()}${(()=>{const r=isToday?remindDue():null; return r?`<div class="banner info"><strong>${esc(r.sum)} 시간입니다</strong><br>${r.k==="log"?"아래 '오늘 할 일'에서 증상을 기록해 주십시오.":"아래 끼니에서 '먹음'을 누르거나, 먹지 않았으면 '안 먹음·바꾸기'를 눌러 주십시오."}</div>`:""})()}${isToday?"":nudgesHTML(true)}${msgHTML()}
   ${isToday?tasksHTML():""}
   <div class="tiles t3">
     <button class="tile" data-go="food" data-sub="menu"><i class="t-warm">${ic("menu")}</i>외식 판정</button>
@@ -2526,7 +2529,7 @@ function viewPlan(){
     ${m.empty?"":`<div class="mact">
       ${future?`<span class="hint">그날이 되면 기록할 수 있습니다</span>`:`<button class="mate ${ate?"on":""}" data-act="ateToggle" data-k="${k}" aria-pressed="${ate}">${ic("check")} 먹음</button>
       ${ate&&ateMenu(d.date,m.slot)?`<span class="ratio" role="group" aria-label="${esc(m.slot)} 먹은 양">${[[0.5,"반"],[1,"전부"],[1.5,"더 많이"]].map(([x,l])=>`<button data-act="ateRatio" data-k="${k}" data-v="${x}" aria-pressed="${r===x}">${l}</button>`).join("")}</span>`:""}`}
-      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} 바꾸기: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} 바꾸기</button>`:""}
+      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
     </div>`}
     </div>`}).join("")}
   </div>
@@ -3400,7 +3403,7 @@ function showFood(id){
    ${INGR[id]?`<details class="ingr"><summary class="hint">${PSRC[id]?(PSRC[id][0]==="fs"?"원료 보기(품목제조보고 때 신고한 원료)":psrcPhoto(id)?"원재료명 보기(판매처 상세의 포장 표시·상품정보 고시)":"원재료명 보기(상품정보 고시, 원산지 표기 생략)"):/^알레르기 표시/.test(INGR[id])?"알레르기 표시 보기(포장 표시)":"원재료명 보기(포장 표시)"}</summary><p class="hint" style="margin:6px 0 0">${esc(INGR[id])}</p></details>`:""}
    ${PSRC[id]?(({p,s})=>`<p class="hint psrc" style="margin:8px 2px 0">출처: <a href="${s.url(p)}" target="_blank" rel="noopener">${s.nm} ${esc(p[1])} ${s.doc}</a>(${p[4]?`보고 일자 ${esc(p[4])}, `:""}${esc(p[2])} 확인, 한 곳에서만 확인)${sup([s.ref])}</p>`)(psrcOf(id)):""}
    ${fam?`<p class="hint" style="margin:6px 2px 0">같은 제품 다른 용량: ${fam.filter(m=>m[0]!==id).map(m=>{const ps=PSRC_SITE[m[2]]||PSRC_SITE.cj; return `<a href="${ps.url([m[2],m[3]])}" target="_blank" rel="noopener">${esc(m[1]||"용량 표시 없음")}</a>(${esc(m[4])} 확인)`}).join(", ")}. 원재료가 같아 한 음식으로 묶었고, 판정은 가장 엄격한 용량을 따릅니다.</p>`:""}
-   ${ADDED[id]?`<div class="kv chk-date"><span>확인 날짜</span><b class="num">${esc(ADDED[id])}</b></div><p class="hint" style="margin:-4px 2px 0">이 음식을 앱에 넣으며 자료를 확인한 날입니다.</p>`:""}
+   ${ADDED[id]?(()=>{const est=ADDED_EST[ADDED[id]]; return `<div class="kv chk-date"><span>확인 날짜</span><b class="num">${esc(est?est[0]:ADDED[id])}</b></div><p class="hint" style="margin:-4px 2px 0">${est?esc(est[1]):"이 음식을 앱에 넣으며 자료를 확인한 날입니다."}</p>`})():""}
    <div class="grid2" style="margin-top:14px"><button class="btn" data-act="closeSheet">닫기</button><button class="btn primary" data-act="extraFood" data-id="${id}">오늘 먹었습니다</button></div>`);
 }
 
@@ -3623,7 +3626,7 @@ function scrSettingsBody(){
     <div class="sec-label">앱 버전·자료</div>
     <div class="card stack"><div class="row between"><span>앱 버전</span><b class="num">${APP_VER}</b></div>
       <div class="row between"><span>음식 자료</span><b class="num">${FOODS.length.toLocaleString()}가지</b></div>
-      <div class="row between"><span>음식 자료 마지막 확인 날짜</span><b class="num">${esc(Object.values(ADDED).sort().pop()||"")}</b></div>
+      <div class="row between"><span>마지막으로 음식을 넣은 날</span><b class="num">${esc(Object.values(ADDED).sort().pop()||"")}</b></div>
       <p class="hint" style="margin:0">음식마다 넣은 날(확인 날짜)은 음식 정보 맨 아래에 있습니다.${IS_ANDROID()?" 설치한 안드로이드 앱은 자동으로 바뀌지 않으니, 새 버전이 나오면 같은 앱 위에 덮어 설치하십시오. 덮어 설치해도 기록은 앱 안에 남고, 앱을 지우면 함께 지워집니다.":""}</p></div>
     <div class="sec-label">앱 안내</div>
     ${infoBody("me")}`;
@@ -4383,7 +4386,7 @@ document.addEventListener("click",e=>{
     case "menuPick": {MP={k:+a.dataset.k,q:""}; renderMenuPick(); break}
     case "mealMore": {const d=curDay(); const k=+a.dataset.k; const m=d.meals[k]; if(!m) break; const fut=d.date>today(); const sk=isSkipped(d.date,m.slot);
       // v1.10.0 디자인 2: 끼니 줄에는 '먹음'만 크게 두고 나머지(안 먹음·고르기·다른 메뉴)는 여기로
-      openSheet(`<h2>${esc(m.slot)} 바꾸기</h2><p class="hint" style="margin:0 0 12px">${esc(m.title)}</p><div class="stack">
+      openSheet(`<h2>${esc(m.slot)} ${fut?"바꾸기":"안 먹음·바꾸기"}</h2><p class="hint" style="margin:0 0 12px">${esc(m.title)}</p><div class="stack">
         ${fut?"":`<button class="btn full" data-close="1" data-act="skipToggleDate" data-v="${d.date}" data-slot="${esc(m.slot)}">${sk?"'안 먹음' 표시 지우기":"이 끼니는 안 먹었습니다"}</button>`}
         ${S.plan.sample?`<button class="btn full" data-close="1" data-act="menuPick" data-k="${k}">${ic("menu")} 메뉴 직접 고르기</button><button class="btn full" data-close="1" data-act="swapMeal" data-k="${k}">${ic("refresh")} 다른 메뉴로 바꾸기</button>`:""}
         <button class="btn ghost full" data-act="closeSheet">닫기</button></div>`); break}

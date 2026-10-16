@@ -181,6 +181,21 @@ const SEED=()=>{
     need(r.haemul,"M5 '해물'은 해물탕을 찾음");
     await p.context().close()}
 
+  console.log('== M8 확인 날짜 문구·M9 안 먹음');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const pick=d=>Object.keys(ADDED).find(i=>ADDED[i]===d&&FOOD[i]);
+      const sheet=id=>{SCR=null; S.tab="food"; render(); showFood(id); const t=document.querySelector('#sheetRoot')?.innerText||""; closeSheet(); return t.replace(/\s+/g," ")};
+      const a=sheet(pick("2026-09-24")), b=sheet(pick("2026-10-13")), c=sheet(pick("2026-10-14"));
+      SCR=null; openScr("set-about"); const ab=(document.querySelector('#main')?.innerText||"").replace(/\s+/g," "); SCR=null;
+      S.tab="home"; SCR=null; render(); const sw=[...document.querySelectorAll('.mswap')].map(x=>x.innerText.trim());
+      return {a,b,c,ab,sw}});
+    need(/2026-09-24 이전\(첫 공개판\)/.test(r.a)&&!/2026-09-24 이전\(첫 공개판\)[^.]*넣으며 자료를 확인한 날/.test(r.a),`M8 첫 공개판 음식은 '2026-09-24 이전(첫 공개판)' (${(r.a.match(/확인 날짜.{0,60}/)||[""])[0]})`);
+    need(/2026-10-13 이전/.test(r.b),`M8 v1.1~v1.8 음식도 추정 날짜로 (${(r.b.match(/확인 날짜.{0,60}/)||[""])[0]})`);
+    need(/2026-10-14/.test(r.c)&&/넣으며 자료를 확인한 날/.test(r.c)&&!/이전/.test((r.c.match(/확인 날짜.{0,30}/)||[""])[0]),`M8 기록이 있는 날짜는 그대로 (${(r.c.match(/확인 날짜.{0,60}/)||[""])[0]})`);
+    need(/마지막으로 음식을 넣은 날/.test(r.ab)&&!/음식 자료 마지막 확인 날짜/.test(r.ab),"M8 설정 항목 이름 '마지막으로 음식을 넣은 날'");
+    need(r.sw.length&&r.sw.every(t=>/안 먹음·바꾸기/.test(t)),`M9 끼니 줄 버튼 '안 먹음·바꾸기' (${r.sw.join(",")})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

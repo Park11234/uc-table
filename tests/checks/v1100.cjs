@@ -78,7 +78,7 @@ const SEED=()=>{
     need(d.sum&&d.more,'디자인 7 판정 이유 한 줄 + 자세히');
     need(d.alt>=1,`사용자 1 피하는 음식에 '대신 이것' (${d.alt}개)`);
     need(d.dash===0,'디자인 6 영양 칸에 – 없음(자료 없음은 한 줄로)');
-    need(/^2026-\d\d-\d\d$/.test(d.date),`개발자 4 확인 날짜(넣은 날) 표시 (${d.date})`);
+    need(/^2026-\d\d-\d\d( 이전\(.+\))?$/.test(d.date),`개발자 4 확인 날짜(넣은 날) 표시, v1.11.0 M8: 추정 날짜는 '이전(첫 공개판)' (${d.date})`);
     need(/278g/.test(d.size),`디자인 5 용량은 이름과 따로 (${d.size})`);
     need(d.fam,'개발자 2 묶은 제품에 다른 용량 표시');
     await p.context().close()}
