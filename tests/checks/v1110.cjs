@@ -103,6 +103,19 @@ const SEED=()=>{
     need(r.back!=="avoid",'H5 약을 지우면 바로 원래 판정');
     await p.context().close()}
 
+  console.log('== M4(8번) 활동기 알림 문장 하나로 고정');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const hi={...BLANK_LOG(),day:7,night:2,urg:2,blood:1,bloody:2,well:1,stool:6,medtaken:1,pain:3};
+      for(const i of [0,1,2]) S.logs[addDays(today(),-i)]={...hi}; save(); SCR=null; S.tab="log"; render();
+      const b3=[...document.querySelectorAll('.banner')].map(x=>x.innerText).join("|");
+      for(const i of [1,2]) delete S.logs[addDays(today(),-i)]; save(); render();
+      const b1=[...document.querySelectorAll('.banner')].map(x=>x.innerText).join("|");
+      return {b3,b1,tell:ALERT_TELL}});
+    need(r.tell==="주치의(IBD 진료팀)에 알리십시오.",`8번 고정 문장 (${r.tell})`);
+    need(r.b3.includes(r.tell)&&!/고려하십시오/.test(r.b3),`8번 3일 연속 알림은 고정 문장 (${r.b3.slice(0,90)})`);
+    need(r.b1.includes(r.tell),`8번 하루 알림도 같은 문장 (${r.b1.slice(0,90)})`);
+    await p.context().close()}
+
   await b.close();
   console.log(F.length?'FAIL '+F.join(' / '):'검증 통과'); process.exit(F.length?1:0);
 })();

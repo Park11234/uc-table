@@ -99,7 +99,7 @@ const SEED=()=>{
     need(q1===3&&q&&q.quick===true&&q.day===1&&q.urg===1,`사용자 6 빠른 기록 세 문항 저장(quick 표시) (${q1}문항)`);
     // 3일 연속 5점 이상
     const t=await p.evaluate(()=>{const hi={...BLANK_LOG(),day:8,night:2,bloody:3,urg:2,blood:2,well:2}; for(let i=0;i<3;i++) S.logs[addDays(today(),-i)]=hi; SCR=null; S.tab="plan"; render(); return {tr:trend3(),txt:document.querySelector('#main').innerText}});
-    need(t.tr&&/3일 연속 활동기 기준입니다/.test(t.txt)&&/주치의\(IBD 진료팀\)에 연락하는 것을 고려하십시오/.test(t.txt)&&/예측하지 않습니다/.test(t.txt),'사용자 5 3일 연속 5점 이상이면 연락을 고려하라는 안내(예측 아님)');
+    need(t.tr&&/3일 연속 활동기 기준입니다/.test(t.txt)&&/주치의\(IBD 진료팀\)에 알리십시오/.test(t.txt)&&/예측하지 않습니다/.test(t.txt),'사용자 5·8번 3일 연속 5점 이상이면 주치의에 알리라는 고정 문장(예측 아님)');
     await p.context().close()}
   {const p=await open({noSeed:true});
     const s=await p.evaluate(()=>{S.consent={date:today()}; S.onb="3"; S.logs={}; S.stageInit=null; render(); const has=!!document.querySelector('[data-act=onbInit][data-v="3"]'); document.querySelector('[data-act=onbInit][data-v="3"]').click(); return {has,st:currentStage().stage,src:currentStage().src}});

@@ -2422,6 +2422,8 @@ function storageHTML(){
   if(storageOK) return "";
   return `<div class="banner crit" role="alert"><strong>기록이 저장되지 않고 있습니다</strong><br>브라우저 저장 공간이 가득 찼거나, 사생활(시크릿) 모드일 수 있습니다. 지금 화면을 벗어나면 오늘 기록이 사라질 수 있으니 먼저 백업 내용을 복사해 두십시오.<div class="b-act"><button class="btn sm primary" data-act="backupCopy">백업 내용 복사</button><button class="btn sm" data-act="openScr" data-v="set-data">백업 화면 열기</button></div></div>`;
 }
+/* v1.11.0 8번(M4): 활동기 알림의 행동 문장은 하루 알림·3일 연속 알림 모두 이 한 문장으로 고정(3일째에 더 약한 말이 되지 않게) */
+const ALERT_TELL="주치의(IBD 진료팀)에 알리십시오.";
 /* v1.10.0 사용자 5: 마지막 기록(어제·오늘)까지 3일 연속 증상 점수 5점 이상인지 */
 function trend3(){const l=latestLog(1); if(!l) return null; const ds=[2,1,0].map(i=>addDays(l.date,-i)); const ls=ds.map(d=>S.logs[d]);
   if(ls.some(x=>!x)) return null; const sc=ls.map(sccai); return sc.every(v=>v>=5)?{from:ds[0],to:ds[2],sc}:null}
@@ -2433,8 +2435,8 @@ function alertsHTML(){
   if(ds.urgent.length) h+=`<div class="banner urgent" role="alert"><strong>진료를 미루지 마십시오</strong><br>${esc(md(l.date))} 기록: ${esc(ds.urgent.join(", "))}. 이런 증상이 있으면 치료를 미루지 않도록 안내됩니다${sup([41])}. 오늘 주치의(IBD 진료팀)에게 연락하고, 심해지면 응급실로 가십시오.</div>`;
   const tr=trend3();
   // v1.10.0 사용자 5: 3일 연속 증상 점수 5점 이상(활동기 기준)이면 알린다. 예측이 아니라 기록을 기준과 비교한 것
-  if(!ds.severe.length&&!ds.urgent.length&&tr) h+=`<div class="banner warn" role="alert"><strong>3일 연속 활동기 기준입니다</strong><br>${esc(md(tr.from))}~${esc(md(tr.to))} 증상 점수가 ${tr.sc.join("·")}점으로 활동기 기준(5점 이상)이 이어지고 있습니다${sup([11,15])}. 주치의(IBD 진료팀)에 연락하는 것을 고려하십시오. 기록을 기준과 비교한 안내이며, 앞으로의 경과를 예측하지 않습니다.</div>`;
-  else if(!ds.severe.length&&!ds.urgent.length&&l&&activity(l).stage===1) h+=`<div class="banner warn" role="alert"><strong>증상이 활동기 기준입니다</strong><br>${esc(md(l.date))} 기록이 악화 기준에 해당합니다${sup([15,38])}. 주치의(IBD 진료팀)에 알리십시오. 스스로 굶지 말고 부드러운 음식을 조금씩 자주 드십시오${sup([40,39])}.</div>`;
+  if(!ds.severe.length&&!ds.urgent.length&&tr) h+=`<div class="banner warn" role="alert"><strong>3일 연속 활동기 기준입니다</strong><br>${esc(md(tr.from))}~${esc(md(tr.to))} 증상 점수가 ${tr.sc.join("·")}점으로 활동기 기준(5점 이상)이 이어지고 있습니다${sup([11,15])}. ${ALERT_TELL} 기록을 기준과 비교한 안내이며, 앞으로의 경과를 예측하지 않습니다.</div>`;
+  else if(!ds.severe.length&&!ds.urgent.length&&l&&activity(l).stage===1) h+=`<div class="banner warn" role="alert"><strong>증상이 활동기 기준입니다</strong><br>${esc(md(l.date))} 기록이 악화 기준에 해당합니다${sup([15,38])}. ${ALERT_TELL} 스스로 굶지 말고 부드러운 음식을 조금씩 자주 드십시오${sup([40,39])}.</div>`;
   if(ds.watch.length) h+=`<div class="banner warn" role="alert"><strong>주치의와 상의가 필요한 증상</strong><br>${esc(md(l.date))} 기록: ${esc(ds.watch.join(", "))}. 증상이 심해지면 바로 진료를 받으십시오.</div>`;
   h+=glimHTML();
   return h;
