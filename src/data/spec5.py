@@ -15,7 +15,7 @@ DS=[
  ("dongtae_jjigae","동태찌개","요리","D:동태찌개",3,["fish","spicy"],[400,"그릇"],["동태찌개","동태탕","생태탕"],"🍲",["spicy"],None,None,"",1),
  ("potato_soup","감자국","요리","D:감자국",1,["liq"],[300,"그릇"],["감자국","감잣국"],"🥣",["soup_clear","potato_ok"],None,None,"",1),
  ("fishcake_soup","어묵국","요리","D:어묵국",9,["processed","fish","wheat","liq"],[300,"그릇"],["어묵국","오뎅국","어묵탕"],"🍢",["processed"],None,None,"",1),
- ("budae_jjigae","부대찌개","요리","D:부대찌개",9,["processed","spicy","upf","pork","wheat"],[400,"그릇"],["부대찌개"],"🍲",["processed","spicy"],None,None,"",1),
+ ("budae_jjigae","부대찌개","요리","D:부대찌개",9,["nitrite","processed","spicy","upf","pork","wheat"],[400,"그릇"],["부대찌개"],"🍲",["nitrite_generic","processed","spicy"],None,None,"",1),
  ("gamjatang","감자탕","요리","D:감자탕",3,["spicy","pork","redmeat","gil"],[500,"그릇"],["감자탕","뼈해장국","뼈다귀해장국"],"🍲",["spicy"],None,None,"",1),
  ("altang","알탕","요리","D:알탕",3,["spicy","fish"],[400,"그릇"],["알탕"],"🍲",["spicy"],None,None,"",1),
  ("bone_broth","사골국","요리","D:사골국",1,["beef","liq"],[300,"그릇"],["사골국","사골곰탕","사골육수"],"🥣",["soup_bone"],None,None,"기름 걷기",1),
@@ -60,5 +60,5 @@ DS=[
  ("tofu_kimchi","두부김치","요리","D:두부김치",3,["spicy","soy","pork"],[200,"인분"],["두부김치"],"🌶️",["spicy"],None,None,"",1),
  ("dotori_muk","도토리묵무침","요리","D:도토리묵무침",3,["spicy","soy"],[100,"접시"],["도토리묵","묵무침","청포묵"],"🥢",["spicy","dish_mixed"],None,None,"",1),
  ("sundae","순대","요리","D:순대",9,["processed","pork"],[100,"인분"],["순대","순대국"],"🌭",["processed"],None,None,"",1),
- ("hotdog","핫도그","요리","D:핫도그",9,["fried","processed","wheat","pork"],[100,"개"],["핫도그","콘도그"],"🌭",["fried","processed"],None,None,"",1),
+ ("hotdog","핫도그","요리","D:핫도그",9,["nitrite","fried","processed","wheat","pork"],[100,"개"],["핫도그","콘도그"],"🌭",["nitrite_generic","fried","processed"],None,None,"",1),
 ]

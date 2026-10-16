@@ -15,6 +15,8 @@ app.src.html에는 화면·판정 규칙·식단 코드가 모두 들어 있고,
   /*@GEN:dishx@*/  음식(D) 값의 종류와 같은 이름 자료의 열량 범위 ← generated/gen_out.json
   /*@GEN:fserv@*/  FODMAP 1회량 기준·성분                  ← fodmap_serv.py build()
   /*@GEN:shop@*/   장보기: 익힌 무게→생것 비율·폐기율(DB 10.4)  ← generated/gen_out.json
+  /*@GEN:psize@*/ /*@GEN:pfam@*/ /*@GEN:idmap@*/  v1.10.0 시판 제품 용량·같은 제품 묶음·옛 id ← generated/gen_out.json
+  /*@GEN:added@*/  v1.10.0 확인 날짜(그 음식을 넣은 날, 날짜별로 묶음) ← generated/gen_out.json(src/data/added.json)
   /*@GEN:logo@*/   UC TABLE 로고(SVG 글자열)                ← src/brand/logo-mono.svg (tools/brand.cjs)
 
 식약처 원본 CSV가 있으면 generate_dataset.py로 gen_out.json부터 다시 만들 수 있다.
@@ -35,6 +37,14 @@ GEN = os.path.join(D, 'generated', 'gen_out.json')
 
 def js(x):
     return json.dumps(x, ensure_ascii=False, separators=(',', ':'))
+
+
+def by_date(d):
+    """확인 날짜를 날짜별 id 목록(띄어쓰기로 이은 글)으로 묶어 앱 크기를 줄인다"""
+    g = {}
+    for i, v in sorted(d.items()):
+        g.setdefault(v, []).append(i)
+    return {k: ' '.join(v) for k, v in sorted(g.items())}
 
 
 def render():
@@ -61,6 +71,10 @@ def render():
         'dishx': js(o.get('dishx', {})),
         'fserv': js(build_fserv()),
         'shop': js(o.get('shop', {})),
+        'psize': js(o.get('psize', {})),
+        'pfam': js(o.get('pfam', {})),
+        'idmap': js(o.get('idmap', {})),
+        'added': js(by_date(o.get('added', {}))),
         'logo': js(open(os.path.join(ROOT, 'src', 'brand', 'logo-mono.svg'), encoding='utf-8').read().strip()),
     }
     found = re.findall(r'/\*@GEN:(\w+)@\*/', s)

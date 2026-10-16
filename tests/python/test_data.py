@@ -755,6 +755,11 @@ class Spec10Test(unittest.TestCase):
                 self.assertIn(fid, skipped)
                 self.assertNotIn(fid, tr)
                 continue
+            if fid in spec10.IDMAP10:    # v1.10.0 용량만 다른 같은 제품은 대표 한 음식으로 묶였다(대표가 같거나 더 엄격)
+                rep = tr[spec10.IDMAP10[fid]]
+                self.assertIn(fid, [m[0] for m in spec10.FAM10[rep[0]]], fid)
+                self.assertEqual('nitrite' in rep[5], r['nit'], fid)
+                continue
             x = tr[fid]
             self.assertTrue(spec10.ING10[fid].startswith(r['ing']), fid)
             self.assertEqual(r['nit'], bool(self.NIT.search(r['ing'])), fid)

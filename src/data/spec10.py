@@ -681,7 +681,14 @@ T10 = {
     'caffeine_cj': ('카페인 음료는 배변량을 늘려 설사를 악화시킬 수 있어, 설사가 있을 때 피하도록 안내됩니다.', [3, 39]),
     'fiber_cj': ('잡곡·곤약·식이섬유 원료가 들었거나 식이섬유가 100g당 3g 이상(식약처 \'식이섬유 함유\' 표시 기준)인 제품이라 저잔사식 단계에서는 보류하고, 증상이 나아진 뒤 조금씩 늘립니다.', [29, 39]),
     'mild_cj': ('맵거나 기름지지 않은 제품이라 이행식 단계부터 양을 보며 드십시오.', [39]),
+    # v1.10.0 절대 금지(발색제 가공육) 제품용: '조금만·소량만 드십시오·자주 먹지 않습니다'처럼 먹어도 된다고 읽히는 말을 빼고 이유만 둔다(점검 보고서 개발자 1)
+    'upf_ban': ('향미증진제·향료·유화제 같은 첨가물도 든 초가공식품입니다(AGA는 초가공식품을 줄이도록 권고).', [2]),
+    'salty_ban': ('나트륨도 많습니다.', [39]),
+    'spicy_ban': ('맵고 자극적인 음식이기도 합니다(피하도록 안내됨).', [37, 39]),
+    'raw_ban': ('익히지 않은 수산물·젓갈도 들어 있습니다(저잔사식에서 제한).', [39]),
 }
+BAN_KEY = {'upf_cj': 'upf_ban', 'salty_cj': 'salty_ban', 'spicy_cj': 'spicy_ban', 'raw_cj': 'raw_ban'}
+EAT_ADVICE = re.compile(r'소량|조금만|자주 먹지 않|드십시오|양을 보며')
 
 
 def _existing():
@@ -703,6 +710,7 @@ def build():
     SKIP_DUP.clear()
     LABEL_NONUT.clear()
     TR, LABEL, T, FOD, ING, PLABEL, PSRC = [], {}, dict(T10), {}, {}, {}, {}
+    SIZE.clear()
     for p in P:
         fid = 'cj' + p['mat']
         base = re.sub(r'\s', '', tidy(p['names'][0]))
@@ -782,6 +790,8 @@ def build():
         if src_key.startswith('L:'):
             PLABEL[fid] = [p['b'], p['bu'], p['tot'], p['tu'], p['kcal'], p['na'], p['c'], p['s'], p['f'], p['tf'], p['sf'], p['ch'], p['p'], p.get('fi')]
         PSRC[fid] = ['cj', p['prd'], CHECKED]
+        if p.get('tot'):
+            SIZE[fid] = '%g%s' % (p['tot'], p.get('tu') or unit)
     # ---- 다른 회사 가공육(brand10: 동원몰 고시·식품안전나라 품목제조보고). 영양값 없이 원재료로 판정 ----
     for b in BRAND:
         fid = b['site'] + re.sub(r'\D', '', str(b['id']))
@@ -897,6 +907,12 @@ def build():
         al = r.get('al') or ''
         ING[fid] = r['ing'] + ('. ' + al if al else '')
         PSRC[fid] = [r['site'], r['pid'], r['checked']]
+        if r.get('tot'):
+            SIZE[fid] = '%g%s' % (r['tot'], r.get('tu') or 'g')
+    # v1.10.0 같은 제품의 다른 용량은 한 음식으로 묶고, 이름 끝의 용량은 따로 보인다(SIZE10)
+    TR = merge_families(TR, T, FOD, ING, PLABEL, PSRC, LABEL)
+    TR = tidy_size_names(TR)
+    TR = ban_text(TR, T)
     # 같은 별명이 두 음식 이상에 붙으면(용량만 다른 제품 등) 검색이 헷갈리므로 그 별명은 뺀다(이름은 그대로 검색됨)
     cnt = {}
     for x in TR:
@@ -907,9 +923,105 @@ def build():
     return TR, LABEL, T, FOD, ING, PLABEL, PSRC
 
 
+SIZE_TAIL = re.compile(r'\s*(?:\d+(?:\.\d+)?\s*(?:g|kg|ml|L|l)(?:\s*[x×]\s*\d+)?|\d+\s*(?:입|개입|봉|개))+$')
+THRESH_TAGS = ('fatty', 'salty', 'sugar', 'hifiber')    # 영양값 기준으로 붙는 태그: 용량별 표시값이 조금 달라 경계에서 갈릴 수 있다
+
+
+def fam_key(name):
+    """같은 제품인지 볼 이름 열쇠: 띄어쓰기와 끝의 용량(300g·1000g·2입)을 뺀 이름"""
+    return re.sub(r'\s', '', SIZE_TAIL.sub('', name))
+
+
+def ing_tokens(ing):
+    t = re.sub(r'\s', '', ing or '')
+    return {x for x in re.split(r'[,.·\[\]()]', t) if x and not re.search(r'함유$|국산|외국산|산$', x)}
+
+
+def merge_families(TR, T, FOD, ING, PLABEL, PSRC, LABEL):
+    """v1.10.0 용량만 다른 같은 제품을 한 음식으로 묶는다(점검 보고서 개발자 2·디자인 5).
+    같은 이름 열쇠이고 원재료가 60% 이상 겹치며, 판정에 쓰는 태그가 영양값 기준 태그(지방·나트륨·당류·식이섬유)와 알레르기 말고 같을 때만 묶는다.
+    대표는 판정이 가장 엄격한 것(시작 단계가 큰 것, 영양값 기준 태그를 모두 가진 것)이라, 묶어도 판정이 느슨해지지 않는다.
+    알레르기 태그는 모두 합친다. 다른 용량은 FAM10(용량·상품 번호·확인 날짜)으로 음식 정보에 보이고, 옛 id는 IDMAP10으로 대표에 잇는다."""
+    groups = {}
+    for x in TR:
+        groups.setdefault(fam_key(x[1]), []).append(x)
+    drop, repl = set(), {}
+    core = lambda tg: {t for t in tg if t not in ALLERGEN_KEYS and t not in THRESH_TAGS}
+    for k, xs in groups.items():
+        if len(xs) < 2:
+            continue
+        thr_all = {t for x in xs for t in x[5] if t in THRESH_TAGS}
+        cands = [x for x in xs if thr_all <= set(x[5])] or []
+        rep = max(cands, key=lambda x: (x[4], -xs.index(x))) if cands else None
+        if rep is None:
+            continue
+        rt = ing_tokens(ING.get(rep[0], ''))
+        same = [x for x in xs if x is not rep and core(x[5]) == core(rep[5]) and x[4] <= rep[4]
+                and len(rt & ing_tokens(ING.get(x[0], ''))) / max(1, len(rt | ing_tokens(ING.get(x[0], '')))) >= 0.6]
+        if not same:
+            continue
+        members = [rep] + same
+        # 이름: 용량을 뺀 이름 가운데 띄어쓰기가 가장 많은 것(같은 제품의 표기 차이를 하나로)
+        bases = [SIZE_TAIL.sub('', x[1]).strip() for x in members]
+        name = max(bases, key=lambda b: (b.count(' '), -bases.index(b)))
+        tags = list(rep[5]) + [t for x in same for t in x[5] if t in ALLERGEN_KEYS and t not in rep[5]]
+        tags = list(dict.fromkeys(tags))
+        al = list(rep[7]) + [x[1] for x in same] + [a for x in same for a in x[7]]
+        if rep[1] != name:
+            al.insert(0, rep[1])
+        al = [a for a in dict.fromkeys(al) if re.sub(r'\s', '', a) != re.sub(r'\s', '', name)][:8]
+        repl[rep[0]] = rep[:1] + (name,) + rep[2:5] + (tags,) + rep[6:7] + (al,) + rep[8:]
+        FAM10[rep[0]] = [[x[0], SIZE.get(x[0], ''), PSRC[x[0]][0], PSRC[x[0]][1], PSRC[x[0]][2]] for x in members]
+        for x in same:
+            drop.add(x[0])
+            IDMAP10[x[0]] = rep[0]
+            for d in (FOD, ING, PLABEL, PSRC, LABEL):
+                d.pop(x[0], None)
+            T.pop('p_' + x[0], None)
+    return [repl.get(x[0], x) for x in TR if x[0] not in drop]
+
+
+def ban_text(TR, T):
+    """절대 금지(nitrite)·늘 피하기(시작 단계 9) 제품의 설명에서 먹는 방법을 안내하는 문장을 이유만 적은 문장으로 바꾼다(v1.10.0).
+    제품 문장(p_)에도 그런 말이 있으면 멈춘다(generate_dataset.py가 앱 전체를 한 번 더 확인)"""
+    out = []
+    for x in TR:
+        if 'nitrite' in x[5] or x[4] == 9:    # 절대 금지와, 모든 단계에서 피하기(시작 단계 9)인 제품
+            tk = [BAN_KEY.get(k, k) for k in x[9]]
+            for k in tk:
+                assert not EAT_ADVICE.search(T[k][0]), (x[0], k, T[k][0])
+            x = x[:9] + (tk,) + x[10:]
+        out.append(x)
+    return out
+
+
+def tidy_size_names(TR):
+    """이름 끝에 붙은 용량을 떼어 SIZE10으로 따로 보인다. 이름이 같은 다른 제품이 있으면(원재료가 다른 같은 이름 제품)
+    구별하려고 용량을 남기되 띄어 쓴다(예: '비비고 생야채물만두278g' → '비비고 생야채물만두', 음식 정보에 '278g')"""
+    cnt = {}
+    for x in TR:
+        cnt[fam_key(x[1])] = cnt.get(fam_key(x[1]), 0) + 1
+    out = []
+    for x in TR:
+        nm = x[1]
+        m = SIZE_TAIL.search(nm)
+        if m and m.start() > 0:
+            base, tail = nm[:m.start()].strip(), m.group(0).strip()
+            nm2 = base if cnt[fam_key(nm)] == 1 else base + ' ' + re.sub(r'\s+', '', tail)
+            if nm2 != nm:
+                al = [a for a in dict.fromkeys([nm] + list(x[7])) if re.sub(r'\s', '', a) != re.sub(r'\s', '', nm2)][:8]
+                x = x[:1] + (nm2,) + x[2:7] + (al,) + x[8:]
+        out.append(x)
+    return out
+
+
+SIZE = {}       # 제품 id → 총 내용량(예: '278g'), 음식 정보에 따로 보인다
+FAM10 = {}      # 대표 id → [[id, 용량, 판매처, 상품 번호, 확인 날짜], …] 묶은 같은 제품
+IDMAP10 = {}    # 묶여 빠진 옛 id → 대표 id(옛 기록·즐겨찾기를 대표로 잇는다)
 SKIP_DUP = []   # 앱에 이미 있는 같은 제품이라 넣지 않은 것
 LABEL_NONUT = []   # 영양정보를 찾지 못해 넣지 않은 만두·볶음밥·국
 TR10, LABEL10, T10, FOD10, ING10, PLABEL10, PSRC10 = build()
+SIZE10 = {i: v for i, v in SIZE.items() if i in PSRC10}
 
 if __name__ == '__main__':
     import collections

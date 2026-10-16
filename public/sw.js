@@ -1,6 +1,6 @@
 // 자동 생성 파일 — tools/build_offline.py
-const CACHE="uc-table-8d6a9af66b";
-const ASSETS=["./", "./index.html", "./app.js?v=4f2f9b34ba", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html", "./vendor/html2canvas.min.js", "./vendor/jspdf.umd.min.js"];
+const CACHE="uc-table-911c94913e";
+const ASSETS=["./", "./index.html", "./app.js?v=e326a2474a", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html", "./vendor/html2canvas.min.js", "./vendor/jspdf.umd.min.js"];
 self.addEventListener("install",e=>{
   // HTTP 캐시를 건너뛰고 새로 받아야 옛 파일이 새 캐시에 들어가지 않는다
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:"reload"})))).then(()=>self.skipWaiting()));

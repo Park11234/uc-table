@@ -10,7 +10,8 @@ from spec1 import G; from spec2 import P; from spec3 import DY,V; from spec4 imp
 from spec9 import TR9, LABEL9, T9, FOD9   # 마트·편의점 시판 식품(2026-10-14)
 LABEL.update(LABEL9)
 # CJ더마켓 시판 식품(v1.9.0, 2026-10-14): 한 곳(CJ더마켓 상품정보 제공고시)에서 확인, 아질산염 가공육은 '절대 금지' 고정
-from spec10 import TR10, LABEL10, T10, FOD10, ING10, PLABEL10, PSRC10
+from spec10 import TR10, LABEL10, T10, FOD10, ING10, PLABEL10, PSRC10, SIZE10, FAM10, IDMAP10
+from spec11 import EO as EO11, T11, MOVE_ALIAS as MOVE11   # 외식에서 흔한 메뉴(v1.10.0)
 LABEL.update(LABEL10)
 import snack_check
 import ramen_check
@@ -58,7 +59,8 @@ T['plant_milk']=("유당이 없는 식물성 음료입니다. 우유보다 단�
 T['padthai']=("쌀국수를 기름에 볶고 땅콩·숙주를 올리는 음식입니다. 땅콩·숙주는 저잔사식에서 제한되고, 기름진 음식은 증상 악화 음식으로 안내돼 관해기에 소량 드십시오.",[39])
 T['rose_sauce']=("로제 소스는 매운 양념에 크림이나 우유를 섞어 만들어 유제품이 들어갑니다.",[])
 T['cream_sauce']=("크림소스는 생크림·버터·치즈로 만들어 기름지고 유당이 있습니다. 기름진 음식은 증상 악화 음식으로 안내돼 소량만 드십시오.",[39])
-L=[list(x) for x in G+P+DY+V+FR+FAT+ETC+DS+EX+TR+TR8+TR9+TR10]
+T.update(T11)
+L=[list(x) for x in G+P+DY+V+FR+FAT+ETC+DS+EX+TR+TR8+TR9+TR10+EO11]
 IDX={x[0]:x for x in L}
 # ---- 음식별 보정(근거 검토 결과) ----
 def add(i,*tags):
@@ -112,6 +114,8 @@ ALLIUM+= [x[0] for x in L if x[2]=='요리' and x[0] not in ('egg_soup','bone_br
 for i in ALLIUM:
     add(i,'allium')
 # 별명 정리
+for i,a in MOVE11:   # v1.10.0 외식 메뉴로 옮긴 별명(순대국→순대국밥, 회→모둠회, 훈제오리→훈제오리)
+    assert a in IDX[i][7], (i,a); alias(i,[x for x in IDX[i][7] if x!=a])
 alias('cherry_tomato',[a for a in IDX['cherry_tomato'][7] if a!='토마토'])
 alias('carrot_raw',[a for a in IDX['carrot_raw'][7] if a!='당근'])
 alias('smoked_salmon',[a for a in IDX['smoked_salmon'][7] if a!='연어'])
@@ -597,6 +601,26 @@ for i,(cn,rn,lab,useref) in SHOP_COOK.items():
     out['shop'][i]=[lab,fac,rref(r) if useref else 0,rn]
 for i,(rn,lab) in SHOP_RAWREF.items():
     out['shop'][i]=[lab,1,rref(rrow(rn)),rn]
+# ---- v1.10.0 같은 제품의 다른 용량(묶음)·제품 용량·옛 id → 대표 id ----
+out['psize']={i:SIZE10[i] for i in sorted(SIZE10) if i in IDX}
+out['pfam']={i:FAM10[i] for i in sorted(FAM10)}
+out['idmap']={i:IDMAP10[i] for i in sorted(IDMAP10)}
+for o,n in out['idmap'].items(): assert n in IDX and o not in IDX, (o,n)
+# ---- v1.10.0 확인 날짜(그 음식을 앱에 넣은 날, tools/added_dates.py가 관리. 1년 점검은 하지 않음) ----
+ADDED=json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'added.json'),encoding='utf-8'))
+_app_ids=set(re.findall(r'\bF\("([a-z0-9_]+)"',open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),'app','app.src.html'),encoding='utf-8').read()))
+_miss=sorted((set(IDX)|_app_ids)-set(ADDED))
+if _miss:
+    sys.exit('확인 날짜가 없는 음식 %d종(%s…): python3 tools/added_dates.py --add 로 넣은 날을 적은 뒤 다시 실행하십시오' % (len(_miss), ', '.join(_miss[:5])))
+out['added']={i:ADDED[i] for i in sorted(set(IDX)|_app_ids)}
+# ---- v1.10.0 절대 금지(발색제 가공육)·늘 피하기(시작 단계 9) 음식의 설명에 '조금만·소량만 드십시오·자주 먹지 않습니다'가 없게(점검 보고서 개발자 1) ----
+EAT_ADVICE=re.compile(r'소량|조금만|자주 먹지 않|양을 보며')
+for x in L:
+    if 'nitrite' in x[5] or x[4]==9:
+        w,_=why(x)
+        assert not EAT_ADVICE.search(w), (x[0], EAT_ADVICE.findall(w), w[:200])
+    if 'nitrite' in x[5]:
+        assert x[4]==9 and '드십시오' not in why(x)[0].replace('익혀 드십시오',''), x[0]
 json.dump(out,open(GEN,'w'),ensure_ascii=False)
 print('foods',len(out['foods']),'fodi',len(out['fodi']),'emo',len(out['emo']),'ficon',len(out['ficon']))
 print('exceptions',len(notes)); print('dup series',dup)
