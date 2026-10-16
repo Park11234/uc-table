@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=e326a2474a"></script>
+<script defer src="app.js?v=635216b1fd"></script>
 </head>
 <body>
 <style>
@@ -29,7 +29,7 @@
   --display:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
   --body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
   /* v1.9.0 색 토큰: 하드코딩 색을 옮김(즐겨찾기 별, 근거 종류 칩) — 별은 흰 바탕 3.96:1 */
-  --star:#A87700; --rt-s-bg:#E6F4EA; --rt-s-ink:#1E6B3A; --rt-h-bg:#FFF1E0; --rt-h-ink:#8A4B08; --rt-2-bg:#F1ECF8; --rt-2-ink:#5B3A8C;
+  --star:#A87700; --rt-s-bg:#E6F4EA; --rt-s-ink:#1E6B3A; --rt-h-bg:#FFF1E0; --rt-h-ink:#8A4B08; --rt-2-bg:#F1ECF8; --rt-2-ink:#5B3A8C; --pc-bg:#E2E6EC;
   --r:20px; color-scheme:light;
 }
 /* 화면 모드: 앱 설정(data-app-theme)이 뷰어 테마(data-theme)보다 우선 */
@@ -41,7 +41,7 @@
   --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
   --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
   --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
-  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0;
+  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
   }
 }
 :root[data-theme="dark"]:not([data-app-theme="light"]),:root[data-app-theme="dark"]{
@@ -51,11 +51,37 @@
   --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
   --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
   --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
-  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0;
+  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}
 .wrap{max-width:560px;margin:0 auto}
+/* v1.10.0 PC(넓은 화면): PC 전용 화면을 따로 만들지 않고, 휴대폰과 같은 화면을 가운데 휴대폰 너비로 보인다(사용자 요청).
+   고정 위치 요소(메뉴·아래 버튼·알림·시트·+버튼)도 같은 너비 안에 둔다 */
+:root{--phone:430px}
+@media (min-width:700px){
+  html{background:var(--pc-bg)}
+  body{width:var(--phone);margin:0 auto;min-height:100vh;box-shadow:0 0 0 1px var(--line),0 12px 48px rgba(0,0,0,.10)}
+  .wrap{max-width:none}
+  .tabs,.toasts,#errbar,body.pushed .bottom-bar,body.welcome .bottom-bar{left:calc(50% - var(--phone)/2);right:calc(50% - var(--phone)/2);max-width:none}
+  .tabs-in{max-width:none}
+  .fab{right:calc(50% - var(--phone)/2 + 20px)}
+  .sheet{max-width:var(--phone)}
+  .plan-note,.hint,.card{word-break:keep-all}
+}
+.plan-note{display:flex;gap:6px;align-items:flex-start;margin:0 6px 14px}
+.why-sum{margin:12px 0 0;font-weight:600}
+.why-more{margin:8px 0 10px;background:var(--surface-2);border-radius:14px;padding:4px 12px}
+.why-more summary{min-height:44px;display:flex;align-items:center;font-size:0.8125rem;font-weight:700;color:var(--accent);cursor:pointer}
+.why-more p{margin:0 0 10px;font-size:0.875rem}
+.why-list{margin:0 0 8px;padding-left:18px;font-size:0.8125rem}
+.fsize{display:block;margin-top:4px}
+.alt-box{margin:4px 0 12px;display:flex;flex-direction:column;gap:6px}
+.alt-row{display:flex;flex-direction:column;gap:6px}
+.alt-chip{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 10px;min-height:48px;text-align:left;color:inherit}
+.alt-chip span:nth-child(2){flex:1;min-width:0;font-weight:600;font-size:0.875rem}
+.alt-chip .fic{width:34px;height:34px}
+.plan-note .ic{width:16px;height:16px;margin-top:2px}
 .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:flex;align-items:center;gap:4px;min-height:58px;margin-inline:-16px;padding:6px 10px 6px 16px;background:var(--bg);box-shadow:0 1px 0 var(--line)} /* v1.9.0 D-11: 불투명 + 아래 구분선(본문이 비치지 않게) */
 .appbar h1{font-family:var(--display);font-size:1.3125rem;font-weight:800;letter-spacing:-.02em}
@@ -259,7 +285,7 @@ html{scroll-padding-bottom:104px;scroll-padding-top:72px}
 .lrow.shop{cursor:pointer}.lrow.shop small.ingr{color:var(--ink);margin-top:2px}.lrow.shop input{width:26px;height:26px;flex:0 0 auto;margin:0 4px 0 2px;accent-color:var(--accent)}
 .mm-g{width:76px;min-height:44px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;padding:0 8px;text-align:right}
 .rem-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.rem-row .swrow{flex:1 1 200px}
-.fcard .pill{margin-top:4px;font-size:0.75rem}
+.fcard .pill{font-size:0.75rem}
 /* v18 */
 .copybox{white-space:pre-wrap;word-break:break-word;background:var(--warn-soft);border-radius:12px;padding:12px;font:inherit;font-size:0.8125rem;margin:10px 0 0}
 
@@ -333,7 +359,7 @@ body.welcome .bottom-bar{position:fixed;left:0;right:0;bottom:0;margin:0 auto;ma
 .fgroup :is(h2,h3){display:flex;align-items:center;gap:8px;margin:4px 2px 0;font-size:0.875rem} /* v1.9.0 A-13: 묶음 제목은 h2(제목 단계를 건너뛰지 않게) */
 .fg-t{display:inline-flex;align-items:center;gap:4px}
 .more-btn{min-height:44px;margin-top:2px}
-.fcard{align-items:flex-start}
+.fcard{align-items:center}
 .fic .emo{font-size:1.5rem;line-height:1}
 .fic.lg .emo{font-size:1.875rem} .fic.xl .emo{font-size:2.75rem}
 .stepbox{display:inline-flex;align-items:baseline;gap:4px}
@@ -595,8 +621,17 @@ input[type=range]{width:100%;accent-color:var(--accent);height:44px;margin:0} /*
 .subnav{margin-top:0}
 .subnav .stage{border:0;background:none;font-weight:600;font-size:0.8125rem}
 .subnav .stage.on{background:var(--fill);color:var(--fill-ink)}
-.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.fcard{position:relative;text-align:left;border:0;background:var(--surface);border-radius:20px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;min-width:0}
+/* v1.10.0 디자인 4: 검색 결과는 한 줄 목록(그림·이름·종류와 1회 양·판정) */
+.fgrid{display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.fcard{position:relative;text-align:left;border:0;background:transparent;padding:10px 14px;display:flex;flex-direction:row;align-items:center;gap:12px;min-width:0;min-height:60px;color:inherit}
+.fcard+.fcard{border-top:1px solid var(--line)}
+.fcard .lt{flex:1;min-width:0;display:flex;flex-direction:column}
+.fcard .lt small{color:var(--muted);font-size:0.75rem;line-height:1.35}
+.fcard .pill{flex:none;margin:0}
+.ftools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ftools .chip{min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.ftools .chip .ic{width:16px;height:16px}
+.ftools .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--on-soft);font-weight:700}
 .fcard .thumb{width:50px;height:50px;font-size:1.5625rem;border-radius:16px}
 .fcard:nth-child(4n+1) .thumb{background:var(--food-tint)} .fcard:nth-child(4n+2) .thumb{background:var(--deco-soft)} .fcard:nth-child(4n+3) .thumb{background:var(--accent-soft)} .fcard:nth-child(4n) .thumb{background:var(--surface-2)}
 .fcard .chev{position:absolute;right:12px;bottom:14px;color:var(--muted);font-size:1.125rem;line-height:1}
@@ -619,7 +654,9 @@ th{color:var(--muted);font-weight:500}
 .refitem .n{display:inline-block;min-width:28px;font-weight:700;color:var(--accent-deep)}
 .refitem .cite{font-size:0.8125rem;color:var(--muted);margin-top:3px}
 /* v1.9.0 D-6: 알림(토스트)은 아래 조작 영역을 가리지 않게 위쪽 전용 영역에 5초 동안. 누르거나 초점이 가면 멈춘다. 영역은 늘 있어(aria-live) 화면 읽기가 알림을 읽는다 */
-.toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:30;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+/* v1.10.0 디자인 10: 알림은 아래쪽(메뉴 바로 위)에 띄워 화면 제목을 가리지 않는다. 메뉴가 없는 화면(설정·기록 마법사)은 화면 아래 버튼 위 */
+.toasts{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);z-index:30;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
+body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
 .toast{pointer-events:auto;display:flex;align-items:center;gap:4px;max-width:528px;background:var(--ink);color:var(--bg);padding:4px 4px 4px 16px;border-radius:16px;font-size:0.875rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:1;transition:opacity .2s}
 .toast .t-msg{flex:1;padding:8px 4px 8px 0}
 .toast button{flex:none;min-height:44px;min-width:44px;border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 10px;border-radius:12px}
