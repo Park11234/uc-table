@@ -124,7 +124,7 @@ v1.9.0의 시판 제품은 판매처 고시·포장 표시를 옮긴 기록을 �
 **실제 사용 환경을 점검합니다.** 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,400회)과, 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다. 아이폰 사파리와 같은 엔진(WebKit)의 주요 흐름 점검은 CI에서 돌립니다. 디자인을 바꾼 뒤에는 agent-browser로 처음 쓰는 사람처럼 끝까지 써 보며 찾은 24건을 고쳤습니다(v1.11.0). v1.12.0에서는 v1.11.0 전체를 다른 검토자가 다시 읽어 판정·백업·초기화·검색 등 20건을 고쳤습니다.
-앱을 일부러 <!--n:mutants-->70<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->72<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
+앱을 일부러 <!--n:mutants-->71<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->73<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
 
 **기록은 기기 밖으로 나가지 않습니다.** 서버·계정·분석 도구가 없고, 저장은 기기의 localStorage(기록)와 IndexedDB(최근 7일 자동 보관본)뿐입니다. 백업 파일은 원하면 비밀번호로 암호화합니다.
 같은 앱을 두 창에서 열어도 서로 덮어쓰지 않게 막고, 백업을 불러올 때는 지금 기록과 비교해 합치거나 되돌릴 수 있습니다.
@@ -219,7 +219,7 @@ npm ci && npx playwright install --with-deps chromium   # package-lock.json 그�
 npm run lint                     # ESLint (경고 0)
 npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->88<!--/n-->개(파이썬 표준 라이브러리만)
 npm test                         # Playwright 점검 <!--n:pw-->57<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
-npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->70<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
+npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->71<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
@@ -283,7 +283,7 @@ Since v1.7.0 the app uses no AI at runtime: <!--n:menus-->1,174<!--/n--> meal te
 v1.11.0 fixes the v1.10.0 review and applies a new design ("calm ridge", clear blue): a home status band with a one-line summary and a two-week symptom-score ridge chart over a remission band, progress rings, a bundled subset font (UC Table Sans, renamed from Pretendard under the SIL OFL), and plain-language stage names. Rules: foods the user is allergic to are now "never"; immunosuppressant users get raw foods as "avoid" (CDC); the active-disease alert is one fixed sentence; quick logs are marked everywhere instead of reading as zeros; packaged-product status and "instead try" suggestions are rebuilt; optional backup encryption (PBKDF2-SHA256 310k → AES-GCM 256); a full reset also clears local snapshots and keys; lab values and medication-change notes go into the clinic PDF; English names and typos are suggested in search; the open-source license texts ship inside the app. A browser walkthrough with agent-browser after the redesign found and fixed 24 more issues.
 v1.12.0 applies an independent review of the whole v1.11.0 change: the eating-out check now uses each listed food's allergen tags, the food list no longer serves stale verdicts after a medication or allergy change, the raw-food rule for immunosuppressant users also covers off-list menus and package ingredients, a reset that keeps snapshots preserves the pre-reset record, backups stop instead of going out in plaintext when the encryption key cannot be read, and CI now uploads failure logs. The app icon moves to the clear-blue palette and a font-coverage check guards the bundled subset font.
 Quality checks: <!--n:pw-->57<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->88<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
-PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->70<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
+PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->71<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
 
 ## 라이선스
 
