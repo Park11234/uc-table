@@ -3394,6 +3394,8 @@ const CHO_L="ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
 function choOf(t){let o="";for(const ch of String(t)){const c=ch.charCodeAt(0);o+=(c>=0xAC00&&c<=0xD7A3)?CHO_L[Math.floor((c-0xAC00)/588)]:ch}return o}
 const isChoQuery=k=>k.length>=2&&[...k].every(ch=>CHO_L.includes(ch));
 function foodKeys(f){return [f.name,f.name.split("(")[0],...(ALIAS[f.id]||[])].map(x=>String(x).replace(/\s/g,"")).filter(Boolean)}
+// v1.12.0 검토 C-05: 사용자가 적은 낱말로 객체를 찾을 때 쓴다(constructor·toString 같은 이름이 객체가 원래 가진 함수로 잡히지 않게)
+const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:undefined;
 function splitWords(t){const out=new Set(); for(const part of String(t).normalize("NFC").split(/[,，、\n\/·;]+/)){const x=part.trim(); if(!x) continue; out.add(x); const toks=x.split(/\s+/); if(toks.length>1) for(const k of toks) out.add(k)} return [...out]}
 // 원재료명(포장 표시)에 적은 낱말이 있는지. 한 글자는 다른 낱말 속에 우연히 걸리기 쉬워 두 글자 이상만
 function ingrHit(f,w){const t=INGR[f.id]; if(!t) return false; const k=String(w).normalize("NFC").replace(/\s/g,"").toLowerCase(); return k.length>=2&&t.replace(/\s/g,"").toLowerCase().includes(k)}
@@ -3851,7 +3853,7 @@ const BROAD={"샐러드":["salad","chicken_salad","caesar_salad","wolnamssam"],"
   "찌개":["doenjang_jjigae","kimchi_jjigae","sundubu_jjigae","budae_jjigae","dongtae_jjigae"],"파스타":["spaghetti_tomato","cream_pasta","rose_pasta"],"스파게티":["spaghetti_tomato","cream_pasta","rose_pasta"],
   "치킨":["fried_chicken","yangnyeom_chicken","kkanpunggi"],"냉면":["mul_naengmyeon","bibim_naengmyeon"],"칼국수":["kalguksu","bajirak_kalguksu"],"탕":["maeuntang","haemultang","galbitang","samgyetang"],
   "죽":["rice_porridge","chicken_porridge","pumpkin_porridge","abalone_porridge"],"카레":["curry_rice","hayashi_rice"],"비빔밥":["bibimbap","yukhoe_bibimbap"]};
-const broadOf=name=>{const k=String(name||"").normalize("NFC").replace(/\s/g,""); const ids=(BROAD[k]||[]).filter(i=>FOOD[i]); return ids.length>1?ids:null};
+const broadOf=name=>{const k=String(name||"").normalize("NFC").replace(/\s/g,""); const ids=(own(BROAD,k)||[]).filter(i=>FOOD[i]); return ids.length>1?ids:null};
 let MJ={step:"idle",items:[],results:[],err:"",text:""};
 function mjSync(){
   MJ.items.forEach((it,i)=>{const n=document.getElementById("mj_n_"+i),g=document.getElementById("mj_g_"+i);if(n)it.name=n.value;if(g)it.ingr=g.value.split(/[,、]/).map(x=>x.trim()).filter(Boolean)});
@@ -4309,13 +4311,15 @@ function tip(id,html,cls="hint"){TIPS[id]=html; return S.tips.includes(id)?`<but
    증상 기록 입구는 이 띠 한 곳(빠른 기록·평소와 같음 포함), '오늘 할 일'은 고리로 끝낸 정도만 */
 function ridgeText(){
   const t=today(); const tl=S.logs[t]; const pd=lastLogBefore(t,60); const pl=pd?S.logs[pd]:null;
-  const band=v=>v<=2?"관해 범위 안입니다":v<=4?"증상이 조금 있는 범위입니다":"활동기 기준(5점 이상)입니다";
+  // v1.12.0 검토 C-06: 상태 문장은 식단 단계와 같은 기준(activity: 대한장연구학회[38]·ECCO[12]의 관해 = 하루 배변 3회 이하, 혈변·급박감 없음).
+  // SCCAI 2점 이하는 연구에서 쓰는 관해 점수(Higgins 2005)지만 하루 4~6회 배변도 1점이라, 점수만으로 관해·편안한 하루라고 하지 않는다
+  const band=l=>{const st=activity(l).stage; return st===3?"관해 기준(하루 3회 이하, 혈변·급박감 없음)에 맞습니다":st===2?"증상이 남아 있습니다(활동기 기준 미만)":"활동기 기준입니다"};
   const yd=pd===addDays(t,-1); const ref=yd?"어제":"지난 기록", refWa=yd?"어제와":"지난 기록과";
-  if(tl){const v=sccai(tl), pv=pl?sccai(pl):null;
-    const head=v>=5?"증상이 활발합니다":pv==null?(v<=2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
-    return {head,sub:`증상 점수 ${v}점, ${band(v)}${tl.quick?" (빠른 기록)":""}`}}
+  if(tl){const v=sccai(tl), pv=pl?sccai(pl):null, st=activity(tl).stage;
+    const head=st===1?"증상이 활발합니다":pv==null?(st===3?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
+    return {head,sub:`증상 점수 ${v}점, ${band(tl)}${tl.quick?" (빠른 기록)":""}`}}
   if(S.stageMode==="auto"&&currentStage().stale){const l0=lastLogBefore(t,3650); return {head:"요즘 증상이 어떻습니까?",sub:`${l0?`마지막 기록 ${md(l0)}. `:""}기록하면 식단 단계를 다시 맞춥니다`}}
-  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(sccai(pl))}`};
+  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(pl)}`};
   return {head:"증상을 기록하면 흐름이 보입니다",sub:"하루 한 번 배변·피·급박감을 적으면 2주 흐름이 여기에 그려집니다"};
 }
 function ridgeSVG(){
@@ -4331,7 +4335,7 @@ function ridgeSVG(){
   const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
   // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
   const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
-  const bl=`<text x="8" y="${f(BB-5)}" class="bl">관해 범위</text>`;
+  const bl=`<text x="8" y="${f(BB-5)}" class="bl">점수 2점 이하</text>`;   // v1.12.0 C-06: 관해는 식단 단계 기준으로만 말한다
   if(!have.length) return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록이 쌓이면 보입니다">${band}${bl}<text x="${f(W/2)}" y="44" text-anchor="middle" class="r-empty">기록이 쌓이면 2주 흐름이 보입니다</text>${labels}</svg>`;
   // v1.11.0 R-06: 기록이 1일뿐이어도 그날 점은 그린다(선은 2일부터)
   if(have.length===1){const p=have[0]; return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록 1일, ${md(p.d)} ${p.v}점. 기록이 2일 이상이면 선으로 이어집니다">${band}${bl}<text x="${f(W/2)}" y="30" text-anchor="middle" class="r-empty">기록이 2일 이상이면 선으로 이어집니다</text><circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="5.5" class="${p.q?"qdot":"dot"}"/>${labels}</svg>`}
@@ -4342,7 +4346,7 @@ function ridgeSVG(){
   const last=have[have.length-1];
   const dots=have.filter(p=>p.q||p===last||segs.some(sg=>sg.length===1&&sg[0]===p)).map(p=>`<circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="${p===last?5.5:3.6}" class="${p.q?"qdot":"dot"}"/>`).join("");
   const vs=have.map(p=>p.v);
-  const aria=`최근 2주 증상 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 관해 범위(2점 이하)${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
+  const aria=`최근 2주 증상 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 증상 점수 2점 이하${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
   return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="${aria}">${band}${lines}${bl}${dots}${labels}</svg>`;
 }
 function ridgeHTML(cs){
@@ -5048,7 +5052,7 @@ const ENG_Q={banana:"바나나",milk:"우유",coffee:"커피",rice:"밥",porridg
   honey:"꿀",sugar:"설탕",salt:"소금","olive oil":"올리브유",ham:"햄",sausage:"소시지",bacon:"베이컨",beer:"맥주",wine:"와인",alcohol:"술",soda:"탄산음료",cola:"콜라",coke:"콜라",
   "lactose free":"락토프리","lactose-free":"락토프리",protein:"단백질",steak:"스테이크",curry:"카레",omelet:"오믈렛",omelette:"오믈렛",pancake:"팬케이크",waffle:"와플",donut:"도넛",bagel:"베이글"};
 function engQuery(q){const k=String(q||"").trim().toLowerCase().replace(/\s+/g," "); if(!/^[a-z][a-z \-']*$/.test(k)) return "";
-  return ENG_Q[k]||ENG_Q[k.replace(/es$/,"")]||ENG_Q[k.replace(/s$/,"")]||""}
+  return own(ENG_Q,k)||own(ENG_Q,k.replace(/es$/,""))||own(ENG_Q,k.replace(/s$/,""))||""}
 function jamoDist(a,b,max){if(Math.abs(a.length-b.length)>max) return max+1; let prev=[...Array(b.length+1).keys()];
   for(let i=1;i<=a.length;i++){const cur=[i]; let mn=i; for(let j=1;j<=b.length;j++){const v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); cur.push(v); if(v<mn) mn=v}
     if(mn>max) return max+1; prev=cur} return prev[b.length]}
@@ -5059,7 +5063,7 @@ function suggestFoods(q){const k=String(q||"").normalize("NFC").replace(/\s/g,""
   return [...best.values()].sort((a,b)=>a.d-b.d||isProd(a.f)-isProd(b.f)||a.f.name.length-b.f.name.length).slice(0,3).map(x=>x.f)}
 let FS_ENG="";   // 영어로 찾은 한글 이름(안내 문장에 씀)
 function foodSearchData(){
-  const c=ctx(); const q0=S.foodQ.trim(); const eq=engQuery(q0); FS_ENG=eq; const q=eq||q0; const st=statusOf(c); const qt=QTAG[q.replace(/\s/g,"")]||[];
+  const c=ctx(); const q0=S.foodQ.trim(); const eq=engQuery(q0); FS_ENG=eq; const q=eq||q0; const st=statusOf(c); const qt=own(QTAG,q.replace(/\s/g,""))||[];
   const list=FOODS.filter(f=>!q||searchHit(f,q)||f.cat.includes(q)||qt.some(t=>f.tags.includes(t)));
   const order=LV_RANK;
   const rows=list.map(f=>({f,s:st(f),r:searchRank(f,q)})).sort((a,b)=>order[a.s.level]-order[b.s.level]||a.r-b.r);
@@ -6282,7 +6286,7 @@ document.addEventListener("click",e=>{
     case "nudgeLater": S.nudgeHide=today(); render(); break;
     case "reloadPage": location.reload(); break;
     case "errClose": $("#errbar")?.remove(); break;
-    case "recoverHome": SCR=null; draft=null; S.tab="plan"; S.plan=null; try{S.plan=samplePlan()}catch(e){} render(); break;
+    case "recoverHome": SCR=null; draft=null; S.tab="plan"; S.foodQ=""; S.plan=null; try{S.plan=samplePlan()}catch(e){} render(); break;
     case "bkMark": S.lastBackup=today(); S.chgDays=[]; closeSheet(); render(); break;
     case "restorePaste": openSheet(`<h2>백업 내용 붙여 넣기</h2><p class="hint">'백업 내용 복사'로 보관한 내용을 모두 붙여 넣어 주십시오.</p><textarea id="rsText" style="min-height:140px" aria-label="백업 내용"></textarea><div class="grid2" style="margin-top:10px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="restoreText">불러오기</button></div>`); break;
     case "restoreText": restoreFromText($("#rsText")?.value||""); break;
@@ -6291,7 +6295,7 @@ document.addEventListener("click",e=>{
     case "restoreApply": restoreApply(v); break;
     case "restoreUndoGo": restoreUndoGo(); break;
     case "androidRetake": {let t=""; try{t=window.UCTableAndroid.peekMigrated()||""}catch(e){} if(!t){alertMsg("옮겨 둔 예전 기록이 없습니다."); break} restoreFromText(t); break}
-    case "resetDo": {const all=document.getElementById("rstAll")?.checked!==false; S=DEF(); S.consent={date:today()}; draft=null; SCR=null; closeSheet(); render();
+    case "resetDo": {const all=document.getElementById("rstAll")?.checked!==false; if(!all) keepBeforeReset(); S=DEF(); S.consent={date:today()}; draft=null; SCR=null; closeSheet(); render();
       if(all) wipeLocalCopies().then(()=>toast("모든 기록과 기기 안 보관본을 지웠습니다")); else toast("기록을 지웠습니다. 자동 보관본은 백업 화면에서 되살릴 수 있습니다"); break}
     case "mjEat": {const r=MJ.results[+a.dataset.i]; if(r){addExtra(today(),{name:r.name,amt:null,unit:"",kcal:0,p:0,fi:0,ca:0,noNutri:true,src:"외식"}); save(); toast(`${r.name}${euroReul(r.name)} 오늘 먹은 음식에 넣었습니다(영양 정보 없음)`)} break}
     case "mjOk": {const r=MJ.results[+a.dataset.i]; if(!r) break; MJ.okIdx=+a.dataset.i; openSheet(`<h2>판정이 이상합니까?</h2><p style="margin:10px 0">판정은 메뉴 이름과 재료의 단어로 앱 규칙을 적용해서, 실제 음식과 다를 수 있습니다. 재료를 고쳐서 다시 판정하면 더 정확해집니다.</p>
@@ -6397,10 +6401,12 @@ document.addEventListener("click",e=>{
     case "repDays": S.reportDays=+v; render(); break;
     case "pdf": exportPDF(); break;
     case "pdfShare": exportPDF("share"); break;
-    case "readyShare": {const r=READY; if(!r) break; shareFile(r.filename,r.blob,r.type,r.title).then(x=>{closeSheet(); if(x==="saved") toast("공유를 지원하지 않아 파일로 저장했습니다"); else if(x==="shared") toast("공유했습니다")}); break}
-    case "readySave": {const r=READY; if(!r) break; DL.save({filename:r.filename,data:r.blob}).then(()=>toast("파일로 저장했습니다"),()=>{}); break}
+    case "readyShare": {const r=READY; if(!r) break; shareFile(r.filename,r.blob,r.type,r.title).then(x=>{closeSheet(); if(r.backup&&(x==="shared"||x==="saved")){S.lastBackup=today(); S.chgDays=[]; render()}   // v1.12.0 C-10: 준비해 둔 백업
+      if(x==="saved") toast("공유를 지원하지 않아 파일로 저장했습니다"); else if(x==="shared") toast(r.backup?"백업 파일을 보냈습니다. 받은 곳에 잘 보관하십시오":"공유했습니다")}); break}
+    case "readySave": {const r=READY; if(!r) break; DL.save({filename:r.filename,data:r.blob}).then(()=>{if(r.backup){S.lastBackup=today(); S.chgDays=[]; render()} toast("파일로 저장했습니다")},()=>{}); break}
     case "backupShare": backupShare(); break;
     case "encOpen": encSheet(); break;
+    case "encRetry": ENC.err=false; render(); break;
     case "labAdd": labSheet(); break;
     case "labSave": {const d=$("#labDate")?.value||"", k=$("#labKind")?.value||"etc", vr=String($("#labVal")?.value||"").trim().replace(",","."), note=String($("#labNote")?.value||"").trim(); const er=$("#labErr");
       const num=["crp","calpro","hb","alb"].includes(k);
@@ -6546,8 +6552,15 @@ async function shareFile(filename,data,type,title){
   if(!DL) return "fail";
   await DL.save({filename,data:blob}); return "saved";
 }
+/* v1.12.0 검토 C-10: 사파리는 복사·공유를 누른 그 순간(클릭 처리 중)에만 허용한다. 암호화 꺼짐이 확인되면 기다리지 않고 바로 만들고(동기),
+   켜져 있으면 진료용 PDF처럼 먼저 만들어 둔 뒤 '보내기'를 한 번 더 누르게 한다 */
+const backupNow=()=>ENC.ready&&!ENC.key?backupJSON():null;
 async function backupShare(){
-  try{const r=await shareFile(`uc-table-backup-${today()}.json`,await backupOut(),"application/json","식단 기록 백업");
+  const fn=`uc-table-backup-${today()}.json`, now=backupNow();
+  if(now==null){let out; try{out=await backupOut()}catch(e){alertMsg(e?.message==="enc-unknown"?ENC_ERR:"백업을 만들지 못했습니다. 다시 시도해 주십시오."); return}
+    READY={filename:fn,blob:new Blob([out],{type:"application/json"}),type:"application/json",title:"식단 기록 백업",backup:true};
+    openSheet(`<h2>백업 파일이 준비됐습니다</h2><p class="hint" style="margin:0 0 12px">${ENC.key?"비밀번호로 암호화한 백업입니다. ":""}메일·메신저·파일 앱(iCloud Drive 등)으로 보낼 수 있습니다. 건강 기록이 들어 있으니 받는 곳을 확인하십시오.</p><div class="grid2"><button class="btn" data-act="readySave" data-close="1">파일로 저장</button><button class="btn primary" data-act="readyShare">보내기</button></div>`); return}
+  try{const r=await shareFile(fn,now,"application/json","식단 기록 백업");
     if(r==="shared"||r==="saved"){S.lastBackup=today(); S.chgDays=[]; render(); toast(r==="shared"?"백업 파일을 보냈습니다. 받은 곳에 잘 보관하십시오":"백업 파일을 저장했습니다")}}
   catch(e){alertMsg("백업을 보내지 못했습니다. '백업 내용 복사'를 이용해 주십시오.")}
 }
@@ -6629,18 +6642,20 @@ const AUTO={folder:null,perm:"",last:"",busy:false,t:null,snaps:null};
    이 기기 안 자동 보관본·CSV·진료용 PDF는 암호화하지 않는다 */
 const ENC_ITER=310000;
 const ENC_OK=()=>{try{return !!(window.crypto&&crypto.subtle&&window.indexedDB)}catch(e){return false}};
-const ENC={key:null,salt:"",iter:ENC_ITER,ready:false};
+const ENC={key:null,salt:"",iter:ENC_ITER,ready:false,err:false,busy:false};
+const ENC_ERR="백업 암호화 설정을 읽지 못해 백업을 멈췄습니다(암호화를 켜 두었다면 평문으로 나가지 않게). 앱을 다시 연 뒤 시도해 주십시오.";
 const b64=u8=>{let s=""; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s)};
 const unb64=t=>Uint8Array.from(atob(String(t)),c=>c.charCodeAt(0));
 async function encDerive(pw,salt,iter){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(String(pw).normalize("NFC")),"PBKDF2",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"PBKDF2",hash:"SHA-256",salt,iterations:iter},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
 async function encLoad(){if(ENC.ready||!ENC_OK()) return ENC;
-  try{const x=await idb("kv","readonly",st=>st.get("bkKey")); if(x&&x.key){ENC.key=x.key; ENC.salt=x.salt; ENC.iter=+x.iter||ENC_ITER}}catch(e){} ENC.ready=true; return ENC}
+  // v1.12.0 검토 C-07: 읽기 실패는 '꺼짐'이 아니다. 준비되지 않은 채로 두어 다음에 다시 읽고, 그동안 백업은 encWrap에서 멈춘다
+  try{const x=await idb("kv","readonly",st=>st.get("bkKey")); if(x&&x.key){ENC.key=x.key; ENC.salt=x.salt; ENC.iter=+x.iter||ENC_ITER} ENC.ready=true; ENC.err=false}catch(e){ENC.err=true} return ENC}
 async function encSet(pw){const salt=crypto.getRandomValues(new Uint8Array(16)); const key=await encDerive(pw,salt,ENC_ITER);
-  await idb("kv","readwrite",st=>st.put({key,salt:b64(salt),iter:ENC_ITER,at:today()},"bkKey")); Object.assign(ENC,{key,salt:b64(salt),iter:ENC_ITER,ready:true})}
+  await idb("kv","readwrite",st=>st.put({key,salt:b64(salt),iter:ENC_ITER,at:today()},"bkKey")); Object.assign(ENC,{key,salt:b64(salt),iter:ENC_ITER,ready:true,err:false})}
 async function encOff(){try{await idb("kv","readwrite",st=>st.delete("bkKey"))}catch(e){} Object.assign(ENC,{key:null,salt:"",iter:ENC_ITER,ready:true})}
 // 켜져 있으면 백업 글을 암호문 봉투(JSON)로 바꾼다
-async function encWrap(plain){await encLoad(); if(!ENC.key) return plain; const iv=crypto.getRandomValues(new Uint8Array(12));
+async function encWrap(plain){await encLoad(); if(ENC_OK()&&!ENC.ready) throw new Error("enc-unknown"); if(!ENC.key) return plain; const iv=crypto.getRandomValues(new Uint8Array(12));
   const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},ENC.key,new TextEncoder().encode(plain)));
   return JSON.stringify({app:"uc-table",enc:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ENC.iter,salt:ENC.salt,iv:b64(iv),ct:b64(ct)})}
 async function encUnwrap(o,pw){const key=await encDerive(pw,unb64(o.salt),+o.iter||ENC_ITER);
@@ -6682,6 +6697,12 @@ async function folderPick(){ if(!FOLDER_OK()){alertMsg("이 브라우저는 폴�
     await encLoad(); if(ok&&SYNC_RE.test(h.name)&&!ENC.key) alertMsg(`'${h.name}' 폴더는 클라우드와 동기화되는 폴더로 보입니다. 건강 기록이 클라우드에도 올라가니, 데이터 백업 화면에서 '백업 비밀번호 암호화'를 켜 두기를 권합니다.`) }
   catch(e){ if(e?.name!=="AbortError") alertMsg("폴더를 고르지 못했습니다.") } }
 async function folderOff(){ try{await idb("kv","readwrite",st=>st.delete("folder"))}catch(e){} AUTO.folder=null; AUTO.perm=""; S.autoBk=null; save(); render(); toast("자동 백업 폴더를 껐습니다. 이미 저장한 파일은 그대로 있습니다") }
+/* v1.12.0 검토 C-04: '자동 보관본 남기기'로 초기화하면 초기화 직전 기록을 오늘 날짜와 다른 이름으로 보관한다.
+   초기화 뒤 자동 보관(5초 뒤)이 오늘 보관본을 빈 기록으로 덮어도 이것으로 되살린다(최근 7개 안에서 함께 정리) */
+const RESET_SNAP="~before-reset";
+const snapLabel=d=>String(d).endsWith(RESET_SNAP)?`${md(String(d).slice(0,10))} 초기화 전 보관본`:`${md(d)} 보관본`;
+async function keepBeforeReset(){ if(LOAD_FAIL||!S.consent) return; const json=backupJSON(), n=Object.keys(S.logs).length;   // await 전에 지금 기록을 읽는다
+  try{ await idb("snaps","readwrite",st=>st.put({date:today()+RESET_SNAP,at:new Date().toISOString(),n,json})); AUTO.snaps=null }catch(e){} }
 async function snapList(){ try{ AUTO.snaps=((await idb("snaps","readonly",st=>st.getAll()))||[]).map(x=>({date:x.date,at:x.at,n:x.n})).sort((a,b)=>a.date<b.date?1:-1) }catch(e){ AUTO.snaps=[] } return AUTO.snaps }
 async function snapRestore(date){ try{ const x=await idb("snaps","readonly",st=>st.get(date)); if(!x) return; restoreFromText(x.json) }catch(e){ alertMsg("보관본을 읽지 못했습니다.") } }
 function labsHTML(){const L=(S.labs||[]).map((x,i)=>({x,i})).sort((a,b)=>a.x.date<b.x.date?1:a.x.date>b.x.date?-1:b.i-a.i);
@@ -6697,10 +6718,11 @@ function labSheet(){openSheet(`<h2>검사 수치·약 메모</h2><div class="sta
   <div class="grid2" style="margin-top:12px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="labSave">저장</button></div>`)}
 function encCardHTML(){
   if(!ENC_OK()) return "";
-  if(!ENC.ready){encLoad().then(()=>{if(SCR?.name==="set-data") render()})}
+  if(!ENC.ready&&!ENC.err&&!ENC.busy){ENC.busy=true; encLoad().finally(()=>{ENC.busy=false; if(SCR?.name==="set-data") render()})}   // 실패면 저절로 다시 읽지 않음('다시 확인')
   const on=!!ENC.key;
   return `<div class="sec-label">백업 암호화</div><div class="card stack enc-card">
-    <div class="row between"><b>백업 비밀번호 암호화</b><span class="pill ${on?"ok":"neutral"}">${on?"켜짐":"꺼짐"}</span></div>
+    <div class="row between"><b>백업 비밀번호 암호화</b><span class="pill ${on?"ok":ENC.err?"avoid":"neutral"}">${on?"켜짐":ENC.err?"확인 못 함":ENC.ready?"꺼짐":"확인 중"}</span></div>
+    ${ENC.err?`<p class="crit-t" role="alert" style="margin:0">암호화 설정을 읽지 못했습니다. 평문으로 나가지 않도록 그동안 백업 파일·보내기·복사·자동 백업 폴더 쓰기를 멈춥니다.</p><button class="btn full" data-act="encRetry">다시 확인</button>`:""}
     <p class="hint" style="margin:0">켜면 백업 파일 저장·보내기·백업 내용 복사·자동 백업 폴더에 쓰는 내용을 비밀번호로 암호화합니다(AES-GCM 256). 클라우드 동기화 폴더(OneDrive·구글 드라이브·iCloud)나 메일에 보관한다면 켜 두십시오. 비밀번호를 잊으면 그 백업은 되살릴 수 없습니다. 이 기기 안 자동 보관본·CSV·진료용 PDF는 암호화하지 않습니다.</p>
     ${on?`<div class="grid2"><button class="btn" data-act="encOpen">비밀번호 바꾸기</button><button class="btn" data-act="encOffAsk">끄기</button></div>`:`<button class="btn primary full" data-act="encOpen">비밀번호 정하고 켜기</button>`}</div>`}
 function autoBackupHTML(){
@@ -6713,7 +6735,7 @@ function autoBackupHTML(){
     :isIOS()?`<p class="hint pad">아이폰·아이패드는 폴더에 자동으로 저장할 수 없습니다. '백업 파일 보내기'로 파일 앱(iCloud Drive)이나 메일에 2주에 한 번 보관하십시오.</p>`:"";
   return `<div class="sec-label">자동 백업</div>${folder.startsWith("<button")?`<div class="list">${folder}</div>`:folder}
     <div class="card stack"><b>이 기기 안 자동 보관본(최근 7일)</b><p class="hint" style="margin:0">기록이 바뀐 날마다 하나씩 브라우저 안 다른 저장소에 둡니다. 기록이 손상되거나 실수로 초기화했을 때 되살릴 수 있습니다. 사이트 데이터를 지우거나 기기를 바꾸면 함께 사라지니 백업 파일은 따로 보관하십시오.</p>
-    ${sn.length?`<div class="list">${sn.map(x=>`<button class="lrow" data-act="snapRestore" data-v="${x.date}"><span class="lic t-plain">${ic("repeat")}</span><span class="lt"><b>${md(x.date)} 보관본</b><small>증상 기록 ${x.n}일 · 눌러서 지금 기록과 비교한 뒤 불러오기</small></span>${ic("chev","chev")}</button>`).join("")}</div>`:`<p class="hint" style="margin:0">${AUTO.snaps===null?"확인하는 중입니다":"아직 보관본이 없습니다"}</p>`}</div>`}
+    ${sn.length?`<div class="list">${sn.map(x=>`<button class="lrow" data-act="snapRestore" data-v="${x.date}"><span class="lic t-plain">${ic("repeat")}</span><span class="lt"><b>${snapLabel(x.date)}</b><small>증상 기록 ${x.n}일 · 눌러서 지금 기록과 비교한 뒤 불러오기</small></span>${ic("chev","chev")}</button>`).join("")}</div>`:`<p class="hint" style="margin:0">${AUTO.snaps===null?"확인하는 중입니다":"아직 보관본이 없습니다"}</p>`}</div>`}
 async function csvExport(kind,mode){
   const rows=csvRows(kind); if(rows.length<2){toast(kind==="logs"?"내보낼 증상 기록이 없습니다":"내보낼 먹은 기록이 없습니다"); return}
   const fn=`uc-table-${kind==="logs"?"symptoms":"meals"}-${today()}.csv`, txt=csvText(rows);
@@ -6725,12 +6747,17 @@ async function csvExport(kind,mode){
 async function backup(){
   if(!DL){alertMsg("이 화면에서는 파일 저장을 쓸 수 없습니다. '백업 내용 복사'를 이용해 주십시오.");return}
   try{await DL.save({filename:`uc-table-backup-${today()}.json`,data:await backupOut()}); S.lastBackup=today(); S.chgDays=[]; render(); toast(ENC.key?"암호화한 백업 파일을 저장했습니다":"백업 파일을 저장했습니다")}
-  catch(e){if(e?.code!=="declined") alertMsg("백업을 저장하지 못했습니다. '백업 내용 복사'를 이용해 주십시오.")}
+  catch(e){if(e?.message==="enc-unknown") alertMsg(ENC_ERR); else if(e?.code!=="declined") alertMsg("백업을 저장하지 못했습니다. '백업 내용 복사'를 이용해 주십시오.")}
 }
 async function backupCopy(){
-  const txt=await backupOut();
-  try{await navigator.clipboard.writeText(txt); S.lastBackup=today(); S.chgDays=[]; render(); toast("백업 내용을 복사했습니다. 메모 앱 등에 붙여 넣어 보관하십시오")}
-  catch(e){openSheet(`<h2>백업 내용</h2><p class="hint">자동 복사가 안 됩니다. 아래 내용을 길게 눌러 모두 선택해 복사한 뒤, 메모 앱 등에 붙여 넣어 보관하십시오.</p><textarea id="bkText" readonly style="min-height:160px" aria-label="백업 내용">${esc(txt)}</textarea><button class="btn primary full" data-act="bkMark" style="margin-top:10px">복사해서 보관했습니다</button>`)}
+  // v1.12.0 검토 C-10: 클립보드 쓰기는 누른 그 순간에 부른다(암호화가 꺼져 있으면 바로 만든 글, 켜져 있으면 ClipboardItem에 암호문 Promise)
+  const now=backupNow();
+  try{ if(now!=null) await navigator.clipboard.writeText(now);
+    else if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write) await navigator.clipboard.write([new ClipboardItem({"text/plain":backupOut().then(t=>new Blob([t],{type:"text/plain"}))})]);
+    else await navigator.clipboard.writeText(await backupOut());
+    S.lastBackup=today(); S.chgDays=[]; render(); toast("백업 내용을 복사했습니다. 메모 앱 등에 붙여 넣어 보관하십시오")}
+  catch(e){let txt=now; if(txt==null){try{txt=await backupOut()}catch(e2){alertMsg(ENC_ERR); return}}
+    openSheet(`<h2>백업 내용</h2><p class="hint">자동 복사가 안 됩니다. 아래 내용을 길게 눌러 모두 선택해 복사한 뒤, 메모 앱 등에 붙여 넣어 보관하십시오.</p><textarea id="bkText" readonly style="min-height:160px" aria-label="백업 내용">${esc(txt)}</textarea><button class="btn primary full" data-act="bkMark" style="margin-top:10px">복사해서 보관했습니다</button>`)}
 }
 let PENDING_RESTORE=null;
 /* v1.8.0 불러오기 전에 지금 기록과 백업을 나란히 보여 주고, 바꾸기·합치기를 고르게 한다. 불러오기 직전 기록은 기기 안에 보관해 되돌릴 수 있다 */

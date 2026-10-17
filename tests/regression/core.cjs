@@ -39,7 +39,8 @@ window.claude={use:async n=>{
 fs.writeFileSync(T('uc_test.html'), page_html);
 (async()=>{const b = await chromium.launch();
 const p = await b.newPage({viewport:{width:390,height:844}});
-await p.route('https://cdnjs.cloudflare.com/**', r=>{const u=r.request().url(); const f=u.includes('html2canvas')?LIB_H2C:LIB_JSPDF; r.fulfill({path:f,contentType:'application/javascript'})});
+// v1.12.0: 앱(v1.11.0 L1)은 CDN이 아니라 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다. 다른 점검(pdflong)이 만들어 둔 폴더에 기대지 않게 직접 복사
+fs_.mkdirSync(path.join(TMP,'vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'vendor','jspdf.umd.min.js'));
 await p.route('https://fonts.googleapis.com/**', r=>r.fulfill({body:'',contentType:'text/css'}));
 const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 await p.goto('file://'+WRAP('uc_test.html')); await p.waitForTimeout(1500);

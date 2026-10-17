@@ -65,6 +65,71 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
     need(!lr(r.off.label)&&!lr(r.on.lab2),'C-03 약이 없거나 젓갈(명란젓)뿐이면 날음식 줄 없음');
     await p.context().close()}
 
+  console.log('== C-04 전체 초기화에서 보관본을 남기면 초기화 직전 기록을 되살릴 수 있음');
+  {const p=await open();
+    await p.evaluate(async()=>{S.logs[today()]={...BLANK_LOG(),day:3,night:0,memo:"초기화 전 메모"}; save(); await autoRun();
+      const bt=document.createElement('button'); bt.dataset.act='reset'; document.body.appendChild(bt); bt.click()});
+    await p.evaluate(()=>{document.getElementById('rstAll').checked=false; document.querySelector('#sheetRoot [data-act=resetDo]').click()});
+    await p.waitForTimeout(6500);   // 초기화 뒤 자동 보관(5초)이 돈 뒤
+    const r=await p.evaluate(async()=>{const all=await idb("snaps","readonly",st=>st.getAll()); AUTO.snaps=null; await snapList(); SCR={name:"set-data"}; render();
+      return {logs:Object.keys(S.logs).length, keep:all.filter(x=>x.json.includes("초기화 전 메모")).map(x=>x.date), list:document.querySelector('#main').innerText.includes("초기화 전")}});
+    need(r.logs===0&&r.keep.length>=1,`C-04 초기화 6.5초 뒤에도 초기화 직전 기록이 보관본에 남음 (${JSON.stringify(r.keep)})`);
+    need(r.list,'C-04 백업 화면에 "초기화 전" 보관본이 보임');
+    await p.context().close()}
+
+  console.log('== C-05 영어 낱말(constructor·toString 등)로 검색·외식 판정이 멈추지 않음');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const bad=[]; for(const q of ["constructor","toString","valueOf","hasOwnProperty","__proto__"]){
+        try{S.foodQ=q; foodSearchData()}catch(e){bad.push("검색 "+q+": "+e.message)}
+        try{MJ.items=[{name:q,ingr:[],conf:1}]; mjJudge()}catch(e){bad.push("외식 "+q+": "+e.message)}}
+      S.foodQ="constructor"; S.tab="food"; save(); const bt=document.createElement('button'); bt.dataset.act='recoverHome'; document.body.appendChild(bt); bt.click();
+      return {bad,q:S.foodQ,eng:engQuery("banana")}});
+    need(!r.bad.length,`C-05 오류 없음 (${r.bad.join(" / ")||"모두 통과"})`);
+    need(r.q==="",`C-05 오류 화면의 '처음 화면으로'가 검색어도 비움 (${JSON.stringify(r.q)})`);
+    need(r.eng==="바나나",'C-05 영어 검색은 그대로(banana → 바나나)');
+    await p.context().close()}
+
+  console.log('== C-06 홈 상태 띠는 식단 단계와 같은 관해 기준');
+  {const p=await open();
+    const r=await p.evaluate(()=>{S.stageMode="auto"; const t=today(); const one=day=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day,night:0,urg:0,blood:0,bloody:0,well:0,pain:0}; save(); S.tab="plan"; SCR=null; render();
+        const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage,bl:document.querySelector('.ridge svg text.bl')?.textContent||""}};
+      return {six:one(6),three:one(3)}});
+    need(r.six.stage===2&&r.six.head!=="편안한 하루입니다"&&!/관해 범위 안|관해 기준에 맞/.test(r.six.sub),`C-06 하루 6회: 편안한 하루·관해라고 하지 않음 (${r.six.head} · ${r.six.sub})`);
+    need(r.three.stage===3&&/관해/.test(r.three.sub),`C-06 하루 3회·증상 없음: 관해 기준이라고 함 (${r.three.head} · ${r.three.sub})`);
+    need(!/관해/.test(r.six.bl),`C-06 그래프 띠 이름은 점수로(관해라고 쓰지 않음) (${r.six.bl})`);
+    await p.context().close()}
+
+  console.log('== C-07 암호화 열쇠를 읽지 못하면 평문으로 내보내지 않음');
+  {const p=await open();
+    const r=await p.evaluate(async()=>{const orig=idb; ENC.ready=false; ENC.key=null; idb=async()=>{throw new Error("blocked")};
+      let a; try{const t=await backupOut(); a={plain:typeof t==="string"&&t.includes('"logs"')}}catch(e){a={err:String(e&&e.message)}}
+      idb=orig; let b2; try{const t=await backupOut(); b2=typeof t==="string"&&t.includes('"logs"')}catch(e){b2="err:"+e.message}
+      return {a,b2}});
+    need(!r.a.plain&&!!r.a.err,`C-07 열쇠를 읽지 못하면 백업을 멈춤 (${JSON.stringify(r.a)})`);
+    need(r.b2===true,`C-07 다시 읽을 수 있게 되면 그대로 백업(암호화 꺼짐이면 평문) (${r.b2})`);
+    await p.context().close()}
+
+  console.log('== C-10 암호화를 켜도 복사·보내기를 누른 그 순간에 처리(아이폰 사파리 조건)');
+  {const p=await open();
+    await p.evaluate(async()=>{await encSet("test-pass-1234");
+      // 크롬은 작은 AES-GCM 암호화를 같은 작업 안에서 끝내지만, WebKit(사파리)은 다음 작업에서 끝낸다. 사파리와 같게 한 틱 늦춘다
+      const enc0=crypto.subtle.encrypt.bind(crypto.subtle); crypto.subtle.encrypt=(...a)=>new Promise((ok,no)=>setTimeout(()=>enc0(...a).then(ok,no),0));
+      // 누른 그 순간 = 클릭 처리 중(window 캡처 단계부터 window 버블 단계까지, 그 사이 마이크로태스크 포함). 암호화처럼 진짜 비동기를 기다린 뒤면 false
+      window.__task=false; window.addEventListener('click',()=>{window.__task=true},true); window.addEventListener('click',()=>{window.__task=false},false);
+      const cb={write:async items=>{window.__cw={task:window.__task}; try{const bl=await items[0].getType("text/plain"); window.__cwText=await bl.text()}catch(e){window.__cwText="ERR "+e.message}},
+        writeText:async t=>{window.__wt={task:window.__task,enc:/"enc":"AES-GCM-256"/.test(t)}}};
+      Object.defineProperty(navigator,'clipboard',{value:cb,configurable:true});
+      navigator.canShare=()=>true; navigator.share=async d=>{window.__sh={task:window.__task,name:d.files[0].name}};
+      for(const [id,act] of [["tbkc","backupCopy"],["tbks","backupShare"]]){const bt=document.createElement('button'); bt.id=id; bt.dataset.act=act; bt.textContent=act; bt.style.cssText="position:fixed;left:10px;top:"+(id==="tbkc"?10:70)+"px;width:120px;height:44px;z-index:99"; document.body.appendChild(bt)}});
+    await p.click('#tbkc'); await p.waitForTimeout(1200);
+    const c=await p.evaluate(()=>({cw:window.__cw||null,cwEnc:/"enc":"AES-GCM-256"/.test(window.__cwText||""),wt:window.__wt||null}));
+    need((c.cw&&c.cw.task&&c.cwEnc)||(c.wt&&c.wt.task&&c.wt.enc),`C-10 백업 내용 복사: 누른 순간 클립보드에 암호문 (${JSON.stringify(c)})`);
+    await p.evaluate(()=>{closeSheet()}); await p.click('#tbks'); await p.waitForTimeout(1200);
+    let s=await p.evaluate(()=>({sh:window.__sh||null,ready:!!document.querySelector('#sheetRoot [data-act=readyShare]')}));
+    if(!s.sh&&s.ready){await p.click('#sheetRoot [data-act=readyShare]'); await p.waitForTimeout(800); s=await p.evaluate(()=>({sh:window.__sh||null,ready:true}))}
+    need(s.sh&&s.sh.task&&/uc-table-backup/.test(s.sh.name),`C-10 백업 파일 보내기: 누른 순간 공유 창(준비된 뒤 한 번 더 누르기 포함) (${JSON.stringify(s)})`);
+    await p.context().close()}
+
   await b.close();
   if(F.length){console.error('FAIL\n'+F.join('\n')); process.exitCode=1} else console.log('검증 통과');
 })();

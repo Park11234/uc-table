@@ -84,6 +84,12 @@ mut={
  'mj_allergy_off.html':rep(r'allergies:c.allergies.filter(a=>!tags.includes(a)),words:[],alWords:(c.alWords||[]).filter(w=>!x.includes(w.replace(/\s/g,""))),trig:[]','allergies:[],words:[],alWords:[],trig:[]'),  # 외식 판정이 목록 음식의 알레르기 표시를 다시 안 봄(C-01)
  'fs_sig_off.html': rep('const sig=JSON.stringify([{...c,trig:c.trig.map(t=>[t.name,t.foodId||""])},','const sig=JSON.stringify([c.stage,c.fiberStage,c.gasHeavy,c.allergies,c.words,c.trig.map(t=>[t.name,t.foodId||""]),'),  # 목록 판정 캐시가 면역 약·직접 적은 알레르기를 다시 모름(C-02)
  'raw_kw_off.html': rep('function rawWords(t){','function rawWords(t){return [];'),  # 목록 밖 외식 메뉴·포장 원재료의 날음식을 다시 못 봄(C-03)
+ 'reset_keep_off.html':rep('if(!all) keepBeforeReset(); ',''),  # 보관본을 남기고 초기화해도 오늘 보관본이 빈 기록으로 덮임(C-04)
+ 'own_off.html':   rep('const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:undefined;','const own=(o,k)=>o[k];'),  # constructor 등으로 검색하면 멈춤(C-05)
+ 'ridge_score.html':rep('pv==null?(st===3?"편안한 하루입니다"','pv==null?(v<=2?"편안한 하루입니다"'),  # 홈 띠가 다시 점수만으로 편안한 하루(C-06)
+ 'enc_failopen.html':rep('if(ENC_OK()&&!ENC.ready) throw new Error("enc-unknown"); ',''),  # 열쇠를 못 읽으면 평문 백업(C-07)
+ 'copy_await.html':rep('else if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write) await','else if(false) await'),  # 암호화를 켜면 복사가 기다린 뒤에(C-10)
+ 'share_await.html':rep('now=backupNow();\n  if(now==null){let out;','now=await backupOut();\n  if(now==null){let out;'),  # 암호화를 켜면 공유가 기다린 뒤에(C-10)
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -154,7 +160,13 @@ body_margin.html tests/checks/review2.cjs
 enc_plain.html tests/checks/v1110.cjs
 mj_allergy_off.html tests/checks/v1120.cjs
 fs_sig_off.html tests/checks/v1120.cjs
-raw_kw_off.html tests/checks/v1120.cjs"
+raw_kw_off.html tests/checks/v1120.cjs
+reset_keep_off.html tests/checks/v1120.cjs
+own_off.html tests/checks/v1120.cjs
+ridge_score.html tests/checks/v1120.cjs
+enc_failopen.html tests/checks/v1120.cjs
+copy_await.html tests/checks/v1120.cjs
+share_await.html tests/checks/v1120.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다
