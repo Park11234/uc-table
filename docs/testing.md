@@ -6,7 +6,7 @@ npm run lint          # ESLint — 오류·경고 0 유지(--max-warnings 0)
 npm run test:py       # tests/python — 데이터 생성 코드 단위 점검 <!--n:pytests-->86<!--/n-->개(표준 라이브러리만)
 npm test              # tests/run-all.sh — Playwright <!--n:pw-->55<!--/n-->개 파일 전부 실행
 node tests/visual/visual.cjs            # 화면 비교(v1.8.0). 의도한 디자인 변경 뒤에는 --update로 기준 화면을 다시 만듦
-npm run test:mutation # tests/mutation-check.sh — 일부러 망가뜨린 앱 <!--n:mutants-->54<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, mutation.yml)
+npm run test:mutation # tests/mutation-check.sh — 일부러 망가뜨린 앱 <!--n:mutants-->58<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, mutation.yml)
 BROWSER=webkit node tests/webkit/webkit.cjs   # 아이폰 사파리 엔진(WebKit) 흐름(v1.11.0, CI의 webkit 작업. 이 개발 환경은 BROWSER=chromium으로 점검 코드만 확인)
 node tools/doc_numbers.cjs     # 문서의 숫자 표시(<!--n:…-->)가 지금 빌드와 같은지(--fix, v1.11.0)
 python3 tools/stale_check.py   # 확인한 지 1년 넘은 근거(참고문헌·FODMAP 1회량·궁금한 점). 기한 90일 전부터는 경고(--soon, v1.11.0)
@@ -25,7 +25,7 @@ python3 tools/tone_check.py    # 앱 문구에 해요체(~요)가 남았는지(�
 3. **파이썬 단위 점검 <!--n:pytests-->86<!--/n-->개** — 아래 표(v1.10.0 데이터 규칙은 `test_v110.py`, v1.11.0은 `test_v111.py`).
 4. **근거 확인일·링크 형식·문구 말투** — `tools/stale_check.py`(1년 넘은 근거가 있으면 실패), `tools/link_check.py`(https가 아니거나 주소 모양이 이상하면 실패), `tools/tone_check.py`(앱 문구에 해요체가 남으면 실패).
 5. **Playwright <!--n:pw-->55<!--/n-->개 + 화면 비교** — 아래 표. WebKit 흐름 점검은 따로 `webkit` 작업에서(아이폰 사파리와 같은 엔진).
-6. **점검의 점검** — 앱을 일부러 <!--n:mutants-->54<!--/n-->가지 방식으로 망가뜨려(`tests/mutation-check.sh`) 해당 점검이 실제로 실패하는지 <!--n:pairs-->56<!--/n-->쌍을 확인.
+6. **점검의 점검** — 앱을 일부러 <!--n:mutants-->58<!--/n-->가지 방식으로 망가뜨려(`tests/mutation-check.sh`) 해당 점검이 실제로 실패하는지 <!--n:pairs-->60<!--/n-->쌍을 확인.
    점검이 아무것도 확인하지 않고 늘 통과하는 상태로 변하면 여기서 걸립니다.
    오래 걸려 v1.10.0부터는 매 커밋이 아니라 매주 한 번과 손으로 실행할 때만 돕니다(`.github/workflows/mutation.yml`, 개발자 12).
    **실패 알림(v1.11.0 L10)**: 매주 작업이 실패하면 GitHub가 저장소 주인에게 Actions 실패 메일을 보냅니다(GitHub 설정 → Notifications → Actions에서 '실패만' 켜 두기). **출시 전에는 손으로 한 번** `npm run test:mutation`을 돌리거나 Actions의 mutation 작업을 'Run workflow'로 실행하고, 결과를 출시 기록에 남깁니다.
@@ -133,11 +133,13 @@ v1.5.0에서 이 34개에 기대값 확인을 넣었습니다. 출력한 줄을 
 | 음식 검색에 관련 질문이 안 나옴 | `regression/core.cjs` |
 | 내 정보를 저장하지 않고 나가도 묻지 않음 · 저장 전에 기록이 바로 바뀜 | `regression/t28.cjs` |
 | 동의 뒤 첫 실행 설정이 안 나옴 · '반·더 많이'가 먹은 양에 반영 안 됨 · 평소 나쁜 날 비율과 비교하지 않는 의심 음식 · 다른 창이 저장해도 덮어씀 · 합치기를 골라도 바꿔 버림 · BMI에 따른 열량 목표 빠짐 · FODMAP 1회량이 자료와 다름 · 낮에도 모자람을 경고색으로 · 넘어가는 동안 아래 버튼이 튐 · 뒤로 가기가 앱이 쌓은 기록보다 더 넘어감 · 화면을 연 직후 아래 버튼 자리를 누르면 탭이 눌림 · 홈 제목 자리에 로고 대신 옛 이름 | `regression/t29.cjs` |
-| 화면 디자인이 몰래 바뀜(요약 줄 배경색) | `visual/visual.cjs` |
+| 화면 디자인이 몰래 바뀜(홈 상태 띠 바탕색, v1.11.0 전에는 요약 줄) | `visual/visual.cjs` |
 | 끝낸 '오늘 할 일' 줄이 전역 `.done`(26px 원) 규칙에 걸려 글자가 세로로 흘러내림(v1.9.0) | `checks/v190.cjs` |
 | 일반 햄이 다시 '피하기' · 묶여 빠진 옛 제품 id를 잇지 않음 · '샐러드'를 한 음식으로 판정 · PC에서 전체 너비 · 알림이 다시 위쪽 · CSV 수식 막기 빠짐 · 안드로이드 앱이 기록을 매번 덮어씀 · 단백질 반찬을 늘리기만 함 · '다음 단계'가 다시 '보류'(v1.10.0) | `checks/v1100.cjs` |
+| 알레르기 음식이 다시 '피하기' · 실제 앱에 body 기본 여백이 다시 남음(v1.11.0 재검토) | `checks/review2.cjs` |
+| 활동기 알림 문장이 다시 '연락하는 것을 고려하십시오'로 약해짐 · 암호화를 켜도 백업이 평문(v1.11.0) | `checks/v1110.cjs` |
 
-돌연변이 56쌍은 동시에 돌리되, 쌍마다 임시 폴더를 따로 써서 페이지 파일이 섞이지 않게 합니다.
+돌연변이 <!--n:pairs-->60<!--/n-->쌍은 동시에 돌리되, 쌍마다 임시 폴더를 따로 써서 페이지 파일이 섞이지 않게 합니다.
 처음 돌렸을 때 '신장질환자용 피하기 없앰'을 놓쳤습니다. 그 제품은 시작 단계가 '항상 피하기'라 규칙이 없어도 판정이 같았기 때문이고, 지금은 판정 이유까지 확인합니다.
 
 ## 점검 자체에서 찾아 고친 것(1.1.0)

@@ -73,7 +73,7 @@ def main(src):
     opts.name_IDs = ['*']
     opts.name_languages = ['*']
     opts.notdef_outline = True
-    font = TTFont(src)
+    font = TTFont(src, recalcTimestamp=False)   # 같은 입력이면 같은 파일(만든 시각을 넣지 않음)
     sub = subset.Subsetter(options=opts)
     sub.populate(text=text)
     sub.subset(font)

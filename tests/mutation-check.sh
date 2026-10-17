@@ -56,7 +56,7 @@ mut={
  'fserv_off.html': end('FSERV.broccoli.hi=null;'),                            # FODMAP 1회량이 자료와 다름
  'shortok_off.html':rep('const shortOK=date=>date<today()||(date===today()&&new Date().getHours()>=19);','const shortOK=()=>true;'),  # 낮에도 모자람을 경고색으로
  'wzbar_anim.html':rep('.a-push>:not(.bottom-bar),.a-fwd>:not(.bottom-bar){animation:push','.a-push,.a-fwd{animation:push'),  # 넘어가는 동안 아래 버튼이 튐
- 'visual_css.html':s.replace('<style>','<style>.sumline{background:#f4d03f!important}',1),  # 화면 디자인이 몰래 바뀜
+ 'visual_css.html':s.replace('<style>','<style>.ridge{background:#f4d03f!important}',1),  # 화면 디자인이 몰래 바뀜(v1.11.0: 첫 화면에 보이는 홈 상태 띠 바탕색. 요약 줄은 새 디자인에서 첫 화면 아래로 내려감)
  'tabs_hit.html':  rep('body.pushed .tabs{transform:translateY(140%);visibility:hidden;pointer-events:none}','body.pushed .tabs{transform:translateY(140%);visibility:hidden}'),  # 화면을 연 직후 아래 버튼 자리를 누르면 탭이 눌림
  'logo_gone.html': rep('const TAB_TITLE={plan:LOGO_H,','const TAB_TITLE={plan:"UC 식단 관리 도우미",'),  # 홈 제목 자리에 로고 대신 옛 이름
  'nav_over.html':  rep('const n=Math.min(NAV.depth-want,+(history.state?.ucnav)||0);','const n=NAV.depth-want;'),  # 뒤로 가기가 앱 밖까지 넘어감
@@ -75,6 +75,11 @@ mut={
  'migrate_twice.html':rep('typeof window.UCTableAndroid.takeMigrated==="function"&&!localStorage.getItem(KEY)','typeof window.UCTableAndroid.takeMigrated==="function"'),  # 안드로이드 앱이 기록을 매번 덮어씀
  'protein_up.html':rep('t.p>tg.p*1.15?Math.max(0.7,tg.p*1.1/t.p):1','1'),       # 단백질 반찬을 늘리기만 함
  'later_word.html':rep('later:"다음 단계"','later:"보류"'),                        # '다음 단계'가 다시 '보류'
+ # v1.11.0 검토 반영분·디자인 뒤 재검토
+ 'allergy_soft.html':rep('set("ban",`알레르기(${allergyLabel(a)}): 먹지 마십시오`);','set("avoid",`알레르기(${allergyLabel(a)})`);'),  # 알레르기 음식이 다시 '피하기'(R-15)
+ 'tell_soft.html': rep('const ALERT_TELL="주치의(IBD 진료팀)에 알리십시오.";','const ALERT_TELL="주치의(IBD 진료팀)에 연락하는 것을 고려하십시오.";'),  # 활동기 알림 문장이 다시 약해짐(8번·M4)
+ 'body_margin.html':rep('body{margin:0;background:var(--bg);','body{background:var(--bg);'),  # 실제 앱에 body 기본 여백이 다시 남음(R-01)
+ 'enc_plain.html': rep('const backupOut=async()=>encWrap(backupJSON());','const backupOut=async()=>backupJSON();'),  # 암호화를 켜도 백업이 평문(M10)
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -138,7 +143,11 @@ toast_top.html tests/checks/v1100.cjs
 csv_inj.html tests/checks/v1100.cjs
 migrate_twice.html tests/checks/v1100.cjs
 protein_up.html tests/checks/v1100.cjs
-later_word.html tests/checks/v1100.cjs"
+later_word.html tests/checks/v1100.cjs
+allergy_soft.html tests/checks/review2.cjs
+tell_soft.html tests/checks/v1110.cjs
+body_margin.html tests/checks/review2.cjs
+enc_plain.html tests/checks/v1110.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다
