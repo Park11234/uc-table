@@ -80,7 +80,7 @@ expect(()=>{const a=jsonOf('discard'); return a[0]===null&&a[1]===false&&a[2]===
 expect(()=>{const a=jsonOf('reopenClean'); return a[0]===''&&a[1]===false},'다시 열면 저장된 값부터');
 expect(()=>{const a=jsonOf('saved'); return a[0]===null&&a[1]===true&&a[2]==='망고'&&a[3]===true},'저장 버튼으로 반영·안내');
 expect(()=>{const a=JSON.parse(logOf('storedSaved')); return a[0].includes('peanut')&&a[1]==='망고'},'기기에 저장');
-expect(()=>logOf('judge')==='avoid','저장한 알레르기가 판정에 반영');
+expect(()=>logOf('judge')==='ban','저장한 알레르기가 판정에 반영(v1.11.0 R-15: 절대 금지)');
 expect(()=>{const a=jsonOf('cleanBack'); return a[0]===null&&a[1]===false},'바꾸지 않았으면 바로 나감');
 expect(()=>{const a=jsonOf('liveDraft'); return a[0]==='172'&&a[1]===''&&a[2]==='M'},'저장 전에는 초안에만');
 expect(()=>{const a=jsonOf('saveFromSheet'); return a[0]===null&&a[1]==='172'&&a[2]==='M'&&a[3]===false},'확인 시트에서 저장하고 나가기');

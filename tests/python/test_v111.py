@@ -6,6 +6,7 @@
 - M6: 끼니가 되는 시판 요리(일품요리·국·죽·밥)는 1회 분량이 포장 총량의 15% 이상(반찬·누룽지로 잘못 분류해 1회 40~50g이 되던 것)
 - L9: 근거 확인일 점검은 기한 90일 전부터 미리 알린다(실패는 아님)
 - L11: 대상이 19세 이상이라 급식 질문은 '대학·회사'
+- 검토 R-12·R-13: 햄 안내에 발색제 기준, 생성 데이터에 조사 자리표시 없음
 """
 import json, os, re, sys, unittest
 
@@ -82,7 +83,8 @@ class HamRuleTest(unittest.TestCase):
         for i in ('gimbap', 'omurice', 'veg_fried_rice', 'kimchi_fried_rice'):
             self.assertIn('hamopt', FOODS[i][2], i)
             self.assertNotIn('nitrite', FOODS[i][2], i)
-        self.assertIn('const HAM_NOTE="햄·소시지가 들어가면 절대 금지입니다. 빼고 드십시오.";', APP_SRC)
+        # v1.11.0 검토 R-12: 기준(발색제)을 밝힘 — 발색제 없는 김밥햄 제품은 '피하기'라 '햄이면 무조건 절대 금지'와 어긋나지 않게
+        self.assertIn('const HAM_NOTE="햄·소시지는 빼고 드십시오. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.";', APP_SRC)
 
 
 class ServingTest(unittest.TestCase):
@@ -117,6 +119,14 @@ class LowItemsTest(unittest.TestCase):
         self.assertEqual(stale_check.check(d, 365)[0], 0)
         self.assertGreater(stale_check.soon(d, 365, 90), 0)
         self.assertEqual(stale_check.soon(dt.date(2026, 10, 17), 365, 90), 0)
+
+    def test_no_josa_placeholder_in_data(self):
+        """v1.11.0 검토 R-13: 생성 데이터 문장에 '이(가)' 같은 조사 자리표시가 없음(받침에 맞춰 고름)"""
+        txt = json.dumps(GEN, ensure_ascii=False)
+        for pat in ('이(가)', '을(를)', '은(는)', '와(과)'):
+            self.assertNotIn(pat, txt, pat)
+        self.assertEqual(spec10.iga('콩'), '이')
+        self.assertEqual(spec10.iga('우유(유당)'), '가')
 
     def test_meal_question_adult(self):
         import qa

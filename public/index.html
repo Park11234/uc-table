@@ -15,7 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=d071cb9230"></script>
+<script defer src="app.js?v=4401c2e8c1"></script>
 </head>
 <body>
 <style>
@@ -57,7 +57,7 @@
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
 }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}   /* v1.11.0 R-01: 기본 여백 8px이 실제 앱에만 남아 화면이 16px 넘치고 좌우가 좁았음 */
 .wrap{max-width:560px;margin:0 auto}
 .plan-note{display:flex;gap:6px;align-items:flex-start;margin:0 6px 14px}
 .bc-cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
@@ -154,6 +154,7 @@ button.lrow:active,label.lrow:active,.mrow:active,.hrow:active,.fcard:active,.ti
 .opts{display:flex;flex-direction:column;gap:10px}
 .opts button{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:2px solid transparent;border-radius:18px;padding:17px 18px;font-size:1rem;font-weight:600;box-shadow:var(--shadow);text-align:left}
 .opts .ck{opacity:0;color:var(--accent);width:20px;height:20px;stroke-width:2.6}
+.opts .o-l{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}.opts .o-l small{font-weight:400;font-size:0.8125rem}   /* v1.11.0 R-04: 설명은 보기 글자 아래 줄 */
 .opts button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .opts button[aria-pressed="true"] .ck{opacity:1}
 .bigstep{display:flex;align-items:center;justify-content:center;gap:22px;padding:26px 0}
@@ -565,8 +566,8 @@ sup.ref{font-size:0.75rem;color:var(--accent-deep);font-weight:700;cursor:pointe
 .pill.neutral{background:var(--accent-soft);color:var(--on-soft)}
 
 /* forms */
-label.f{display:flex;flex-direction:column;gap:4px;font-size:0.8125rem;color:var(--muted);font-weight:500}
-input[type=text],input[type=number],input[type=date],input[type=search],input[type=time],input[type=email],select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:14px;padding:10px 13px;color:var(--ink);font-size:1rem}
+label.f,div.f{display:flex;flex-direction:column;gap:4px;font-size:0.8125rem;color:var(--muted);font-weight:500}   /* v1.11.0 R-02: '성별'(div.f)도 다른 칸 제목과 같게 */
+input[type=text],input[type=number],input[type=date],input[type=search],input[type=time],input[type=email],input[type=password],input[type=tel],input[type=url],select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:14px;padding:10px 13px;color:var(--ink);font-size:1rem}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;background:var(--surface)}
 textarea{min-height:70px;resize:vertical}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -636,6 +637,9 @@ th{color:var(--muted);font-weight:500}
 .scrim{position:fixed;inset:0;background:var(--scrim);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);width:100%;max-width:560px;max-height:86%;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px))}
 .sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 14px}
+/* v1.11.0 R-11: 시트 맨 끝 버튼 줄(닫기·오늘 먹었습니다 등)은 시트 아래에 붙여 내용을 내리지 않아도 보이게 */
+.sheet>.grid2:last-child:has(>.btn),.sheet>.btn.full:last-child{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
+.sheet>.btn.full:last-child{width:calc(100% + 36px)}
 .refitem{padding-block:10px;border-top:1px solid var(--line);font-size:0.875rem}
 .refitem:first-of-type{border-top:0}
 .refitem .n{display:inline-block;min-width:28px;font-weight:700;color:var(--accent-deep)}
@@ -653,7 +657,12 @@ body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,
 .toasts.top{top:calc(env(safe-area-inset-top,0px) + 10px);bottom:auto}   /* v1.11.0 L4: 끼니 버튼 위를 가리지 않게 */
 .fg-h .fg-n{white-space:nowrap}   /* v1.11.0 L2 */
 .low-t{color:var(--warn-ink,var(--ink));font-size:0.75rem;font-weight:700}   /* v1.11.0 A-15 */
-.gloss-all summary{cursor:pointer;min-height:44px;display:flex;align-items:center}   /* v1.11.0 U-2: 용어 풀이 모음 */
+.gloss-all summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+/* v1.11.0 R-23: summary를 flex로 바꾸면 기본 펼침 삼각형이 사라지므로 오른쪽에 펼침 화살표를 그린다(열리면 위로) */
+.why-more>summary::after,.qa-ev>summary::after,.rcard details>summary::after,.gloss-all>summary::after,.oss>summary::after{content:"";flex:0 0 auto;width:8px;height:8px;margin:0 6px 0 auto;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s}
+.why-more[open]>summary::after,.qa-ev[open]>summary::after,.rcard details[open]>summary::after,.gloss-all[open]>summary::after,.oss[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+@media (prefers-reduced-motion: reduce){.why-more>summary::after,.qa-ev>summary::after,.rcard details>summary::after,.gloss-all>summary::after,.oss>summary::after{transition:none}}
+.oss>summary{font-size:0.8125rem;color:var(--accent-deep);min-height:44px;display:flex;align-items:center;cursor:pointer}.oss-txt{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--muted);background:var(--surface-2);border-radius:12px;padding:10px 12px;max-height:50vh;overflow:auto;margin:4px 0 0}   /* v1.11.0 R-18 */   /* v1.11.0 U-2: 용어 풀이 모음 */
 .gloss-dl{margin:6px 0 0}.gloss-dl dt{font-weight:700;margin-top:10px}.gloss-dl dd{margin:2px 0 0;color:var(--muted);font-size:0.875rem}
 /* v1.9.0 F-9: 화면이 막 바뀐 직후 같은 자리 버튼은 잠깐 비활성으로 보인다(연타로 다음 화면 버튼이 눌리지 않게) */
 .cool{opacity:.45!important;transition:opacity .15s}
@@ -727,6 +736,7 @@ body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
 .list{border-radius:var(--r)}
 .fgrid{border-radius:var(--r)}
 .btn{border:0;background:var(--surface-2);color:var(--ink);border-radius:999px;min-height:46px;padding:10px 18px;font-weight:700}
+.btn>.ic{vertical-align:middle}.btn:has(>.ic){display:inline-flex;align-items:center;justify-content:center;gap:6px}   /* v1.11.0 R-09: 아이콘이 글자보다 위로 뜨지 않게 */
 .btn.sm{min-height:44px;padding:6px 14px;border-radius:999px}
 .btn.primary,.btn.dark,.btn.eat{background:var(--fill);color:var(--fill-ink)}
 .btn.ghost{background:transparent;color:var(--accent-deep)}
@@ -757,9 +767,9 @@ body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
 .tasks .tk-n.part{background:conic-gradient(var(--accent) 0 var(--p,0%),transparent 0)}
 /* 홈 맨 위 상태 띠: 오늘 상태 한 문장 + 최근 2주 증상 점수 능선 + 기록 버튼 */
 .ridge{background:var(--field);border-radius:26px;padding:16px 18px 16px;margin:2px 0 4px;color:var(--ink)}
-.ridge .r-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.ridge .r-date{font-size:0.8125rem;color:var(--muted);margin:0}
-.ridge .r-stage{background:var(--surface);border:0;border-radius:999px;min-height:44px;padding:4px 10px 4px 12px;font-size:0.8125rem;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:2px}
+.ridge .r-top{display:flex;align-items:center;gap:6px 8px;justify-content:space-between;flex-wrap:wrap}   /* v1.11.0 R-24: 좁으면 칩이 날짜 아래 줄로 */
+.ridge .r-date{font-size:0.8125rem;color:var(--muted);margin:0;white-space:nowrap}
+.ridge .r-stage{background:var(--surface);border:0;border-radius:999px;min-height:44px;padding:4px 10px 4px 12px;font-size:0.8125rem;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
 .ridge .r-stage .chev{width:16px;height:16px}
 .ridge .r-head{font-family:var(--display);font-size:1.6875rem;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:8px 0 0}
 .ridge .r-sub{font-size:0.9375rem;margin:4px 0 0}
@@ -770,7 +780,7 @@ body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
 .ridge .r-chart .dot{fill:var(--accent);stroke:var(--field);stroke-width:3}
 .ridge .r-chart .qdot{fill:var(--field);stroke:var(--accent);stroke-width:2}
 .ridge .r-chart text{font-family:var(--body);font-size:12px;fill:var(--muted)}
-.ridge .r-chart .bl{font-size:11.5px;fill:var(--accent-deep);font-weight:700}
+.ridge .r-chart .bl{font-size:11.5px;fill:var(--accent-deep);font-weight:700;paint-order:stroke;stroke:var(--field);stroke-width:4px;stroke-linejoin:round}   /* v1.11.0 R-20 */
 .ridge .r-chart .r-empty{font-size:13px;fill:var(--muted)}
 .ridge .r-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .ridge .r-btns .btn{flex:1 1 auto;min-height:46px}

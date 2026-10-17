@@ -44,8 +44,8 @@ await p.click('[data-act=lbReset]');
 await p.fill('#lbText','정제수, 카라기난, 복숭아과즙'); await p.click('[data-act=lbCheck]'); await p.waitForTimeout(400);
 console.log(await p.evaluate(()=>JSON.stringify(LB.res.rows.map(r=>[r.lv,r.title,r.found]))));
 await p.screenshot({path:T('lb.png'),fullPage:true});
-console.log('errors',errs); {const a=lineJSON('{"o":'); expect(()=>a.o==='avoid'&&a.name==='딸기 요거트 음료'&&a.rows.some(r=>r[1]==='내 알레르기 원재료'&&r[2].includes('복숭아')),'복숭아 알레르기');
+console.log('errors',errs); {const a=lineJSON('{"o":'); expect(()=>a.o==='ban'&&a.name==='딸기 요거트 음료'&&a.rows.some(r=>r[1]==='내 알레르기 원재료'&&r[2].includes('복숭아')),'복숭아 알레르기');
  for(const t of ['인공감미료','당알코올(폴리올)','프럭탄(이눌린·프락토올리고당)','카라기난(증점제)']) expect(()=>a.rows.some(r=>r[1]===t),'원재료 점검 '+t);
  const b2=lineJSON('{"overall"'); expect(()=>b2.overall==='ok','쌀·소금은 문제없음');
- const c3=lineJSON('[["'); expect(()=>c3[0][0]==='avoid'&&c3.some(r=>r[1]==='카라기난(증점제)'),'세 번째 원재료');}
+ const c3=lineJSON('[["'); expect(()=>c3[0][0]==='ban'&&c3.some(r=>r[1]==='카라기난(증점제)'),'세 번째 원재료');}
 __done(); await b.close()})();

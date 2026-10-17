@@ -85,7 +85,7 @@ await p.evaluate(()=>{SCR=null;S.tab="food";render()}); await p.waitForTimeout(3
 await p.screenshot({path:T('t7_xl_sheet.png')});
 console.log('hscroll', await p.evaluate(()=>document.documentElement.scrollWidth));
 console.log('errors',errs); {const j=lineJSON('{"label"'); expect(j,'출력 없음');
- expect(()=>j.label[0]==='avoid','알레르기 원재료');
+ expect(()=>j.label[0]==='ban','알레르기 원재료(v1.11.0 R-15: 절대 금지)');
  expect(()=>{const m=Object.fromEntries(j.menu.map(([n,r])=>[n,r.level])); return m['전복죽']==='later'&&m['닭갈비']==='avoid'&&m['유당분해우유']==='ok'&&m['김치전']==='avoid'&&m['백김치']==='caution'},'외식 판정');
  expect(()=>j.act1.stage===1&&j.act2.stage===3&&j.act3.stage===1,'활동도 단계');
  expect(()=>j.d1.severe.length&&j.d2.severe.length&&j.d3.severe.length,'위험 신호');

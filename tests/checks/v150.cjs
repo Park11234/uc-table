@@ -42,7 +42,7 @@ const r=await p.evaluate(()=>{
   ok(FOOD.newcare_dangplan_pro.fod==="high"&&FOOD.newcare_dangplan_pro.tags.includes("polyol")&&FOOD.newcare_dangplan_pro.tags.includes("hifiber"),"당플랜 프로: 돼지감자 추출분말 FODMAP·당알코올·섬유 강화");
   ok(st("curewell",S3).level==="caution"&&st("curewell",{stage:1,fiberStage:1}).level==="later"&&FOOD.curewell.tags.includes("peanut")&&FOOD.curewell.fi===3.5,"큐어웰: 섬유 7g 제품 저잔사식 보류·땅콩 함유");
   ok(FOOD.newcare_fiber.fod==="high"&&FOOD.newcare_fiber.tags.includes("dairy")&&!FOOD.newcare_fiber.tags.includes("unverified")&&FOOD.newcare_mini_sesame&&!FOOD.newcare_mini_sesame.tags.includes("dairy")&&FOOD.newcare_ibd.tags.includes("sweetener"),"화이바·미니 검은깨·IBD 플러스 원재료");
-  S.profile.allergies=["peanut"]; ok(st("curewell",S3).level==="avoid",'큐어웰 땅콩 알레르기 피하기'); S.profile.allergies=[];
+  S.profile.allergies=["peanut"]; ok(st("curewell",S3).level==="ban",'큐어웰 땅콩 알레르기 절대 금지(v1.11.0 R-15)'); S.profile.allergies=[];
   ok(FOOD.carewell_gosu.fod==="high"&&FOOD.carewell_gosu.ca===72.5,"케어웰 프락토올리고당·칼슘");
   ok(FOOD.mediwell_renal.k===200&&st("mediwell_renal").level==="avoid"&&FOOD.mediwell_renal_hd,"메디웰 신장식 비투석 값·투석 따로");
   ok(FOOD.newcare_gosu.src&&FOOD.newcare_gosu.src.kind==="L"&&Math.abs(FOOD.newcare_gosu.k-100)<1&&FOOD.newcare_gosu.na===85,"뉴케어 구수한맛 순 100ml당 값");
@@ -64,7 +64,7 @@ const r=await p.evaluate(()=>{
   ok(["dreamcacao56","dreamcacao72","dreamcacao82","chicchoc","zec","butter_coconut","kkokkalcorn"].every(id=>!FOOD[id]),"식약처 DB와 맞지 않거나 DB에 없는 제품은 넣지 않음(v1.6.0 제품 7종 뺌)");
   ok(FOODS.filter(f=>(QTAG["사탕"]||[]).some(t=>f.tags.includes(t))).map(f=>f.id).filter(id=>["mygummy","mok_candy","gummy","sugarfree_candy"].includes(id)).length===4,"'사탕' 검색 묶음");
   S.profile.allergyOther="사과"; { const a=foodStatus(FOOD.kkulkwabaegi), b=foodStatus(FOOD.saeukkang);
-    ok(a.level==="avoid"&&a.reasons.some(r=>r.includes("원재료"))&&!b.reasons.some(r=>r.includes("원재료")),"직접 적은 알레르기(사과)를 원재료(사과농축액)와 대조"); }
+    ok(a.level==="ban"&&a.reasons.some(r=>r.includes("원재료"))&&!b.reasons.some(r=>r.includes("원재료")),"직접 적은 알레르기(사과)를 원재료(사과농축액)와 대조(v1.11.0 R-15: 알레르기는 절대 금지)"); }
   S.profile.allergyOther="밀"; ok(!foodStatus(FOOD.saeukkang).reasons.some(r=>r.includes("원재료")),"한 글자는 원재료 대조에 쓰지 않음"); S.profile.allergyOther="";
   ok(!FOOD.meiji_kouka86&&!FOOD.lindt_ex85,"한국 포장 표시를 확인하지 못한 수입 초콜릿은 넣지 않음");
   // 시판 라면(v1.6.2): 농심몰(68)·오뚜기몰(69)·삼양식품 홈페이지(70) 포장 표시 + 식약처 가공식품 DB(27) 대조
@@ -74,9 +74,9 @@ const r=await p.evaluate(()=>{
   ok(Math.round(FOOD.rm_shin.k)===417&&Math.round(FOOD.rm_shin.na)===1492&&FOOD.rm_carbo_buldak.tags.includes("lactose")&&FOOD.rm_matitneun.tags.includes("peanut")&&FOOD.rm_matitneun.tags.includes("walnut")&&FOOD.rm_samyang1963.tags.includes("fish")&&FOOD.rm_chamkkae.tags.includes("sesame"),"포장 표시 값(100g 환산)·원재료 태그(유당·땅콩·호두·생선·참깨)");
   ok(["rm_neoguri_hot","rm_twigim_udon_cup","rm_shin_rose","rm_baehongdong","rm_sarigomtang_big","rm_neoguri_cup","rm_jin_mild","rm_odongtong","rm_snack","rm_snack_cup","rm_snack_bowl","rm_samyang_spicy","rm_carbo_buldak_big","rm_nagasaki"].every(id=>!FOOD[id]),"식약처 DB와 맞지 않거나 DB 행이 없는 라면 14종은 넣지 않음");
   { const q=FOODS.filter(f=>(QTAG["라면"]||[]).some(t=>f.tags.includes(t))).map(f=>f.id); ok(q.includes("rm_buldak")&&q.includes("rm_olive_jjapa")&&q.includes("ramen")&&q.length===56,"'라면' 검색 묶음(이름에 라면이 없는 불닭볶음면·짜파게티 포함)"); }
-  S.profile.allergies=["soy"]; ok(foodStatus(FOOD.rm_shin).level==="avoid",'대두 알레르기면 신라면 피하기'); S.profile.allergies=[];
+  S.profile.allergies=["soy"]; ok(foodStatus(FOOD.rm_shin).level==="ban",'대두 알레르기면 신라면 절대 금지(v1.11.0 R-15)'); S.profile.allergies=[];
   S.profile.allergyOther="사과"; { const a=foodStatus(FOOD.rm_jinbibim), b=foodStatus(FOOD.rm_shin);
-    ok(a.level==="avoid"&&a.reasons.some(r=>r.includes("원재료"))&&!b.reasons.some(r=>r.includes("원재료")),"진비빔면 원재료(사과식초·농축사과과즙)와 직접 적은 알레르기 대조"); } S.profile.allergyOther="";
+    ok(a.level==="ban"&&a.reasons.some(r=>r.includes("원재료"))&&!b.reasons.some(r=>r.includes("원재료")),"진비빔면 원재료(사과식초·농축사과과즙)와 직접 적은 알레르기 대조(절대 금지)"); } S.profile.allergyOther="";
   ok(/^알레르기 표시/.test(INGR.rm_kimchi_sabal)&&/돼지고기/.test(INGR.rm_kimchi_sabal)&&/소맥분/.test(INGR.rm_shin),"원재료명 전체를 못 읽은 제품은 알레르기 표시만");
   ok(FOOD.newcare_gosu.src.ref===undefined,"영양식 제품 표시 근거는 그대로 53");
   // 국가표준식품성분 DB 10.4(v1.6.0): 식약처 값과 다른 49개 원재료는 DB 10.4 값(근거 64)

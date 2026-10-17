@@ -123,7 +123,7 @@ console.log('errors', errs);
  expect(()=>/진료를/.test(logOf('alerts')||''),'진료 안내'); expect(()=>JSON.parse(logOf('saved')).size>100000,'PDF 저장');
  // v1.9.0 U-1: 쪽으로 묶인 마법사 — 답해도 저절로 넘어가지 않고, 쪽마다 적은 값이 모두 저장됨
  expect(()=>{const a=jsonOf('noAutoAdv'); return a[0]===a[1]},'답해도 다음 쪽으로 저절로 넘어가지 않음');
- expect(()=>{const o=JSON.parse(logOf('log')), l=o.l; return o.tab==='log'&&o.scr===null&&l.day===7&&l.night===0&&l.bloody===3&&l.urg===1&&l.blood===2&&l.well===1&&l.extra.length===1&&l.pain===6&&l.gas==='약간'&&l.fatigue==='심함'&&l.stool===6&&l.medtaken===2&&l.temp==='38.1'&&l.other.includes('두통')&&l.memo==='테스트 메모'},'증상 기록 쪽마다 적은 값 저장');
+ expect(()=>{const o=JSON.parse(logOf('log')), l=o.l; return o.tab==='plan'&&o.scr===null&&l.day===7&&l.night===0&&l.bloody===3&&l.urg===1&&l.blood===2&&l.well===1&&l.extra.length===1&&l.pain===6&&l.gas==='약간'&&l.fatigue==='심함'&&l.stool===6&&l.medtaken===2&&l.temp==='38.1'&&l.other.includes('두통')&&l.memo==='테스트 메모'},'증상 기록 쪽마다 적은 값 저장');
  expect(()=>/참고문헌|근거 자료/.test(logOf('sheet')||''),'참고문헌 시트');
  expect(()=>{const o=JSON.parse(logOf('profile')); return o.p.height==='170'&&o.p.sex==='F'&&o.o.checked.includes('lowres')},'내 정보 저장 버튼으로 반영(v1.7.1)');
  expect(()=>{const a=jsonOf('noAI'); return a[0]===false&&a.slice(1).every(t=>t==='undefined')},'AI 기능 없음(v1.7.0)');

@@ -48,10 +48,10 @@ const r=await p.evaluate(()=>{
   ok(bestFood("잔치국수").id==="janchi_guksu",'best 잔치국수'); ok(bestFood("미음").id==="rice_gruel",'best 미음');
   ok(bestFood("고등어조림").id==="braised_mackerel",'best 고등어조림');
   S.profile.dislikes="배"; let c=ctx(); ok(foodStatus(FOOD.pear,c).level==="avoid"&&foodStatus(FOOD.napa,c).level!=="avoid",'dislike 배');
-  S.profile.dislikes=""; S.profile.allergies=["clam"]; c=ctx(); ok(foodStatus(FOOD.oyster_sauce,c).level==="avoid"&&foodStatus(FOOD.abalone,c).level==="avoid"&&foodStatus(FOOD.oyster,c).level==="avoid",'allergy clam');
-  S.profile.allergies=["squid"]; c=ctx(); ok(foodStatus(FOOD.nakji,c).level==="avoid",'allergy squid→낙지');
-  S.profile.allergies=["shrimp"]; c=ctx(); ok(foodStatus(FOOD.kkakdugi,c).level==="avoid"&&foodStatus(FOOD.zucchini_stirfry,c).level==="avoid",'allergy shrimp→젓갈');
-  S.profile.allergies=["wheat"]; c=ctx(); ok(foodStatus(FOOD.bulgogi,c).level==="avoid"&&foodStatus(FOOD.soy_sauce,c).level==="avoid",'allergy wheat→간장 양념');
+  S.profile.dislikes=""; S.profile.allergies=["clam"]; c=ctx(); ok(foodStatus(FOOD.oyster_sauce,c).level==="ban"&&foodStatus(FOOD.abalone,c).level==="ban"&&foodStatus(FOOD.oyster,c).level==="ban",'allergy clam');   // v1.11.0 R-15: 알레르기는 절대 금지
+  S.profile.allergies=["squid"]; c=ctx(); ok(foodStatus(FOOD.nakji,c).level==="ban",'allergy squid→낙지');
+  S.profile.allergies=["shrimp"]; c=ctx(); ok(foodStatus(FOOD.kkakdugi,c).level==="ban"&&foodStatus(FOOD.zucchini_stirfry,c).level==="ban",'allergy shrimp→젓갈');
+  S.profile.allergies=["wheat"]; c=ctx(); ok(foodStatus(FOOD.bulgogi,c).level==="ban"&&foodStatus(FOOD.soy_sauce,c).level==="ban",'allergy wheat→간장 양념');
   S.profile.allergies=[]; S.profile.lactose=true; c=ctx(); ok(foodStatus(FOOD.lowfat_milk,c).level==="avoid"&&foodStatus(FOOD.cheddar,c).level!=="avoid",'lactose'); S.profile.lactose=false;
   // 단계별 판정
   const st=(id,s)=>{S.stageMode=s; return foodStatus(FOOD[id],ctx())};

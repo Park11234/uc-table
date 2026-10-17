@@ -461,6 +461,14 @@ def stage_fix(p, kind, tags, ms):
     return ms
 
 
+def iga(w):
+    """받침에 맞는 조사(이/가). v1.11.0 검토 R-13: '콩이(가)' 대신 '콩이'"""
+    m = re.search(r'[가-힣](?=[^가-힣]*$)', re.sub(r'\([^)]*\)\s*$', '', w))
+    if not m:
+        return '이(가)'
+    return '이' if (ord(m.group(0)) - 0xAC00) % 28 else '가'
+
+
 def fodmap(p, kind, tags):
     ing = p['ing']
     if 'lactose' not in tags and re.search(r'유당분해|락토프리|무유당|유당\s*0', ' '.join(p['names']) + ing) and kind in ('milk', 'yogurt'):
@@ -480,7 +488,7 @@ def fodmap(p, kind, tags):
     if kind == 'natto' or re.search(r'^대두|^콩', first):
         return ('high', '콩류', [20])
     if found:
-        return ('unk', '·'.join(found) + '이(가) 들어 있어 높을 수 있음(이 제품은 시험되지 않음)', [20, 51])
+        return ('unk', '·'.join(found) + iga(found[-1]) + ' 들어 있어 높을 수 있음(이 제품은 시험되지 않음)', [20, 51])
     return ('unk', '이 제품의 FODMAP 수치는 확인되지 않음', [20])
 
 

@@ -66,6 +66,6 @@ const after=await p.evaluate(()=>({value:document.getElementById('foodQ').value,
 console.log('imeGuard', JSON.stringify({mid,after}));
 console.log('errors',errs); {const a=JSON.parse(logOf('otherAdd')); expect(()=>a.next[0]==='두통'&&a.chip.length===3&&a.enter[0].length===4&&a.enter[2]==='','기타 증상 입력');
  const o=JSON.parse(logOf('orders')); expect(()=>o.other.includes('우유는 하루 1컵')&&o.box===''&&o.saved.includes('우유는 하루 1컵'),'지시 추가·저장'); expect(()=>JSON.parse(logOf('clearedOnLeave'))==='','화면 떠나면 입력 비움');
- const w=JSON.parse(logOf('words')); expect(()=>w.kiwi==='avoid'&&w.mackerel==='avoid'&&w.eggplant==='avoid'&&w.menu.level==='avoid','적은 음식 제외');
+ const w=JSON.parse(logOf('words')); expect(()=>w.kiwi==='ban'&&w.mackerel==='avoid'&&w.eggplant==='avoid'&&w.menu.level==='ban','적은 음식 제외(v1.11.0 R-15: 직접 적은 알레르기는 절대 금지, 싫어하는 음식은 피하기)');
  const g=JSON.parse(logOf('imeGuard')); expect(()=>g.mid.same&&g.after.value==='바나'&&g.after.rendered,'한글 입력 중 보호');}
 __done(); await b.close();})();

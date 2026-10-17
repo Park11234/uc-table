@@ -49,7 +49,8 @@ const STATES=["S","SCR","WZ","draft","BAD","rateDraft","TP","EX","MP","MM","MJ",
       if(e.disabled||e.closest('[hidden]')) return false; if(e.matches('input[type=file]')) return false; if(e.dataset.act==="pdf") return false; if(e.dataset.act==="reloadPage") return false; /* 오류 안내의 '새로고침'은 일부러 다시 읽는 버튼 */ return true});
     window.__key=e=>[e.tagName,e.className&&String(e.className).slice(0,30),e.dataset.act||'',e.dataset.v||'',e.dataset.k||'',e.dataset.i||'',e.dataset.j||'',e.dataset.id||'',e.dataset.tab||'',e.dataset.go||'',e.dataset.sub||'',e.dataset.key||'',e.id||'',(e.getAttribute('aria-label')||e.textContent||'').trim().slice(0,24)].join('|');
     window.__sig=()=>{const sh=document.querySelector('#sheetRoot .sheet h2, #sheetRoot h2'); return [S.tab,SCR?SCR.name:'',SCR&&SCR.name==='wizard'?WZ.step:'',sh?sh.textContent.slice(0,20):''].join('/')};
-    window.__bad=()=>{const out=[]; const txt=['#main','#appbar','#sheetRoot'].map(s=>document.querySelector(s)?.innerText||'').join('\n');
+    window.__bad=()=>{const out=[]; let txt=['#main','#appbar','#sheetRoot'].map(s=>document.querySelector(s)?.innerText||'').join('\n');
+      for(const e of document.querySelectorAll('.oss-txt')) txt=txt.split(e.innerText).join('');   // v1.11.0: 라이선스 전문의 영어 낱말(null and void 등)은 앱 표시가 아님
       if(/화면을 그리는 중 문제가 생겼습니다/.test(txt)) out.push('렌더 오류 화면');
       const m=txt.match(/.{0,20}(\bundefined\b|\bNaN\b|\[object Object\]|\bnull\b).{0,20}/); if(m) out.push('이상 표시: '+m[0]);
       if(document.documentElement.scrollWidth>innerWidth+1) out.push('가로 넘침 '+document.documentElement.scrollWidth);

@@ -163,7 +163,7 @@ const SEED=()=>{
       MJ={step:"edit",items:[{name:"김밥",ingr:[],cook:""}],results:[],err:"",text:""}; mjJudge(); S.tab="food"; S.foodMode="eatout"; SCR=null; render();
       const mj=document.querySelector('#main')?.innerText||""; const duck=FOOD.smoked_duck;
       return {out,plain,mjNote:MJ.results[0]&&MJ.results[0].ham===true,mjTxt:mj.includes(HAM_NOTE),note:HAM_NOTE,duckLv:foodStatus(duck).level,duckWhy:duck.why}});
-    need(r.note==="햄·소시지가 들어가면 절대 금지입니다. 빼고 드십시오.",`M3 안내 문장 (${r.note})`);
+    need(r.note==="햄·소시지는 빼고 드십시오. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.",`M3 안내 문장(검토 R-12: 기준을 밝힘) (${r.note})`);
     need(Object.values(r.out).every(x=>x.note&&x.lv!=="ban"),`M3 김밥·오므라이스·볶음밥 정보에 안내, 판정은 그대로 (${JSON.stringify(r.out)})`);
     need(!r.plain,'M3 햄과 관계없는 음식(우동)에는 안내 없음');
     need(r.mjNote,'M3 외식 판정 김밥에도 같은 안내');
