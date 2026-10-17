@@ -48,6 +48,8 @@ jobs:
         run: npm test
       - name: 화면 비교 점검 (기준 화면과 픽셀 비교)
         run: node tests/visual/visual.cjs
+      - name: 문서 숫자 점검 (README·docs의 숫자가 지금 빌드와 같은지, v1.11.0 M7)
+        run: node tools/doc_numbers.cjs
       - name: 실패 로그 업로드
         if: failure()
         uses: actions/upload-artifact@v4

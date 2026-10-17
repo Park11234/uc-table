@@ -1,6 +1,6 @@
 {
   "name": "uc-table",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "UC 식단 관리 도우미 — 궤양성 대장염 식단·증상 기록 웹앱(PWA·오프라인 파일·안드로이드 앱)",
   "private": true,
   "scripts": {
@@ -8,6 +8,7 @@
     "test:mutation": "bash tests/mutation-check.sh",
     "test:py": "python3 -m unittest discover -s tests/python -v",
     "lint": "node tools/extract_js.cjs && eslint .lint/app.js --max-warnings 0",
+    "docs:numbers": "node tools/doc_numbers.cjs",
     "build": "python3 src/data/build_app.py && python3 tools/build_offline.py",
     "build:offline": "python3 tools/build_offline.py",
     "serve": "python3 -m http.server 8080 --directory public"
