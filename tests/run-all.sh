@@ -13,5 +13,8 @@ FILES=$(ls tests/regression/*.cjs tests/checks/*.cjs)
 echo "$FILES" | xargs -P "$JOBS" -I{} bash -c 'run {}' | sort -k2 | tee "$TEST_TMP/summary.txt"
 FAILED=$(grep -c '^FAIL' "$TEST_TMP/summary.txt" || true)
 TOTAL=$(grep -c . "$TEST_TMP/summary.txt" || true)
+# v1.12.0 C-08: 실패한 점검의 로그 끝부분을 그대로 보인다(CI 작업 기록만 보고도 이유를 알 수 있게)
+grep '^FAIL' "$TEST_TMP/summary.txt" | sed -n 's/.*(로그: \(.*\))$/\1/p' | while read -r log; do
+  echo "==== $log (끝 40줄)"; tail -n 40 "$log"; done
 echo "----"; echo "$((TOTAL-FAILED))/$TOTAL 통과"
 [ "$FAILED" -eq 0 ]
