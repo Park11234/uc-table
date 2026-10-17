@@ -16,7 +16,7 @@ const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});retur
    증상 기록 4쪽·평소와 같음, 단계 묻기, 검색 오탐, 백업 합치기, 되돌리기, 글자 PDF, PDF 라이브러리 지연 로딩, 자정, 외부 요청 0건 */
 const { chromium } = require('playwright'); const fs=require('fs');
 const F=[]; const need=(c,m)=>{if(!c){F.push(m); console.log('  ✗ '+m)} else console.log('  ✓ '+m)};
-const page=T('v190.html');
+const page=T('v190/v190.html');
 fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs.readFileSync(APP,'utf8')+'</body></html>');
 const SEED=()=>{
   S.consent={date:today()}; S.onb="done";
@@ -28,7 +28,7 @@ const SEED=()=>{
   const b=await chromium.launch();
   const open=async(opt={})=>{const ctx=await b.newContext({viewport:{width:opt.w||390,height:844},reducedMotion:opt.rm?'reduce':'no-preference'}); const p=await ctx.newPage();
 // v1.11.0 L1: 앱이 CDN 대신 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다 → 점검 페이지 옆에 복사
-    fs_.mkdirSync(path.join(TMP,'vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'vendor','jspdf.umd.min.js'));
+    fs_.mkdirSync(path.join(TMP,'v190','vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'v190','vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'v190','vendor','jspdf.umd.min.js'));
     await p.goto('file://'+page); await p.waitForTimeout(300); await p.evaluate(SEED); await p.reload(); await p.waitForTimeout(400); await p.evaluate(()=>scrollTo(0,0)); return p};
 
   console.log('== 접근성');

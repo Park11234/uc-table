@@ -29,7 +29,7 @@ const rateOpen=async p=>{const b=await p.$('[data-act=rateOpen]'); if(b){await b
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('t8.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('t11.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};render()});
 // sample with allergies
 const r1=await p.evaluate(()=>{S.profile.allergies=['egg','fish','shrimp'];S.orders.checked=['nodairy'];render();

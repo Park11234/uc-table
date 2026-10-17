@@ -27,7 +27,7 @@ const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); p
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('t8.html'));await p.waitForTimeout(500);
+await p.goto('file://'+WRAP('smoke.html'));await p.waitForTimeout(500);
 await p.screenshot({path:T('sm_welcome.png')});
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
 for(const t of ['plan','log','food','me']){await p.click(`.tab[data-tab=${t}]`);await p.waitForTimeout(350);await p.screenshot({path:T(`sm_${t}.png`),fullPage:true});}

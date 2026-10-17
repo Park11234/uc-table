@@ -20,7 +20,7 @@ const { chromium } = require('playwright'); const fs=require('fs');
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('ime.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('search.html'));await p.waitForTimeout(400);
 const r=await p.evaluate(()=>{S.consent={date:today()};
   const names=q=>FOODS.filter(f=>searchHit(f,q)).map(f=>f.name);
   const has=(q,nm)=>names(q).some(n=>n.includes(nm));

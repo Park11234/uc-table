@@ -28,7 +28,7 @@ const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); p
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('fin.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('kbd.html'));await p.waitForTimeout(400);
 const cases=[
  ['wizard memo','#memo',()=>{S.consent={date:today()};SCR=null;S.tab="log";render();openWizard();WZ.step=wzStepOf("other");render()}],
  ['wizard otherAdd','#otherAdd',null],

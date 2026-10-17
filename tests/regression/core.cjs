@@ -36,14 +36,14 @@ window.claude={use:async n=>{
  if(n==="downloads") return {save:async({filename,data})=>{window.__saved={filename,size:data.size||data.length}; const buf=await data.arrayBuffer(); window.__pdf=Array.from(new Uint8Array(buf));return {status:"saved"}}};
  return null}};
 </script></head><body>${body}</body></html>`;
-fs.writeFileSync(T('uc_test.html'), page_html);
+fs.writeFileSync(T('core/uc_test.html'), page_html);
 (async()=>{const b = await chromium.launch();
 const p = await b.newPage({viewport:{width:390,height:844}});
-// v1.12.0: 앱(v1.11.0 L1)은 CDN이 아니라 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다. 다른 점검(pdflong)이 만들어 둔 폴더에 기대지 않게 직접 복사
-fs_.mkdirSync(path.join(TMP,'vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'vendor','jspdf.umd.min.js'));
+// v1.12.0: 앱(v1.11.0 L1)은 CDN이 아니라 페이지 옆 vendor/에서 그림 PDF 라이브러리를 불러온다. 다른 점검(pdflong)이 만들어 둔 폴더에 기대지 않게 직접 복사. 동시에 도는 점검과 파일이 섞이지 않게 페이지와 vendor/를 자기 폴더(core/)에 둔다
+fs_.mkdirSync(path.join(TMP,'core','vendor'),{recursive:true}); fs_.copyFileSync(LIB_H2C,path.join(TMP,'core','vendor','html2canvas.min.js')); fs_.copyFileSync(LIB_JSPDF,path.join(TMP,'core','vendor','jspdf.umd.min.js'));
 await p.route('https://fonts.googleapis.com/**', r=>r.fulfill({body:'',contentType:'text/css'}));
 const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
-await p.goto('file://'+WRAP('uc_test.html')); await p.waitForTimeout(1500);
+await p.goto('file://'+WRAP('core/uc_test.html')); await p.waitForTimeout(1500);
 console.log('noAI', await p.evaluate(()=>[!!document.querySelector('#c_ai'),typeof generateWeek,typeof askFood,typeof foodAI]));
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(200);
 await p.screenshot({path:T('s1.png'),fullPage:false});

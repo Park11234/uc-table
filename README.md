@@ -27,7 +27,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 음식 판정 | 끼니 메뉴 | 궁금한 점 | 근거 자료 | 자동 점검 | 저장 데이터 손상 퍼징 | 접근성(WCAG 2.2 AA) | 외부 요청 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->88<!--/n-->건** | **Playwright <!--n:pw-->57<!--/n-->개 + 파이썬 <!--n:pytests-->88<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
+| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->88<!--/n-->건** | **Playwright <!--n:pw-->57<!--/n-->개 + 파이썬 <!--n:pytests-->89<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
 
 **기술 스택** — Vanilla JS(HTML 한 파일, 프레임워크 없음) · localStorage·IndexedDB · Service Worker(PWA) · Web Crypto(백업 암호화) · html2canvas + jsPDF · Python(음식 데이터 파이프라인) · Playwright · axe-core · ESLint · GitHub Actions / Pages
 
@@ -217,7 +217,7 @@ python3 src/data/build_app.py    # app.src.html의 표시자 자리에 데이터
 python3 tools/build_offline.py   # public/(PWA)과 dist/(단일 파일) 생성
 npm ci && npx playwright install --with-deps chromium   # package-lock.json 그대로 설치
 npm run lint                     # ESLint (경고 0)
-npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->88<!--/n-->개(파이썬 표준 라이브러리만)
+npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->89<!--/n-->개(파이썬 표준 라이브러리만)
 npm test                         # Playwright 점검 <!--n:pw-->57<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
 npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->71<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
@@ -282,7 +282,7 @@ through a reproducible pipeline (the app build is byte-identical, checked in CI)
 Since v1.7.0 the app uses no AI at runtime: <!--n:menus-->1,174<!--/n--> meal templates built from reviewed components and <!--n:qa-->51<!--/n--> Q&A entries whose <!--n:qaev-->169<!--/n--> evidence quotes are verified verbatim against the source texts by a unit test.
 v1.11.0 fixes the v1.10.0 review and applies a new design ("calm ridge", clear blue): a home status band with a one-line summary and a two-week symptom-score ridge chart over a remission band, progress rings, a bundled subset font (UC Table Sans, renamed from Pretendard under the SIL OFL), and plain-language stage names. Rules: foods the user is allergic to are now "never"; immunosuppressant users get raw foods as "avoid" (CDC); the active-disease alert is one fixed sentence; quick logs are marked everywhere instead of reading as zeros; packaged-product status and "instead try" suggestions are rebuilt; optional backup encryption (PBKDF2-SHA256 310k → AES-GCM 256); a full reset also clears local snapshots and keys; lab values and medication-change notes go into the clinic PDF; English names and typos are suggested in search; the open-source license texts ship inside the app. A browser walkthrough with agent-browser after the redesign found and fixed 24 more issues.
 v1.12.0 applies an independent review of the whole v1.11.0 change: the eating-out check now uses each listed food's allergen tags, the food list no longer serves stale verdicts after a medication or allergy change, the raw-food rule for immunosuppressant users also covers off-list menus and package ingredients, a reset that keeps snapshots preserves the pre-reset record, backups stop instead of going out in plaintext when the encryption key cannot be read, and CI now uploads failure logs. The app icon moves to the clear-blue palette and a font-coverage check guards the bundled subset font.
-Quality checks: <!--n:pw-->57<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->88<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
+Quality checks: <!--n:pw-->57<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->89<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
 PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->71<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
 
 ## 라이선스

@@ -28,12 +28,12 @@ const out=(k,v)=>console.log(k, typeof v==='string'?v:JSON.stringify(v));
 (async()=>{const b=await chromium.launch();
 const body=fs.readFileSync(APP,'utf8');
 const html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+body+'</body></html>';
-fs.writeFileSync(T('app.html'),html);
+fs.writeFileSync(T('pass3.html'),html);
 const errs=[];
 const mk=async(vp={width:390,height:844})=>{const c=await b.newContext({viewport:vp});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));return p};
 // P3-1 손상된 저장 데이터
 let p=await mk();
-await p.goto('file://'+WRAP('app.html')); await p.evaluate(()=>localStorage.setItem('uc-table.v1','{"profile":')); await p.reload(); await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('pass3.html')); await p.evaluate(()=>localStorage.setItem('uc-table.v1','{"profile":')); await p.reload(); await p.waitForTimeout(400);
 out('1 load fail', await p.evaluate(()=>[LOAD_FAIL, !!document.body.textContent.match(/읽지 못했습니다/), localStorage.getItem('uc-table.v1')]));
 // 동의 화면에서도 경고가 보이는가
 out('1b banner on welcome', await p.evaluate(()=>document.querySelector('#main').textContent.includes('읽지 못했')));
@@ -52,7 +52,7 @@ out('3 rollover ai', await p.evaluate(()=>{const mkDay=d=>({date:d,meals:SLOTS.m
   return [big, !!todayBtn, S.selDay]}));
 // P3-4 전 화면 다크·아주 크게·360px 가로 넘침
 p=await mk({width:360,height:740});
-await p.goto('file://'+WRAP('app.html')); await p.waitForTimeout(300);
+await p.goto('file://'+WRAP('pass3.html')); await p.waitForTimeout(300);
 const ov=await p.evaluate(async()=>{S.consent={date:today()};S.theme="dark";S.fontSize="xl";
   for(let i=0;i<5;i++){const d=addDays(today(),-i);S.logs[d]={date:d,...BLANK_LOG(),day:3,bloody:i%2}}
   S.triggers=[{name:"우유",foodId:"milk",sym:["gas"],never:false}];
@@ -68,7 +68,7 @@ out('5 unnamed buttons', await p.evaluate(()=>{const bad=[];for(const t of ["pla
 // P3-6 평가가 있는 끼니를 안 먹음/다른 메뉴로
 // v1.9.0 U-3: 확인 창 대신 바로 바꾸고, 알림에 지운 사실과 '되돌리기'를 보인다(되돌리면 평가가 돌아옴)
 p=await mk();
-await p.goto('file://'+WRAP('app.html')); await p.waitForTimeout(300);
+await p.goto('file://'+WRAP('pass3.html')); await p.waitForTimeout(300);
 await p.evaluate(()=>{S.consent={date:today()};S.plan=null;render(); const d=S.plan.days[0]; S.ratings=[{date:d.date,slot:"아침",title:d.meals[0].title,foodId:d.meals[0].items[0][0],rating:"good"}]; render()});
 const undoTxt=()=>p.evaluate(()=>{const t=document.querySelector('#toasts .toast'); return t?[t.querySelector('.t-msg')?.textContent||'',t.querySelector('.t-act')?.textContent||'']:null});
 await p.click('[data-act=mealMore][data-k="0"]'); await p.click('#sheetRoot [data-act=skipToggleDate][data-slot="아침"]'); await p.waitForTimeout(200);
