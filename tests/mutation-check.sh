@@ -90,6 +90,8 @@ mut={
  'enc_failopen.html':rep('if(ENC_OK()&&!ENC.ready) throw new Error("enc-unknown"); ',''),  # 열쇠를 못 읽으면 평문 백업(C-07)
  'copy_await.html':rep('else if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write) await','else if(false) await'),  # 암호화를 켜면 복사가 기다린 뒤에(C-10)
  'share_await.html':rep('now=backupNow();\n  if(now==null){let out;','now=await backupOut();\n  if(now==null){let out;'),  # 암호화를 켜면 공유가 기다린 뒤에(C-10)
+ 'wipe_skip.html': rep('await tryDo(()=>idb("kv","readwrite",st=>st.delete("bkKey")));',''),  # 초기화가 암호화 열쇠를 남김(C-13)
+ 'sync_name_only.html':rep(':`고른 폴더가 OneDrive',':""&&`고른 폴더가 OneDrive'),  # 이름에 OneDrive가 없으면 동기화 폴더 권유를 안 함(C-14)
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -166,7 +168,9 @@ own_off.html tests/checks/v1120.cjs
 ridge_score.html tests/checks/v1120.cjs
 enc_failopen.html tests/checks/v1120.cjs
 copy_await.html tests/checks/v1120.cjs
-share_await.html tests/checks/v1120.cjs"
+share_await.html tests/checks/v1120.cjs
+wipe_skip.html tests/checks/v1120.cjs
+sync_name_only.html tests/checks/v1120.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

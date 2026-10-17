@@ -130,6 +130,44 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
     need(s.sh&&s.sh.task&&/uc-table-backup/.test(s.sh.name),`C-10 백업 파일 보내기: 누른 순간 공유 창(준비된 뒤 한 번 더 누르기 포함) (${JSON.stringify(s)})`);
     await p.context().close()}
 
+  console.log('== C-11~C-16 낮음: 알림 문구·검사 수치 백업 안내·초기화 지우기·동기화 폴더·조사·안드로이드 문구');
+  {const p=await open();
+    const r=await p.evaluate(async()=>{const o={};
+      // C-11: 증상 기록 알림이 기록 버튼(위 상태 띠)을 가리킴
+      const rd=remindDue; remindDue=()=>({k:"log",sum:"증상 기록"}); delete S.logs[today()]; SCR=null; S.tab="plan"; render();
+      o.remind=[...document.querySelectorAll('#main .banner')].map(x=>x.innerText).find(t=>/증상 기록 시간/.test(t))||""; remindDue=rd;
+      // C-12: 검사 수치·약 메모 화면의 백업 안내
+      openScr("set-labs"); o.labs=document.querySelector('#main').innerText;
+      // C-13: 하나를 못 지워도 나머지를 지우고, 결과를 알림
+      const orig=idb, calls=[]; idb=async(st,mode,fn)=>{calls.push(st+":"+mode); if(st==="snaps"&&mode==="readwrite") throw new Error("x"); return orig(st,mode,fn)};
+      o.wipeOk=await wipeLocalCopies(); o.kvDel=calls.filter(c=>c==="kv:readwrite").length; idb=orig;
+      // C-14: 암호화가 꺼져 있으면 폴더 이름과 상관없이 권유, 켜져 있으면 없음
+      ENC.key=null; o.adv1=typeof syncAdvice==="function"?syncAdvice("UC 백업"):""; o.adv2=typeof syncAdvice==="function"?syncAdvice("OneDrive"):"";
+      ENC.key={}; o.adv3=typeof syncAdvice==="function"?syncAdvice("UC 백업"):"x"; ENC.key=null;
+      // C-15: 영어 검색 안내의 조사
+      const note=q=>{S.foodQ=q; S.tab="food"; SCR=null; render(); return document.querySelector('#main .eng-note')?.innerText||""};
+      o.ham=note("ham"); o.ban=note("banana"); S.foodQ="";
+      // C-16: 안드로이드 다시 가져오기 설명
+      window.UCTableAndroid={hasMigrated:()=>true,peekMigrated:()=>"",setLogReminder(){}}; openScr("set-data"); o.and=[...document.querySelectorAll('#main .lrow')].map(x=>x.innerText).find(t=>/예전 버전 기록/.test(t))||""; delete window.UCTableAndroid;
+      return o});
+    need(/위/.test(r.remind)&&/오늘 증상 기록/.test(r.remind)&&!/아래 '오늘 할 일'/.test(r.remind),`C-11 증상 기록 알림이 위 '오늘 증상 기록'을 가리킴 (${r.remind.replace(/\s+/g," ").slice(0,80)})`);
+    need(/백업/.test(r.labs),'C-12 검사 수치·약 메모 화면에 백업 안내 문장');
+    need(r.wipeOk===false&&r.kvDel===2,`C-13 보관본을 못 지워도 폴더 연결·암호화 열쇠는 지우고 실패를 알림 (결과 ${r.wipeOk}, kv 지우기 ${r.kvDel}번)`);
+    need(/암호화/.test(r.adv1)&&/암호화/.test(r.adv2)&&!r.adv3,`C-14 동기화 폴더 권유: 꺼짐이면 이름과 상관없이, 켜짐이면 없음 (${JSON.stringify([!!r.adv1,!!r.adv2,!!r.adv3])})`);
+    need(/'햄'으로/.test(r.ham)&&/'바나나'로/.test(r.ban)&&!/\(으\)로/.test(r.ham+r.ban),`C-15 영어 검색 안내 조사 (${r.ham} / ${r.ban})`);
+    need(!!r.and&&!/1\.10\.0/.test(r.and),`C-16 안드로이드 다시 가져오기 설명에 낸 적 없는 1.10.0이 없음 (${r.and.replace(/\s+/g," ")})`);
+    await p.context().close()}
+
+  console.log('== C-20 백업 파일을 고르는 사이 화면을 다시 그려도 불러오기가 이어짐');
+  {const p=await open();
+    const r=await p.evaluate(async()=>{S.logs[addDays(today(),-1)]={...BLANK_LOG(),day:2}; save(); SCR=null; S.tab="me"; openScr("set-data");
+      const inp=document.getElementById('restore'); render();   // 파일 창이 열린 사이 알림이 사라지며(9초) 다시 그린 것과 같다
+      const bk=JSON.parse(backupJSON()); bk.logs[addDays(today(),-3)]={...BLANK_LOG(),day:4};
+      const dt=new DataTransfer(); dt.items.add(new File([JSON.stringify(bk)],"uc-table-backup.json",{type:"application/json"})); inp.files=dt.files; inp.dispatchEvent(new Event('change',{bubbles:true}));
+      await new Promise(ok=>setTimeout(ok,400)); return {same:inp===document.getElementById('restore'),sheet:(document.querySelector('#sheetRoot')?.innerText||"").slice(0,30)}});
+    need(/불러오기/.test(r.sheet),`C-20 고른 백업 파일의 비교 창이 열림 (${JSON.stringify(r)})`);
+    await p.context().close()}
+
   await b.close();
   if(F.length){console.error('FAIL\n'+F.join('\n')); process.exitCode=1} else console.log('검증 통과');
 })();

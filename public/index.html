@@ -14,8 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=8dc694b6cb"></script>
+<script defer src="app.js?v=7b2a0863db"></script>
 </head>
 <body>
 <style>
@@ -638,8 +637,9 @@ th{color:var(--muted);font-weight:500}
 .sheet{background:var(--surface);width:100%;max-width:560px;max-height:86%;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px))}
 .sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 14px}
 /* v1.11.0 R-11: 시트 맨 끝 버튼 줄(닫기·오늘 먹었습니다 등)은 시트 아래에 붙여 내용을 내리지 않아도 보이게 */
-.sheet>.grid2:last-child:has(>.btn),.sheet>.btn.full:last-child{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
-.sheet>.btn.full:last-child{width:calc(100% + 36px)}
+/* v1.12.0 검토 C-18: :has()를 모르는 옛 브라우저가 규칙 전체를 버리지 않게, :has() 규칙과 넓은 버튼 규칙을 따로 둔다 */
+.sheet>.grid2:last-child:has(>.btn){position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
+.sheet>.btn.full:last-child{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line);width:calc(100% + 36px)}
 .refitem{padding-block:10px;border-top:1px solid var(--line);font-size:0.875rem}
 .refitem:first-of-type{border-top:0}
 .refitem .n{display:inline-block;min-width:28px;font-weight:700;color:var(--accent-deep)}
