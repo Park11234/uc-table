@@ -27,7 +27,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 음식 판정 | 끼니 메뉴 | 궁금한 점 | 근거 자료 | 자동 점검 | 저장 데이터 손상 퍼징 | 접근성(WCAG 2.2 AA) | 외부 요청 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->88<!--/n-->건** | **Playwright <!--n:pw-->55<!--/n-->개 + 파이썬 <!--n:pytests-->86<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
+| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->88<!--/n-->건** | **Playwright <!--n:pw-->56<!--/n-->개 + 파이썬 <!--n:pytests-->88<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
 
 **기술 스택** — Vanilla JS(HTML 한 파일, 프레임워크 없음) · localStorage·IndexedDB · Service Worker(PWA) · Web Crypto(백업 암호화) · html2canvas + jsPDF · Python(음식 데이터 파이프라인) · Playwright · axe-core · ESLint · GitHub Actions / Pages
 
@@ -124,7 +124,7 @@ v1.9.0의 시판 제품은 판매처 고시·포장 표시를 옮긴 기록을 �
 **실제 사용 환경을 점검합니다.** 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,400회)과, 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다. 아이폰 사파리와 같은 엔진(WebKit)의 주요 흐름 점검은 CI에서 돌립니다. 디자인을 바꾼 뒤에는 agent-browser로 처음 쓰는 사람처럼 끝까지 써 보며 찾은 24건을 고쳤습니다(v1.11.0).
-앱을 일부러 <!--n:mutants-->58<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->60<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
+앱을 일부러 <!--n:mutants-->69<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->71<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
 
 **기록은 기기 밖으로 나가지 않습니다.** 서버·계정·분석 도구가 없고, 저장은 기기의 localStorage(기록)와 IndexedDB(최근 7일 자동 보관본)뿐입니다. 백업 파일은 원하면 비밀번호로 암호화합니다.
 같은 앱을 두 창에서 열어도 서로 덮어쓰지 않게 막고, 백업을 불러올 때는 지금 기록과 비교해 합치거나 되돌릴 수 있습니다.
@@ -217,9 +217,9 @@ python3 src/data/build_app.py    # app.src.html의 표시자 자리에 데이터
 python3 tools/build_offline.py   # public/(PWA)과 dist/(단일 파일) 생성
 npm ci && npx playwright install --with-deps chromium   # package-lock.json 그대로 설치
 npm run lint                     # ESLint (경고 0)
-npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->86<!--/n-->개(파이썬 표준 라이브러리만)
-npm test                         # Playwright 점검 <!--n:pw-->55<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
-npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->58<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
+npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->88<!--/n-->개(파이썬 표준 라이브러리만)
+npm test                         # Playwright 점검 <!--n:pw-->56<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
+npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->69<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
@@ -237,7 +237,7 @@ src/app/      앱 코드 한 파일(app.src.html)과 빌드 결과(index.html)
 src/brand/    UC TABLE 로고·앱 아이콘 SVG(tools/brand.cjs가 만듦), 앱 글꼴 uc-table-sans.woff2와 OFL 고지
 src/data/     음식 정의(spec1~10) · 시판 제품 기록(cj10·brand10·label10) · 영양식 표시값(spec8 LABEL) · 끼니 메뉴(menus.py) · 궁금한 점(qa.py) · 설명 템플릿 · 생성·빌드 스크립트
 public/       GitHub Pages로 여는 오프라인 PWA
-tests/        Playwright 점검 <!--n:pw-->55<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->28<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
+tests/        Playwright 점검 <!--n:pw-->56<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->29<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
 tools/        오프라인 빌드 · 근거 표 동기화 · 근거 확인일·링크·말투·문서 숫자 점검 · 로고·아이콘(brand.cjs) · 앱 글꼴(font_subset.py) · 스크린샷 · 린트용 추출 스크립트
 docs/         구조 · 설계 결정 · 점검 · AI 활용 · 데이터 출처 · 근거 목록 · 출시 준비(release.md)
 vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 라이선스(앱 '앱 정보'에도 전문)
@@ -281,8 +281,8 @@ judged by deterministic rules, each linked to one of <!--n:refs-->88<!--/n--> ci
 through a reproducible pipeline (the app build is byte-identical, checked in CI). It is a single HTML file with no framework and stores data only on the device (localStorage, plus a 7-day IndexedDB snapshot).
 Since v1.7.0 the app uses no AI at runtime: <!--n:menus-->1,174<!--/n--> meal templates built from reviewed components and <!--n:qa-->51<!--/n--> Q&A entries whose <!--n:qaev-->169<!--/n--> evidence quotes are verified verbatim against the source texts by a unit test.
 v1.11.0 fixes the v1.10.0 review and applies a new design ("calm ridge", clear blue): a home status band with a one-line summary and a two-week symptom-score ridge chart over a remission band, progress rings, a bundled subset font (UC Table Sans, renamed from Pretendard under the SIL OFL), and plain-language stage names. Rules: foods the user is allergic to are now "never"; immunosuppressant users get raw foods as "avoid" (CDC); the active-disease alert is one fixed sentence; quick logs are marked everywhere instead of reading as zeros; packaged-product status and "instead try" suggestions are rebuilt; optional backup encryption (PBKDF2-SHA256 310k → AES-GCM 256); a full reset also clears local snapshots and keys; lab values and medication-change notes go into the clinic PDF; English names and typos are suggested in search; the open-source license texts ship inside the app. A browser walkthrough with agent-browser after the redesign found and fixed 24 more issues.
-Quality checks: <!--n:pw-->55<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->86<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
-PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->58<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
+Quality checks: <!--n:pw-->56<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->88<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
+PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->69<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
 
 ## 라이선스
 
