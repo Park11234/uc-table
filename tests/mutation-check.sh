@@ -80,6 +80,10 @@ mut={
  'tell_soft.html': rep('const ALERT_TELL="주치의(IBD 진료팀)에 알리십시오.";','const ALERT_TELL="주치의(IBD 진료팀)에 연락하는 것을 고려하십시오.";'),  # 활동기 알림 문장이 다시 약해짐(8번·M4)
  'body_margin.html':rep('body{margin:0;background:var(--bg);','body{background:var(--bg);'),  # 실제 앱에 body 기본 여백이 다시 남음(R-01)
  'enc_plain.html': rep('const backupOut=async()=>encWrap(backupJSON());','const backupOut=async()=>backupJSON();'),  # 암호화를 켜도 백업이 평문(M10)
+ # v1.12.0 전체 코드 검토
+ 'mj_allergy_off.html':rep(r'allergies:c.allergies.filter(a=>!tags.includes(a)),words:[],alWords:(c.alWords||[]).filter(w=>!x.includes(w.replace(/\s/g,""))),trig:[]','allergies:[],words:[],alWords:[],trig:[]'),  # 외식 판정이 목록 음식의 알레르기 표시를 다시 안 봄(C-01)
+ 'fs_sig_off.html': rep('const sig=JSON.stringify([{...c,trig:c.trig.map(t=>[t.name,t.foodId||""])},','const sig=JSON.stringify([c.stage,c.fiberStage,c.gasHeavy,c.allergies,c.words,c.trig.map(t=>[t.name,t.foodId||""]),'),  # 목록 판정 캐시가 면역 약·직접 적은 알레르기를 다시 모름(C-02)
+ 'raw_kw_off.html': rep('function rawWords(t){','function rawWords(t){return [];'),  # 목록 밖 외식 메뉴·포장 원재료의 날음식을 다시 못 봄(C-03)
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -147,7 +151,10 @@ later_word.html tests/checks/v1100.cjs
 allergy_soft.html tests/checks/review2.cjs
 tell_soft.html tests/checks/v1110.cjs
 body_margin.html tests/checks/review2.cjs
-enc_plain.html tests/checks/v1110.cjs"
+enc_plain.html tests/checks/v1110.cjs
+mj_allergy_off.html tests/checks/v1120.cjs
+fs_sig_off.html tests/checks/v1120.cjs
+raw_kw_off.html tests/checks/v1120.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

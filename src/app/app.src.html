@@ -2109,6 +2109,13 @@ const DL_FALLBACK={save:async({filename,data})=>{const blob=data instanceof Blob
 const KW={dairy:["우유","치즈","크림","버터","요거트","요구르트","라떼","생크림","아이스크림","유청","카제인","분유","연유","유크림","유당","락토스","유단백","발효유"],lactose:["우유","라떼","아이스크림","생크림","밀크","유청","분유","연유","유크림","유당","락토스"],egg:["달걀","계란","마요","메추리알","난백","난황","전란","알류","난류"],buckwheat:["메밀","소바"],peanut:["땅콩"],soy:["대두","두부","간장","된장","두유","콩국","청국장","콩기름","쯔유","고추장"],wheat:["밀가루","빵","면","파스타","튀김옷","만두","라면","우동","짜장","짬뽕","수제비","소맥","글루텐","세몰리나","듀럼","강력분","중력분","박력분","호밀","밀배아","밀기울","밀쌀","통밀","세이탄","튀김가루","부침가루","빵가루","간장","쯔유","고추장","굴소스"],mackerel:["고등어"],crab:["게살","꽃게","대게","홍게","킹크랩","게장","크랩"],shrimp:["새우","새우젓","쉬림프"],pork:["돼지","삼겹","제육","돈가스","돈까스","햄","소시지","베이컨","순대","족발","보쌈","돈육","돈지","라드"],peach:["복숭아","황도","백도"],tomato:["토마토","케첩","케찹"],sulfite:["와인","건포도","말린 과일","건과일","곶감"],walnut:["호두"],chicken:["닭","치킨","계육"],beef:["소고기","쇠고기","불고기","갈비탕","곰탕","차돌","스테이크","육회","사골","우육","우지"],squid:["오징어"],clam:["조개","전복","홍합","바지락","꼬막","가리비","재첩","굴국","굴전","생굴","굴밥","굴소스","굴엑기스","키조개","관자"],pine:["잣"],fish:["생선","연어","참치","고등어","대구","멸치","어묵","장어","갈치","꽁치","액젓","까나리","참치액","쯔유","가쓰오","가다랑어","게맛살","맛살","어간장","피시소스"],sesame:["참깨","타히니","참기름","깨소금","통깨","볶음깨"],nut:["아몬드","캐슈","피스타치오","마카다미아","견과","헤이즐넛"],spicy:["고추","매운","김치","고춧가루","청양","마라","불닭","떡볶이","짬뽕","고추장","닭발","얼큰","매콤","칼칼","제육","낙지볶음","주꾸미","쭈꾸미","매운탕","육개장","닭볶음탕","닭도리탕","순두부찌개","비빔","쫄면","칠리","할라피뇨","스리라차","와사비","겨자","라볶이","깐풍","양장피","짬뽕"],redmeat:["소고기","쇠고기","돼지","갈비","삼겹","제육","불고기","스테이크","차돌","곱창","순대"],processed:["햄","소시지","베이컨","스팸","살라미","페퍼로니"],upf:["컵라면","라면","탄산","핫도그","너겟","과자"],fatty:["튀김","치킨","돈가스","돈까스","크림","버터","까르보나라","부침개","파전","김치전","해물전","감자전","육전","동그랑땡","빈대떡","강정","프라이드","후라이드","가라아게","텐더","커틀릿"],alcohol:["술","맥주","소주","와인","막걸리"],caffeine:["커피","아메리카노","에스프레소","에너지드링크","콜라"],fodmap:["양파","마늘","버섯","아스파라거스","사과","복숭아","수박","꿀","우유","요거트","아이스크림","캐슈","피스타치오","렌틸","병아리콩","강낭콩","밀가루","연두부","순두부"]};
 const KW_EXACT={clam:["굴","조개류"],crab:["게"],egg:["알"],fish:["회"],wheat:["밀"],soy:["콩"],sesame:["깨"],fatty:["전","부침"]};
 // 잘못 걸리는 말 빼기: 유당 분해 우유, 맵지 않은 김치, 닭갈비
+/* v1.12.0 검토 C-03: 날것·덜 익힌 생선·조개·고기·달걀 낱말. 면역을 누르는 약을 쓰면 외식 판정·포장 원재료 검사에서도 피하기(CDC[89]).
+   쉼표·괄호로 나눈 마디마다 본다. 젓갈(명란젓·새우젓·액젓 등)은 넣지 않고(사용자 결정), 익히는 요리(숙회·유부초밥·볶음·구이·탕 등)는 뺀다.
+   '스시'는 '…시즈닝·…시럽', '우니'는 '브라우니'에 걸려 쓰지 않는다(성게). 오래된 사파리를 위해 뒤를 보는 정규식은 쓰지 않는다 */
+const RAW_W=/사시미|스시(?!즈|럽)|초밥|육회|회(?=$|정식|세트|한상|백반|덮밥|무침|국수|냉면|비빔밥)|생굴|굴회|석화|게장|새우장|연어장|전복장|간장새우|생연어|훈제연어|날치알|연어알|성게|멍게|산낙지|탕탕이|단새우|홍어|과메기|세꼬시|뭉티기|세비체|카르파초|포케|타르타르|날달걀|생달걀|날계란|생계란|반숙|수란|온천달걀|온천계란/;
+const RAW_NOT=/젓|숙회|유부초밥|소스|볶음|구이|조림|튀김|찜|국$|국밥|국물|탕$|전골|죽|찌개|전$|그라탕|그라탱|파스타|리조또|피자/;
+function rawWords(t){const out=new Set(); for(const ph of String(t).normalize("NFC").split(/[,，、()\[\]{}·\/\n;:+&]+/)){const w=ph.replace(/\s/g,""); if(w&&RAW_W.test(w)&&!RAW_NOT.test(w)) out.add(ph.trim())} return [...out]}
+const rawWhy=(m,w)=>`면역을 누르는 약(${m})을 쓰는 동안 날것·덜 익힌 음식(${w.join("·")})은 식중독 위험이 커 피하기(미국 질병통제예방센터 CDC)`;
 const KW_EXCL={wheat:/곤약면|당면|두부면|해초면|다시마면|녹두면|쌀국수/g,lactose:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,fodmap:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,spicy:/(백김치|물김치|나박김치|동치미)/g,redmeat:/닭갈비|닭불고기|오리불고기/g,beef:/테이크핏|닭갈비|돼지불고기|닭불고기|오리불고기|제육불고기/g,pork:/햄버거|햄버그/g,dairy:/땅콩버터/g,pine:/감잣국|감자국/g};
 function tagsOfText(t,ingr=[]){const x=String(t).normalize("NFC").replace(/\s/g,"");const toks=ingr.map(i=>String(i).normalize("NFC").replace(/\s/g,""));
   const hit=Object.entries(KW).filter(([k,ws])=>{const y=KW_EXCL[k]?x.replace(KW_EXCL[k],""):x; return ws.some(w=>y.includes(w))}).map(([k])=>k);
@@ -2117,7 +2124,7 @@ function tagsOfText(t,ingr=[]){const x=String(t).normalize("NFC").replace(/\s/g,
 function ruleCheck(item){
   // 앱 규칙: 알레르기·지시·주의 음식·절대 제외 항목을 검사
   const text=item.name+" "+(item.ingr||[]).join(" ")+" "+(item.cook||"");
-  const tags=tagsOfText(text,item.ingr||[]); const c=ctx(); const R=[]; let lv="ok";
+  const tags=tagsOfText(text,item.ingr||[]); const c=ctx(); const R=[], X=[]; let lv="ok";
   const up=(l,r)=>{if(LV_RANK[l]>LV_RANK[lv])lv=l;R.push(r)};
   const okd=(S.okMenus||[]).includes(String(item.name).replace(/\s/g,""));
   for(const a of c.allergies) if(tags.includes(a)) up("ban",`알레르기 재료 가능성(${allergyLabel(a)}): 먹지 마십시오`);   // v1.11.0 R-15
@@ -2132,8 +2139,11 @@ function ruleCheck(item){
   for(const t of S.triggers){const k=t.name.split("(")[0].replace(/\s/g,""); if(k&&x.includes(k)) up("avoid",`개인 주의 음식(${t.name})`)}
   for(const w of c.alWords||[]) if(w&&x.includes(w.replace(/\s/g,""))) up("ban",`내가 적은 알레르기(${w}): 먹지 마십시오`);   // v1.11.0 R-15
   for(const w of c.words.filter(w=>!(c.alWords||[]).includes(w))) if(w&&x.includes(w.replace(/\s/g,""))) up("avoid",`싫어하는 음식(${w})`);
+  // v1.12.0 검토 C-03: 면역을 누르는 약이면 이름·재료의 날음식 낱말도 피하기(목록 음식에 날음식 표시가 있으면 아래 그 판정이 붙음)
+  if(c.immunoMeds&&!(f0&&f0.tags.includes("raw"))){const rw=rawWords([item.name,...(item.ingr||[]),item.cook||""].join(",")); if(rw.length){up("avoid",rawWhy(c.immunoMeds,rw)); X.push(89)}}
   if(f0){
-    const s=foodStatus(f0,{...c,allergies:[],words:[],alWords:[],trig:[]});
+    // v1.12.0 검토 C-01: 목록 음식 자체의 알레르기 표시와 직접 적은 알레르기(포장 원재료)도 본다. 이름·적은 재료에서 이미 찾은 것은 겹쳐 적지 않는다
+    const s=foodStatus(f0,{...c,allergies:c.allergies.filter(a=>!tags.includes(a)),words:[],alWords:(c.alWords||[]).filter(w=>!x.includes(w.replace(/\s/g,""))),trig:[]});
     const soft=okd&&s.level==="avoid"&&f0.tags.includes("spicy")&&f0.ms!==9&&!AVOID_TAG.some(([t])=>f0.tags.includes(t))&&!BAN_TAG.some(([t])=>f0.tags.includes(t));
     if(s.level!=="ok") for(const r of s.reasons) up(soft?"caution":s.level,`${f0.name}: ${r}${soft?" (내가 괜찮았다고 표시함)":""}`);
   } else {
@@ -2141,7 +2151,7 @@ function ruleCheck(item){
     if(tags.includes("fatty")) up("caution","기름진 조리");
     if(tags.includes("fodmap")) up("caution","가스를 늘릴 수 있는 재료");
   }
-  return {level:lv,reasons:[...new Set(R)]};
+  return {level:lv,reasons:[...new Set(R)],refs:X};
 }
 /* v1.10.0 개발자 5: 종류가 많은 메뉴 이름(샐러드·국밥·덮밥 등)은 하나로 정하지 않고 가장 엄격한 판정을 보이며, 어떤 메뉴인지 고르게 한다 */
 const BROAD={"샐러드":["salad","chicken_salad","caesar_salad","wolnamssam"],"국밥":["dwaeji_gukbap","sogogi_gukbap","sundae_gukbap","gul_gukbap","beansprout_soup"],
@@ -2175,7 +2185,7 @@ function mjJudge(){
     // 앱 음식 목록에 같은 이름이 있으면 그 음식 판정을, 없으면 이름·재료의 단어로만 검사하고 '주의'보다 낮게 두지 않는다
     const lv=f?rc.level:(rc.level==="ok"?"caution":rc.level);
     const why=f?`앱 음식 목록의 '${f.name}' 판정입니다.`:(it.ingr.length?"앱 음식 목록에 없는 메뉴라 적어 주신 이름과 재료로 앱 규칙만 검사했습니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.":"앱 음식 목록에 없는 메뉴라 이름의 단어로만 검사했습니다. 재료를 적으면 더 정확해집니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.");
-    return {name:it.name,conf:it.conf,level:lv,why,refs:f?f.refs.slice(0,3):[],rules:rc.reasons,override:false,food:f?f.id:null,ham:!!(f&&f.tags.includes("hamopt")&&lv!=="ban")};
+    return {name:it.name,conf:it.conf,level:lv,why,refs:[...new Set([...(f?f.refs.slice(0,3):[]),...(rc.refs||[])])],rules:rc.reasons,override:false,food:f?f.id:null,ham:!!(f&&f.tags.includes("hamopt")&&lv!=="ban")};
   });
   MJ.step="done"; render();
 }
@@ -2276,6 +2286,8 @@ function labelCheck(rawText,name=""){
   if(tags.includes("spicy")&&c.stage<3) add("avoid","매운 양념",KW.spicy.filter(w=>x.includes(w)),"앱 기본 설정으로 활동기에는 맵고 자극적인 양념을 제외합니다(근거 자료의 직접 권고는 아님).",[]);
   for(const [o,t] of TAGRULE) if(orderOn(o)&&tags.includes(t)) add("avoid",`의료진 지시: ${orderLabel(o)}`,KW[t].filter(w=>x.includes(nrm(w))),"의료진 지시에 해당하는 원재료입니다.",[]);
   for(const t of S.triggers){const k=nrm(t.name.split("(")[0]); if(k&&x.includes(k)) add("avoid","개인 주의 음식",[t.name],"먹고 나빠졌다고 기록한 음식입니다.",[])}
+  // v1.12.0 검토 C-03: 면역을 누르는 약이면 원재료의 날것·덜 익힌 생선·조개·고기·달걀(젓갈 제외)
+  if(c.immunoMeds){const rw=rawWords(text); if(rw.length) add("avoid","날것·덜 익힌 원재료(면역을 누르는 약)",rw,`면역을 누르는 약(${c.immunoMeds})을 쓰는 동안 날것·덜 익힌 생선·조개·고기·달걀은 식중독 위험이 커 피하도록 안내합니다(미국 질병통제예방센터 CDC). 데우거나 익혀 먹는 제품이면 속까지 충분히 익혀 드십시오.`,[89])}
   for(const w of c.words){const k=nrm(w); if(!k||!x.includes(k)) continue; if((c.alWords||[]).includes(w)) add("ban","내가 적은 알레르기",[w],"내 정보에 적은 알레르기입니다. 먹지 마십시오.",[]); else add("avoid","싫어하는 음식",[w],"내 정보에 적은 음식입니다.",[])}   // v1.11.0 R-15
   return {overall,rows};
 }
@@ -3328,7 +3340,8 @@ function searchRank(f,q){const k=String(q||"").normalize("NFC").replace(/\s/g,""
    검색어를 칠 때마다 691개 음식을 모두 다시 판정하던 것을 한 번만 한다 */
 let FS_CACHE={sig:"",m:new Map()};
 function statusOf(c){
-  const sig=JSON.stringify([c.stage,c.fiberStage,c.gasHeavy,c.allergies,c.words,c.trig.map(t=>[t.name,t.foodId||""]),S.orders.checked,S.profile.lactose,S.profile.budget,S.profile.age]);
+  // v1.12.0 검토 C-02: 판정 조건(ctx)을 통째로 열쇠에 넣는다(v1.11.0에서 면역 약·직접 적은 알레르기가 빠져 목록이 옛 판정을 썼음). 주의 음식은 판정에 쓰는 이름·음식만
+  const sig=JSON.stringify([{...c,trig:c.trig.map(t=>[t.name,t.foodId||""])},S.orders.checked,S.profile.lactose,S.profile.budget,S.profile.age]);
   if(FS_CACHE.sig!==sig) FS_CACHE={sig,m:new Map()};
   return f=>{let r=FS_CACHE.m.get(f.id); if(!r){r=foodStatus(f,c); FS_CACHE.m.set(f.id,r)} return r};
 }
