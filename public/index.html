@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#2462E6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F7FB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D131C" media="(prefers-color-scheme: dark)">
 <meta name="description" content="궤양성 대장염 식단·증상 기록 앱(오프라인). 의료기기가 아니며 진단·치료를 하지 않습니다.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,44 +13,47 @@
 <meta name="apple-mobile-web-app-title" content="UC TABLE">
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
 <script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=0821d47079"></script>
+<script defer src="app.js?v=d071cb9230"></script>
 </head>
 <body>
 <style>
+@font-face{font-family:"UC Table Sans";src:url("fonts/uc-table-sans.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 :root{
-  --bg:#F2F4F6; --bg2:#F2F4F6; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF1F4; --ink:#191F28; --muted:#5B6573; --line:#E3E7EC; --line-strong:#7A8594;
-  --accent:#2462E6; --accent-deep:#1A4DBA; --accent-soft:#E9F0FE; --on-soft:#1A4DBA; --fill:#2462E6; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#6A4FD8; --deco-soft:#F0ECFD; --food-tint:#F6F0E7;
-  --ok:#0B7A4A; --ok-soft:#E5F5EC; --ok-ink:#0B7A4A; --warn:#945700; --warn-soft:#FFF2DD; --warn-fill:#C27400; --warn-ink:#945700; --later:#4F5D6E; --later-soft:#EDF0F4; --avoid:#C22A2A; --avoid-soft:#FDECEC; --ban-bg:#8E1616; --ban-ink:#FFFFFF;
-  --crit:#A8001E; --crit-soft:#FDE7EA; --crit-ink:#A8001E; --danger-fill:#A8001E;
-  --shadow:0 1px 2px rgba(20,28,40,.05),0 6px 18px rgba(20,28,40,.06); --scrim:rgba(12,15,20,.42); --fab-shadow:0 8px 20px rgba(36,98,230,.30);
-  /* v1.9.0 글꼴: 웹 글꼴을 내려받지 않고 기기 글꼴로 디자인을 정한다(웹·PWA·오프라인 파일이 같은 모양) */
-  --display:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
-  --body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
+  /* v1.11.0 디자인 A '잔잔한 능선' · 맑은 파랑(사용자 확정 2026-10-17): 바탕·카드·머리 띠·강조 한 가지 파랑, 그림자 없이 바탕색 차이로 구역 */
+  --bg:#F5F7FB; --bg2:#F5F7FB; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF2F8; --ink:#0E1A2E; --muted:#4B5A70; --line:#E6EBF2; --line-strong:#8693A6;
+  --accent:#1F5EDB; --accent-deep:#1749B0; --accent-soft:#E8EFFF; --on-soft:#1749B0; --fill:#1F5EDB; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#E3ECFF;
+  --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
+  --ok:#1F6E3D; --ok-soft:#E1F2E6; --ok-ink:#1F6E3D; --warn:#8A5200; --warn-soft:#FFEFD3; --warn-fill:#C27400; --warn-ink:#8A5200; --later:#4B5A70; --later-soft:#EDF1F7; --avoid:#A8261B; --avoid-soft:#FCE6E3; --ban-bg:#7A1B13; --ban-ink:#FFFFFF;
+  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#A8261B; --danger-fill:#A8261B;
+  --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
+  /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
+  --display:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
+  --body:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
   /* v1.9.0 색 토큰: 하드코딩 색을 옮김(즐겨찾기 별, 근거 종류 칩) — 별은 흰 바탕 3.96:1 */
   --star:#A87700; --rt-s-bg:#E6F4EA; --rt-s-ink:#1E6B3A; --rt-h-bg:#FFF1E0; --rt-h-ink:#8A4B08; --rt-2-bg:#F1ECF8; --rt-2-ink:#5B3A8C; --pc-bg:#EDEEF0;
-  --r:20px; color-scheme:light;
+  --r:22px; color-scheme:light;
 }
 /* 화면 모드: 앱 설정(data-app-theme)이 뷰어 테마(data-theme)보다 우선 */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-app-theme="light"]){
-  --bg:#0F1216; --bg2:#0F1216; --surface:#1A1E24; --card:#1A1E24; --surface-2:#232830; --ink:#E9EDF2; --muted:#9CA6B4; --line:#2B313A; --line-strong:#6B7684;
-  --accent:#7EAAFF; --accent-deep:#A9C6FF; --accent-soft:#1B2A45; --on-soft:#A9C6FF; --fill:#2F6BE0; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#B7A6FF; --deco-soft:#2A2345; --food-tint:#2A2621;
-  --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
-  --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
-  --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
+  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
+  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
+  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
+  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
   }
 }
 :root[data-theme="dark"]:not([data-app-theme="light"]),:root[data-app-theme="dark"]{
-  --bg:#0F1216; --bg2:#0F1216; --surface:#1A1E24; --card:#1A1E24; --surface-2:#232830; --ink:#E9EDF2; --muted:#9CA6B4; --line:#2B313A; --line-strong:#6B7684;
-  --accent:#7EAAFF; --accent-deep:#A9C6FF; --accent-soft:#1B2A45; --on-soft:#A9C6FF; --fill:#2F6BE0; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#B7A6FF; --deco-soft:#2A2345; --food-tint:#2A2621;
-  --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
-  --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
-  --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
+  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
+  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
+  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
+  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
 }
 *{box-sizing:border-box}
@@ -226,7 +229,7 @@ body.pushed .bottom-bar{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max
 .wq .opts.compact button{min-height:48px}
 body.pushed:has(.wz-miss){padding-block-end:150px}
 /* 화면이 바뀔 때 초점을 받는 제목(tabindex=-1)은 누를 수 없는 요소라 테두리를 그리지 않는다 */
-h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
+h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus,.sheet[tabindex="-1"]:focus{outline:none}
 /* v1.9.0 A-10: 글자 크기는 rem 단위 — 앱 설정 '크게·아주 크게'는 뿌리 글자 크기만 키운다(화면 전체 확대 대신. 기기 글자 크기 설정도 따라감) */
 :root[data-font="lg"]{font-size:112.5%} :root[data-font="xl"]{font-size:125%}
 
@@ -714,6 +717,80 @@ details summary{cursor:pointer;font-weight:700}
   #printDoc canvas{max-width:100%;height:auto!important}
   #printDoc .foot{font-size:8pt;color:#666;margin-top:8pt}
 }
+/* ===== v1.11.0 디자인 A '잔잔한 능선' · 맑은 파랑 — 부품 모양 =====
+   참고(세션 조사): 파노라(레드닷 2026, 능선 그래프), Gentler Streak(애플 디자인 어워드 2024, 범위 띠·다정한 문장), Harvee(애플 디자인 어워드 2026 후보, 상태를 말로)
+   원칙: 그림자·테두리 대신 바탕색 차이, 버튼은 알약 모양, 카드 모서리 22px, 판정은 색 + ●▲■✕ 모양 */
+body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
+.appbar{box-shadow:none;background:var(--bg)}
+.card,.list,.fgrid,.bigact,.sumline,.day,.searchbar{box-shadow:none}
+.card{border-radius:var(--r)}
+.list{border-radius:var(--r)}
+.fgrid{border-radius:var(--r)}
+.btn{border:0;background:var(--surface-2);color:var(--ink);border-radius:999px;min-height:46px;padding:10px 18px;font-weight:700}
+.btn.sm{min-height:44px;padding:6px 14px;border-radius:999px}
+.btn.primary,.btn.dark,.btn.eat{background:var(--fill);color:var(--fill-ink)}
+.btn.ghost{background:transparent;color:var(--accent-deep)}
+.btn.danger{background:var(--danger-fill);color:#fff}
+.card .btn:not(.primary):not(.ghost):not(.danger),.sheet .btn:not(.primary):not(.ghost):not(.danger){background:var(--surface-2)}
+.banner{border-radius:18px;border-color:transparent}
+.banner.crit{border-color:var(--crit)}
+.segctl{background:var(--field);border-radius:16px}
+.segctl button{border-radius:12px;font-weight:700}
+.segctl button[aria-pressed="true"]{box-shadow:none;font-weight:800}
+.searchbar{border:0;border-radius:16px;min-height:52px;background:var(--surface)}
+.chip{border-radius:999px}
+.lic{border-radius:14px}
+.fic{border-radius:14px}
+.t-food{background:var(--food-tint);color:var(--accent)!important}
+.pill{font-weight:700}
+.tabs{border-top:0;background:var(--surface)}
+.tab[aria-current="page"],.tab.on{color:var(--accent)}
+.sheet{border-radius:28px 28px 0 0}
+.mate{border:0;background:var(--accent-soft);color:var(--ink)}
+.mate.on{background:var(--fill);color:var(--fill-ink)}
+.mate.on svg{color:var(--fill-ink)}
+.mwrap{border-top-color:var(--line)}
+.sec-title h2,.fgroup :is(h2,h3).fg-h{font-size:1.0625rem;font-weight:800;letter-spacing:-.02em}
+.tasks .tk-n{background:transparent;box-shadow:inset 0 0 0 2.5px var(--line-strong);color:transparent;width:26px;height:26px;border-radius:50%;font-size:0}
+.tasks .is-done .tk-n{background:var(--fill);box-shadow:none;color:var(--fill-ink)}
+.tasks .tk-n svg{width:16px;height:16px}
+.tasks .tk-n.part{background:conic-gradient(var(--accent) 0 var(--p,0%),transparent 0)}
+/* 홈 맨 위 상태 띠: 오늘 상태 한 문장 + 최근 2주 증상 점수 능선 + 기록 버튼 */
+.ridge{background:var(--field);border-radius:26px;padding:16px 18px 16px;margin:2px 0 4px;color:var(--ink)}
+.ridge .r-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.ridge .r-date{font-size:0.8125rem;color:var(--muted);margin:0}
+.ridge .r-stage{background:var(--surface);border:0;border-radius:999px;min-height:44px;padding:4px 10px 4px 12px;font-size:0.8125rem;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:2px}
+.ridge .r-stage .chev{width:16px;height:16px}
+.ridge .r-head{font-family:var(--display);font-size:1.6875rem;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:8px 0 0}
+.ridge .r-sub{font-size:0.9375rem;margin:4px 0 0}
+.ridge .r-chart{display:block;width:100%;height:auto;margin:12px 0 4px;overflow:visible}
+.ridge .r-chart .band{fill:var(--ridge-band)}
+.ridge .r-chart .area{fill:var(--ridge-area)}
+.ridge .r-chart .line{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ridge .r-chart .dot{fill:var(--accent);stroke:var(--field);stroke-width:3}
+.ridge .r-chart .qdot{fill:var(--field);stroke:var(--accent);stroke-width:2}
+.ridge .r-chart text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.ridge .r-chart .bl{font-size:11.5px;fill:var(--accent-deep);font-weight:700}
+.ridge .r-chart .r-empty{font-size:13px;fill:var(--muted)}
+.ridge .r-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ridge .r-btns .btn{flex:1 1 auto;min-height:46px}
+.ridge .r-btns .btn.primary{flex:1 1 100%}
+.ridge .r-btns .btn:not(.primary){background:var(--surface);color:var(--ink)}
+.ridge .r-note{font-size:0.8125rem;color:var(--muted);margin:8px 0 0}
+/* 음식 정보: 세 칸 요약, 차분한 회색 상자, FODMAP 띠 */
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 2px}
+.facts>div{background:var(--surface-2);border-radius:16px;padding:9px 12px;min-width:0}
+.facts small{display:block;font-size:0.75rem;color:var(--muted)}
+.facts b{display:block;font-size:1.0625rem;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.why-card{background:var(--surface-2)}
+.why-card b{color:var(--ink)}
+.fsv>div{background:var(--surface);border-radius:12px}
+.why-card .fsv>div{box-shadow:none}
+.fsv .lo:not(.na){background:var(--ok-soft);color:var(--ok-ink)}.fsv .lo:not(.na) b,.fsv .lo:not(.na) small{color:var(--ok-ink)}
+.fsv .na{color:var(--muted)}
+.fsv .mid{box-shadow:inset 0 3px 0 var(--warn-fill)}.fsv .hi{box-shadow:inset 0 3px 0 var(--avoid)}
+a.lrow,a.lrow b,a.lrow small{text-decoration:none}
+.card a:not(.btn):not(.lrow),.hint a,.info-body a,.banner a{color:var(--accent-deep);text-underline-offset:3px}
 /* v1.10.0 PC(넓은 화면): PC 전용 화면을 따로 만들지 않고, 휴대폰과 같은 화면을 가운데 휴대폰 너비로 보인다(사용자 요청).
    고정 위치 요소(메뉴·아래 버튼·알림·시트·+버튼)도 같은 너비 안에 둔다 */
 :root{--phone:640px}   /* 사용자가 보여 준 예시(PC에서 연 휴대폰 앱)처럼 가운데 640px 세로 띠 */

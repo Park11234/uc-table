@@ -38,5 +38,5 @@ await p.evaluate(()=>{S.tab="me";SCR=null;render()}); await p.click('[data-act=o
 await p.click('[data-act=backup]').catch(e=>console.log('no backup btn',e.message.slice(0,50)));
 const d=await dl; console.log('download', d?d.suggestedFilename():null, await p.evaluate(()=>S.lastBackup));
 console.log(errs);expect(()=>{const d=jsonOf('DL fallback'); return d[0]==='undefined'&&d[1]===true},'claude 런타임 없을 때 브라우저 저장');
-expect(()=>/download/.test(logOf('download')),'백업 파일 받기');
+expect(()=>/^uc-table-backup-\d{4}-\d\d-\d\d\.json /.test(logOf('download')),'백업 파일 받기(v1.11.0 F-1: 영문 파일 이름)');
 __done(); await b.close()})();

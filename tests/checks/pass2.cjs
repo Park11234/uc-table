@@ -41,7 +41,7 @@ out('S1 welcome', await p.evaluate(()=>[!!document.querySelector('#consentGo'), 
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
 out('S1 home', await p.evaluate(()=>[S.tab, !!document.querySelector('.mrow'), document.querySelectorAll('.mrow').length]));
 // 마법사 전체(실제 클릭)
-await p.click('.tasks [data-act=wizard]'); await p.waitForTimeout(300);
+await p.click('.ridge [data-act=wizard]'); await p.waitForTimeout(300);
 let guard=0;
 while(guard++<30){
   const st=await p.evaluate(()=>SCR?.name==="wizard"?WSTEPS[WZ.step]:null); if(!st) break;

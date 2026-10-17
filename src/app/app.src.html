@@ -1,38 +1,40 @@
 <title>UC TABLE</title>
 <style>
+@font-face{font-family:"UC Table Sans";src:url(/*@GEN:font@*/) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 :root{
-  --bg:#F2F4F6; --bg2:#F2F4F6; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF1F4; --ink:#191F28; --muted:#5B6573; --line:#E3E7EC; --line-strong:#7A8594;
-  --accent:#2462E6; --accent-deep:#1A4DBA; --accent-soft:#E9F0FE; --on-soft:#1A4DBA; --fill:#2462E6; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#6A4FD8; --deco-soft:#F0ECFD; --food-tint:#F6F0E7;
-  --ok:#0B7A4A; --ok-soft:#E5F5EC; --ok-ink:#0B7A4A; --warn:#945700; --warn-soft:#FFF2DD; --warn-fill:#C27400; --warn-ink:#945700; --later:#4F5D6E; --later-soft:#EDF0F4; --avoid:#C22A2A; --avoid-soft:#FDECEC; --ban-bg:#8E1616; --ban-ink:#FFFFFF;
-  --crit:#A8001E; --crit-soft:#FDE7EA; --crit-ink:#A8001E; --danger-fill:#A8001E;
-  --shadow:0 1px 2px rgba(20,28,40,.05),0 6px 18px rgba(20,28,40,.06); --scrim:rgba(12,15,20,.42); --fab-shadow:0 8px 20px rgba(36,98,230,.30);
-  /* v1.9.0 글꼴: 웹 글꼴을 내려받지 않고 기기 글꼴로 디자인을 정한다(웹·PWA·오프라인 파일이 같은 모양) */
-  --display:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
-  --body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
+  /* v1.11.0 디자인 A '잔잔한 능선' · 맑은 파랑(사용자 확정 2026-10-17): 바탕·카드·머리 띠·강조 한 가지 파랑, 그림자 없이 바탕색 차이로 구역 */
+  --bg:#F5F7FB; --bg2:#F5F7FB; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF2F8; --ink:#0E1A2E; --muted:#4B5A70; --line:#E6EBF2; --line-strong:#8693A6;
+  --accent:#1F5EDB; --accent-deep:#1749B0; --accent-soft:#E8EFFF; --on-soft:#1749B0; --fill:#1F5EDB; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#E3ECFF;
+  --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
+  --ok:#1F6E3D; --ok-soft:#E1F2E6; --ok-ink:#1F6E3D; --warn:#8A5200; --warn-soft:#FFEFD3; --warn-fill:#C27400; --warn-ink:#8A5200; --later:#4B5A70; --later-soft:#EDF1F7; --avoid:#A8261B; --avoid-soft:#FCE6E3; --ban-bg:#7A1B13; --ban-ink:#FFFFFF;
+  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#A8261B; --danger-fill:#A8261B;
+  --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
+  /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
+  --display:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
+  --body:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
   /* v1.9.0 색 토큰: 하드코딩 색을 옮김(즐겨찾기 별, 근거 종류 칩) — 별은 흰 바탕 3.96:1 */
   --star:#A87700; --rt-s-bg:#E6F4EA; --rt-s-ink:#1E6B3A; --rt-h-bg:#FFF1E0; --rt-h-ink:#8A4B08; --rt-2-bg:#F1ECF8; --rt-2-ink:#5B3A8C; --pc-bg:#EDEEF0;
-  --r:20px; color-scheme:light;
+  --r:22px; color-scheme:light;
 }
 /* 화면 모드: 앱 설정(data-app-theme)이 뷰어 테마(data-theme)보다 우선 */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-app-theme="light"]){
-  --bg:#0F1216; --bg2:#0F1216; --surface:#1A1E24; --card:#1A1E24; --surface-2:#232830; --ink:#E9EDF2; --muted:#9CA6B4; --line:#2B313A; --line-strong:#6B7684;
-  --accent:#7EAAFF; --accent-deep:#A9C6FF; --accent-soft:#1B2A45; --on-soft:#A9C6FF; --fill:#2F6BE0; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#B7A6FF; --deco-soft:#2A2345; --food-tint:#2A2621;
-  --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
-  --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
-  --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
+  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
+  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
+  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
+  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
   }
 }
 :root[data-theme="dark"]:not([data-app-theme="light"]),:root[data-app-theme="dark"]{
-  --bg:#0F1216; --bg2:#0F1216; --surface:#1A1E24; --card:#1A1E24; --surface-2:#232830; --ink:#E9EDF2; --muted:#9CA6B4; --line:#2B313A; --line-strong:#6B7684;
-  --accent:#7EAAFF; --accent-deep:#A9C6FF; --accent-soft:#1B2A45; --on-soft:#A9C6FF; --fill:#2F6BE0; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF;
-  --deco:#B7A6FF; --deco-soft:#2A2345; --food-tint:#2A2621;
-  --ok:#44D192; --ok-soft:#10301F; --ok-ink:#44D192; --warn:#F0B347; --warn-soft:#372810; --warn-fill:#F0B347; --warn-ink:#F0B347; --later:#A7B3C4; --later-soft:#232A34; --avoid:#FF7A70; --avoid-soft:#3A1716; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
-  --crit:#FF6B80; --crit-soft:#3F1520; --crit-ink:#FF6B80; --danger-fill:#C62839;
-  --shadow:0 0 0 1px #252A31; --scrim:rgba(0,0,0,.6); --fab-shadow:0 8px 20px rgba(0,0,0,.45); color-scheme:dark;
+  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
+  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
+  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
+  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
 }
 *{box-sizing:border-box}
@@ -208,7 +210,7 @@ body.pushed .bottom-bar{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max
 .wq .opts.compact button{min-height:48px}
 body.pushed:has(.wz-miss){padding-block-end:150px}
 /* 화면이 바뀔 때 초점을 받는 제목(tabindex=-1)은 누를 수 없는 요소라 테두리를 그리지 않는다 */
-h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
+h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus,.sheet[tabindex="-1"]:focus{outline:none}
 /* v1.9.0 A-10: 글자 크기는 rem 단위 — 앱 설정 '크게·아주 크게'는 뿌리 글자 크기만 키운다(화면 전체 확대 대신. 기기 글자 크기 설정도 따라감) */
 :root[data-font="lg"]{font-size:112.5%} :root[data-font="xl"]{font-size:125%}
 
@@ -696,6 +698,80 @@ details summary{cursor:pointer;font-weight:700}
   #printDoc canvas{max-width:100%;height:auto!important}
   #printDoc .foot{font-size:8pt;color:#666;margin-top:8pt}
 }
+/* ===== v1.11.0 디자인 A '잔잔한 능선' · 맑은 파랑 — 부품 모양 =====
+   참고(세션 조사): 파노라(레드닷 2026, 능선 그래프), Gentler Streak(애플 디자인 어워드 2024, 범위 띠·다정한 문장), Harvee(애플 디자인 어워드 2026 후보, 상태를 말로)
+   원칙: 그림자·테두리 대신 바탕색 차이, 버튼은 알약 모양, 카드 모서리 22px, 판정은 색 + ●▲■✕ 모양 */
+body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
+.appbar{box-shadow:none;background:var(--bg)}
+.card,.list,.fgrid,.bigact,.sumline,.day,.searchbar{box-shadow:none}
+.card{border-radius:var(--r)}
+.list{border-radius:var(--r)}
+.fgrid{border-radius:var(--r)}
+.btn{border:0;background:var(--surface-2);color:var(--ink);border-radius:999px;min-height:46px;padding:10px 18px;font-weight:700}
+.btn.sm{min-height:44px;padding:6px 14px;border-radius:999px}
+.btn.primary,.btn.dark,.btn.eat{background:var(--fill);color:var(--fill-ink)}
+.btn.ghost{background:transparent;color:var(--accent-deep)}
+.btn.danger{background:var(--danger-fill);color:#fff}
+.card .btn:not(.primary):not(.ghost):not(.danger),.sheet .btn:not(.primary):not(.ghost):not(.danger){background:var(--surface-2)}
+.banner{border-radius:18px;border-color:transparent}
+.banner.crit{border-color:var(--crit)}
+.segctl{background:var(--field);border-radius:16px}
+.segctl button{border-radius:12px;font-weight:700}
+.segctl button[aria-pressed="true"]{box-shadow:none;font-weight:800}
+.searchbar{border:0;border-radius:16px;min-height:52px;background:var(--surface)}
+.chip{border-radius:999px}
+.lic{border-radius:14px}
+.fic{border-radius:14px}
+.t-food{background:var(--food-tint);color:var(--accent)!important}
+.pill{font-weight:700}
+.tabs{border-top:0;background:var(--surface)}
+.tab[aria-current="page"],.tab.on{color:var(--accent)}
+.sheet{border-radius:28px 28px 0 0}
+.mate{border:0;background:var(--accent-soft);color:var(--ink)}
+.mate.on{background:var(--fill);color:var(--fill-ink)}
+.mate.on svg{color:var(--fill-ink)}
+.mwrap{border-top-color:var(--line)}
+.sec-title h2,.fgroup :is(h2,h3).fg-h{font-size:1.0625rem;font-weight:800;letter-spacing:-.02em}
+.tasks .tk-n{background:transparent;box-shadow:inset 0 0 0 2.5px var(--line-strong);color:transparent;width:26px;height:26px;border-radius:50%;font-size:0}
+.tasks .is-done .tk-n{background:var(--fill);box-shadow:none;color:var(--fill-ink)}
+.tasks .tk-n svg{width:16px;height:16px}
+.tasks .tk-n.part{background:conic-gradient(var(--accent) 0 var(--p,0%),transparent 0)}
+/* 홈 맨 위 상태 띠: 오늘 상태 한 문장 + 최근 2주 증상 점수 능선 + 기록 버튼 */
+.ridge{background:var(--field);border-radius:26px;padding:16px 18px 16px;margin:2px 0 4px;color:var(--ink)}
+.ridge .r-top{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.ridge .r-date{font-size:0.8125rem;color:var(--muted);margin:0}
+.ridge .r-stage{background:var(--surface);border:0;border-radius:999px;min-height:44px;padding:4px 10px 4px 12px;font-size:0.8125rem;font-weight:700;color:var(--ink);display:inline-flex;align-items:center;gap:2px}
+.ridge .r-stage .chev{width:16px;height:16px}
+.ridge .r-head{font-family:var(--display);font-size:1.6875rem;font-weight:800;letter-spacing:-.035em;line-height:1.25;margin:8px 0 0}
+.ridge .r-sub{font-size:0.9375rem;margin:4px 0 0}
+.ridge .r-chart{display:block;width:100%;height:auto;margin:12px 0 4px;overflow:visible}
+.ridge .r-chart .band{fill:var(--ridge-band)}
+.ridge .r-chart .area{fill:var(--ridge-area)}
+.ridge .r-chart .line{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ridge .r-chart .dot{fill:var(--accent);stroke:var(--field);stroke-width:3}
+.ridge .r-chart .qdot{fill:var(--field);stroke:var(--accent);stroke-width:2}
+.ridge .r-chart text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.ridge .r-chart .bl{font-size:11.5px;fill:var(--accent-deep);font-weight:700}
+.ridge .r-chart .r-empty{font-size:13px;fill:var(--muted)}
+.ridge .r-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ridge .r-btns .btn{flex:1 1 auto;min-height:46px}
+.ridge .r-btns .btn.primary{flex:1 1 100%}
+.ridge .r-btns .btn:not(.primary){background:var(--surface);color:var(--ink)}
+.ridge .r-note{font-size:0.8125rem;color:var(--muted);margin:8px 0 0}
+/* 음식 정보: 세 칸 요약, 차분한 회색 상자, FODMAP 띠 */
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 2px}
+.facts>div{background:var(--surface-2);border-radius:16px;padding:9px 12px;min-width:0}
+.facts small{display:block;font-size:0.75rem;color:var(--muted)}
+.facts b{display:block;font-size:1.0625rem;font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere}
+.why-card{background:var(--surface-2)}
+.why-card b{color:var(--ink)}
+.fsv>div{background:var(--surface);border-radius:12px}
+.why-card .fsv>div{box-shadow:none}
+.fsv .lo:not(.na){background:var(--ok-soft);color:var(--ok-ink)}.fsv .lo:not(.na) b,.fsv .lo:not(.na) small{color:var(--ok-ink)}
+.fsv .na{color:var(--muted)}
+.fsv .mid{box-shadow:inset 0 3px 0 var(--warn-fill)}.fsv .hi{box-shadow:inset 0 3px 0 var(--avoid)}
+a.lrow,a.lrow b,a.lrow small{text-decoration:none}
+.card a:not(.btn):not(.lrow),.hint a,.info-body a,.banner a{color:var(--accent-deep);text-underline-offset:3px}
 /* v1.10.0 PC(넓은 화면): PC 전용 화면을 따로 만들지 않고, 휴대폰과 같은 화면을 가운데 휴대폰 너비로 보인다(사용자 요청).
    고정 위치 요소(메뉴·아래 버튼·알림·시트·+버튼)도 같은 너비 안에 둔다 */
 :root{--phone:640px}   /* 사용자가 보여 준 예시(PC에서 연 휴대폰 앱)처럼 가운데 640px 세로 띠 */
@@ -2511,18 +2587,64 @@ const shortOK=date=>date<today()||(date===today()&&new Date().getHours()>=19);
 const TIPS={};
 function tip(id,html,cls="hint"){TIPS[id]=html; return S.tips.includes(id)?`<button class="tip-i" data-act="tipShow" data-v="${id}">${ic("info")} 안내 보기</button>`:`<div class="${cls} tipbox" data-tip="${id}">${html}<button class="tip-x" data-act="tipHide" data-v="${id}" aria-label="이 안내 닫기">×</button></div>`}
 /* v1.9.0 D-3: 홈 맨 위 '오늘 할 일' 3가지 — 증상 기록·끼니 표시·물. 각 줄에서 바로 처리한다 */
+/* v1.11.0 디자인 A '잔잔한 능선': 홈 맨 위 상태 띠 — 오늘 상태 한 문장, 최근 2주(15일) 증상 점수 능선(관해 범위 띠·일주일 간격 날짜), 기록 버튼.
+   증상 기록 입구는 이 띠 한 곳(빠른 기록·평소와 같음 포함), '오늘 할 일'은 고리로 끝낸 정도만 */
+function ridgeText(){
+  const t=today(); const tl=S.logs[t]; const pd=lastLogBefore(t,60); const pl=pd?S.logs[pd]:null;
+  const band=v=>v<=2?"관해 범위 안입니다":v<=4?"증상이 조금 있는 범위입니다":"활동기 기준(5점 이상)입니다";
+  const yd=pd===addDays(t,-1); const ref=yd?"어제":"지난 기록", refWa=yd?"어제와":"지난 기록과";
+  if(tl){const v=sccai(tl), pv=pl?sccai(pl):null;
+    const head=v>=5?"증상이 활발합니다":pv==null?(v<=2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
+    return {head,sub:`증상 점수 ${v}점, ${band(v)}${tl.quick?" (빠른 기록)":""}`}}
+  if(S.stageMode==="auto"&&currentStage().stale){const l0=lastLogBefore(t,3650); return {head:"요즘 증상이 어떻습니까?",sub:`${l0?`마지막 기록 ${md(l0)}. `:""}기록하면 식단 단계를 다시 맞춥니다`}}
+  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(sccai(pl))}`};
+  return {head:"증상을 기록하면 흐름이 보입니다",sub:"하루 한 번 배변·피·급박감을 적으면 2주 흐름이 여기에 그려집니다"};
+}
+function ridgeSVG(){
+  const t=today(), N=15, from=addDays(t,-(N-1));
+  const pts=[...Array(N)].map((_,i)=>{const d=addDays(from,i), l=S.logs[d]; return {i,d,v:l?sccai(l):null,q:!!(l&&l.quick)}});
+  const have=pts.filter(p=>p.v!=null);
+  // 그래프 폭 = 화면에 그려지는 폭(글자가 화면 크기와 상관없이 같은 크기로 보이게). 휴대폰은 화면 폭 - 68, PC는 640px 띠 안
+  const W=Math.round(Math.max(240,Math.min(600,Math.min(innerWidth||390,640)-68))), X0=6, X1=W-6, YT=10, YB=92, f=n=>n.toFixed(1);
+  // 세로 눈금은 6점 이상(5점 활동기 기준이 그래프 위쪽에 오게)
+  const mx=Math.max(6,...have.map(p=>p.v)); const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YB-(Math.min(v,mx)/mx)*(YB-YT);
+  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(YB-y(2))}" rx="6" class="band"/>`;
+  const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
+  // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
+  const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
+  const bl=`<text x="8" y="${f(YB-5)}" class="bl">관해 범위</text>`;
+  if(have.length<2) return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록이 2일 이상 쌓이면 보입니다">${band}${bl}<text x="${f(W/2)}" y="44" text-anchor="middle" class="r-empty">기록이 쌓이면 2주 흐름이 보입니다</text>${labels}</svg>`;
+  const segs=[]; let cur=[];   // 3일 넘게 비면 선을 끊는다(없는 날을 이어 그리지 않게)
+  for(const p of have){ if(cur.length&&p.i-cur[cur.length-1].i>3){segs.push(cur); cur=[]} cur.push(p) } if(cur.length) segs.push(cur);
+  const path=sg=>{let d=`M${f(x(sg[0].i))},${f(y(sg[0].v))}`; for(let k=1;k<sg.length;k++){const a=sg[k-1], b=sg[k], m=f((x(a.i)+x(b.i))/2); d+=` C${m},${f(y(a.v))} ${m},${f(y(b.v))} ${f(x(b.i))},${f(y(b.v))}`} return d};
+  const lines=segs.filter(sg=>sg.length>1).map(sg=>{const d=path(sg); return `<path d="${d} L${f(x(sg[sg.length-1].i))},${YB} L${f(x(sg[0].i))},${YB} Z" class="area"/><path d="${d}" class="line"/>`}).join("");
+  const last=have[have.length-1];
+  const dots=have.filter(p=>p.q||p===last||segs.some(sg=>sg.length===1&&sg[0]===p)).map(p=>`<circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="${p===last?5.5:3.6}" class="${p.q?"qdot":"dot"}"/>`).join("");
+  const vs=have.map(p=>p.v);
+  const aria=`최근 2주 증상 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 관해 범위(2점 이하)${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
+  return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="${aria}">${band}${lines}${bl}${dots}${labels}</svg>`;
+}
+function ridgeHTML(cs){
+  const t=today(); const tl=S.logs[t]; const ll=lastLogBefore(t,7); const d0=new Date(t+"T00:00:00"); const r=ridgeText();
+  const btns=tl?`<button class="btn" data-act="wizardDate" data-v="${t}">오늘 기록 고치기</button><button class="btn" data-go="log">기록 보기</button>`
+    :`<button class="btn primary" data-act="wizard">오늘 증상 기록</button><button class="btn" data-act="wizardQuick" aria-label="빠른 기록: 배변 횟수·피·급박감 세 가지만">빠른 기록</button>${ll?`<button class="btn" data-act="quickSame" aria-label="평소와 같음: ${md(ll)} 기록과 같게 저장">평소와 같음</button>`:""}`;
+  return `<section class="ridge" aria-labelledby="ridgeT">
+    <div class="r-top"><p class="r-date">${d0.getMonth()+1}월 ${d0.getDate()}일 ${WD[d0.getDay()]}요일</p><button class="r-stage chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div>
+    <h2 class="r-head" id="ridgeT">${esc(r.head)}</h2><p class="r-sub">${esc(r.sub)}</p>
+    ${ridgeSVG()}
+    <div class="r-btns">${btns}</div></section>`;
+}
 function tasksHTML(){
-  const t=today(); const tl=S.logs[t]; const ll=lastLogBefore(t,7);
-  // v1.10.0 디자인 1: 홈의 증상 기록 입구를 이 줄 하나로(예전 '요즘 증상' 안내·바로가기 타일·알림의 버튼을 합침)
-  const stale=!tl&&S.stageMode==="auto"&&currentStage().stale; const ll0=stale?lastLogBefore(t,3650):null;
+  const t=today(); const tl=S.logs[t];
   const mealN=SLOTS.filter(sl=>isAte(t,sl)||isSkipped(t,sl)).length;
   const tg=targets(); const cups=+S.water[t]||0; const goalCups=Math.max(1,Math.round(tg.water/S.cupMl));
   const done=[!!tl,mealN>=SLOTS.length,cups>=goalCups];
-  const row=(ok,n,title,sub,acts)=>`<div class="task${ok?" is-done":""}"><span class="tk-main"><span class="tk-n" aria-hidden="true">${ok?ic("check"):n}</span><span class="lt"><b>${title}${ok?'<span class="sr-only"> 완료</span>':""}</b><small>${sub}</small></span></span><span class="tk-act">${acts}</span></div>`;
+  const ring=(ok,p)=>`<span class="tk-n${!ok&&p>0?" part":""}" aria-hidden="true"${!ok&&p>0?` style="--p:${Math.round(p*100)}%"`:""}>${ok?ic("check"):""}</span>`;
+  const row=(ok,p,title,sub,acts)=>`<div class="task${ok?" is-done":""}"><span class="tk-main">${ring(ok,p)}<span class="lt"><b>${title}${ok?'<span class="sr-only"> 완료</span>':""}</b><small>${sub}</small></span></span>${acts?`<span class="tk-act">${acts}</span>`:""}</div>`;
   return `<section class="card tasks" aria-labelledby="tasksT"><div class="row between"><h2 id="tasksT">오늘 할 일</h2><span class="hint">${done.filter(Boolean).length}/3 완료</span></div>
-    ${row(done[0],1,"증상 기록",tl?`증상 점수 ${sccai(tl)}점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:stale?`요즘 증상이 어떻습니까? ${ll0?`마지막 기록 ${md(ll0)}. `:"아직 기록이 없습니다. "}기록하면 식단 단계를 다시 맞춥니다`:"아직 기록하지 않았습니다",tl?`<button class="btn sm" data-act="wizardDate" data-v="${t}">고치기</button>`:`<button class="btn sm primary" data-act="wizard">기록</button><button class="btn sm" data-act="wizardQuick" aria-label="빠른 기록: 배변 횟수·피·급박감 세 가지만">빠른 기록</button>${ll?`<button class="btn sm" data-act="quickSame" aria-label="평소와 같음: ${md(ll)} 기록과 같게 저장">평소와 같음</button>`:""}`)}
-    ${row(done[1],2,"끼니 표시",`'먹음'·'안 먹음'을 표시한 끼니 ${mealN}/${SLOTS.length}`,`<button class="btn sm" data-act="goMeals">끼니 보기</button>`)}
-    ${row(done[2],3,"물 마시기",`${cups}잔(${cups*S.cupMl}ml) · 목표 약 ${goalCups}잔`,`<button class="btn sm primary" data-act="cupAdd" aria-label="물 한 잔(${S.cupMl}ml) 마셨습니다">+1잔</button>`)}
+    ${row(done[0],0,"증상 기록",tl?`증상 점수 ${sccai(tl)}점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:"아직 기록하지 않았습니다. 위 '오늘 증상 기록'을 누르십시오","")}
+    ${row(done[1],mealN/SLOTS.length,"끼니 표시",`'먹음'·'안 먹음'을 표시한 끼니 ${mealN}/${SLOTS.length}`,`<button class="btn sm" data-act="goMeals">끼니 보기</button>`)}
+    ${row(done[2],cups/goalCups,"물 마시기",`${cups}잔(${cups*S.cupMl}ml) · 목표 약 ${goalCups}잔`,`<button class="btn sm primary" data-act="cupAdd" aria-label="물 한 잔(${S.cupMl}ml) 마셨습니다">+1잔</button>`)}
   </section>`;
 }
 function viewPlan(){
@@ -2536,8 +2658,8 @@ function viewPlan(){
   const note=PLAN_NOTE; PLAN_NOTE="";
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
-  <div class="hero">
-    <div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div>
+  ${isToday?ridgeHTML(cs):`<div class="hero"><div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div></div>`}
+  <div class="hero hero-days">
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
   ${note?`<div class="banner info">${esc(note)}</div>`:""}
@@ -3344,7 +3466,7 @@ function wBasis(f){const s=f?.src; if(!s) return {k:"",l:""}; const n=String(s.n
 const GRP_L={fructan:"프럭탄",gos:"갈락토올리고당(GOS)",lactose:"유당",fructose:"과당(과잉)",sorbitol:"솔비톨",mannitol:"만니톨",polyol:"당알코올"};
 function fservHTML(id){const x=FSERV[id]; if(!x) return "";
   const has=x.lo||x.mid||x.hi;
-  const cell=(c,cls,l,first)=>`<div class="${cls}"><b>${c?(c[0]!=null?`${c[0]}g${first?"까지":"부터"}`:esc(c[1]||"")):"확인 안 됨"}</b>${l}${c&&c[0]!=null&&c[1]?`<br><small class="muted">${esc(c[1])}</small>`:""}</div>`;
+  const cell=(c,cls,l,first)=>`<div class="${cls}${c&&c[0]!=null?"":" na"}"><b>${c?(c[0]!=null?`${c[0]}g${first?"까지":"부터"}`:esc(c[1]||"")):"확인 안 됨"}</b>${l}${c&&c[0]!=null&&c[1]?`<br><small class="muted">${esc(c[1])}</small>`:""}</div>`;
   return `<div class="why-card inset"><b>먹는 양에 따른 FODMAP(Monash 신호등 방식)</b>
     ${has?`<div class="fsv" role="img" aria-label="FODMAP 낮음 ${x.lo?.[0]??"확인 안 됨"}, 중간 ${x.mid?.[0]??"확인 안 됨"}, 높음 ${x.hi?.[0]??"확인 안 됨"}">${cell(x.lo,"lo","낮음",true)}${cell(x.mid,"mid","중간")}${cell(x.hi,"hi","높음")}</div>`:`<p class="hint" style="margin:6px 0 0">양에 따른 수치는 공개 자료에서 확인하지 못했습니다.</p>`}
     ${x.grp.length?`<p class="hint" style="margin:4px 0 0">주된 FODMAP: ${x.grp.map(g=>GLOSS[{fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g]]?term({fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g],GRP_L[g]||g):(GRP_L[g]||g)).join("·")}</p>`:""}
@@ -3440,6 +3562,10 @@ function altFoods(f,c=ctx()){
     const pool=FOODS.filter(g=>good(g)&&!out.includes(g)).map(g=>[sc(g),g]).filter(x=>x[0]>=1.5).sort((a,b)=>b[0]-a[0]||a[1].tags.length-b[1].tags.length||a[1].name.localeCompare(b[1].name,"ko"));
     for(const [,g] of pool){if(out.length>=3) break; out.push(g)}}
   return out.slice(0,3)}
+/* v1.11.0 디자인 A: 음식 정보 머리 아래 세 칸(종류·1회 양·열량) */
+function factsHTML(f){const sv=SERV[f.id]; const u=sv&&/잔|컵|캔|병|팩/.test(sv[1])?"ml":"g";
+  const k=hasNut(f,"k")?(sv?`${Math.round(f.k*sv[0]/100)}kcal`:`${Math.round(f.k)}kcal`):"자료 없음";
+  return `<div class="facts" role="group" aria-label="${esc(f.name)} 요약"><div><small>종류</small><b>${isProd(f)?"시판 제품":esc(f.cat)}</b></div><div><small>1회</small><b>${sv?`${sv[0]}${u}`:"-"}</b></div><div><small>열량${sv||!hasNut(f,"k")?"":"(100g)"}</small><b>${k}</b></div></div>`}
 const firstSent=t=>{const m=String(t||"").match(/^.+?[.!?](?=\s|$)/); return m?m[0]:String(t||"")};
 let FDET=null;
 // v1.10.0 디자인 6: 영양 칸은 자료가 있는 값만 보이고, 없는 값은 아래 한 줄('자료 없음')로
@@ -3450,6 +3576,7 @@ function showFood(id){
   S.seen=[id,...(S.seen||[]).filter(x=>x!==id)].slice(0,12);   // v1.9.0 U-7: 최근 본 음식(찾아보기 맨 위에)
   const alts=badLv(s.level)?altFoods(f):[]; const fam=PFAM[id];
   openSheet(`<div class="row" style="gap:14px">${fIcon(id,"lg")}<div style="flex:1"><h2>${esc(f.name)}</h2><span class="pill ${s.level}">${LV[s.level]}</span>${isProd(f)?`<span class="hint fsize">시판${PSIZE[id]?` · 총 ${esc(PSIZE[id])}`:""}</span>`:""}</div><button class="star" data-act="favToggle" data-v="${id}" aria-pressed="${favOn(id)}" aria-label="${esc(f.name)} 즐겨찾기">${favOn(id)?"★":"☆"}</button></div>
+   ${factsHTML(f)}
    ${s.reasons.length?`<p class="${badLv(s.level)?"crit-t":"warn-t"} why-sum">${esc(s.reasons[0])}${s.reasons.length>1?` <span class="muted">외 ${s.reasons.length-1}가지</span>`:""}</p>`:`<p class="why-sum">${esc(firstSent(f.why))}</p>`}
    ${s.note?`<p class="crit-t ham-note"><span aria-hidden="true">✕ </span>${esc(s.note)}</p>`:""}
    <details class="why-more"><summary>판정 이유와 근거 자세히</summary>
@@ -3702,6 +3829,9 @@ function scrSettingsBody(){
     <div class="sec-label">어려운 말 풀이</div>
     <details class="card gloss-all"><summary><b>앱에 나오는 용어 ${Object.keys(GLOSS).length}개</b></summary>
       <dl class="gloss-dl">${Object.entries(GLOSS).sort((a,b)=>a[1][0].localeCompare(b[1][0],"ko")).map(([k,g])=>`<dt>${esc(g[0])}</dt><dd>${esc(g[1])}${sup(g[2])}</dd>`).join("")}</dl></details>
+    <div class="sec-label">글꼴·오픈 소스</div>
+    <div class="card stack"><p class="hint" style="margin:0"><b>UC Table Sans</b>: Pretendard 1.3.9(© Kil Hyung-jin, 길형진)를 이 앱이 쓰는 글자만 남기고 이름을 바꾼 글꼴입니다. SIL Open Font License 1.1을 따릅니다.</p>
+      <p class="hint" style="margin:0">그림 PDF: html2canvas·jsPDF(MIT) · 바코드 읽기: @zxing/library(Apache-2.0). 라이선스 전문은 저장소의 vendor/·src/brand/에 있습니다.</p></div>
     <div class="sec-label">앱 안내</div>
     ${infoBody("me")}`;
   return "";
@@ -4988,6 +5118,8 @@ function dayCheck(){const t=today(); if(t===LAST_DAY) return; if(SCR&&SCR.name==
 document.addEventListener("visibilitychange",()=>{if(!document.hidden) dayCheck()});
 window.addEventListener("pageshow",dayCheck);
 setInterval(dayCheck,60000);
+// v1.11.0 디자인: 화면 폭이 바뀌면(휴대폰 회전·PC 창 크기) 홈 능선 그래프를 그 폭으로 다시 그린다
+{let rw=innerWidth, rt=null; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{if(Math.abs(innerWidth-rw)>24&&S.tab==="plan"&&!SCR&&!document.querySelector("#sheetRoot .sheet")){rw=innerWidth; render()}},200)})}
 // v1.11.0 W-1: 홈 화면 아이콘의 바로가기(?go=log 증상 기록, ?go=food 음식 찾기)
 try{const go=new URLSearchParams(location.search).get("go"); if(go){ if(S.consent&&!onbActive()&&(go==="log"||go==="food")) S.tab=go; history.replaceState(null,"",location.pathname)}}catch(e){}
 // v1.11.0 W-2: 설치형 앱(PWA)이 새 버전을 받으면 '새 버전이 준비됐습니다' 안내(다시 열면 바뀜, 기록은 그대로)

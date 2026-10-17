@@ -3475,18 +3475,64 @@ const shortOK=date=>date<today()||(date===today()&&new Date().getHours()>=19);
 const TIPS={};
 function tip(id,html,cls="hint"){TIPS[id]=html; return S.tips.includes(id)?`<button class="tip-i" data-act="tipShow" data-v="${id}">${ic("info")} 안내 보기</button>`:`<div class="${cls} tipbox" data-tip="${id}">${html}<button class="tip-x" data-act="tipHide" data-v="${id}" aria-label="이 안내 닫기">×</button></div>`}
 /* v1.9.0 D-3: 홈 맨 위 '오늘 할 일' 3가지 — 증상 기록·끼니 표시·물. 각 줄에서 바로 처리한다 */
+/* v1.11.0 디자인 A '잔잔한 능선': 홈 맨 위 상태 띠 — 오늘 상태 한 문장, 최근 2주(15일) 증상 점수 능선(관해 범위 띠·일주일 간격 날짜), 기록 버튼.
+   증상 기록 입구는 이 띠 한 곳(빠른 기록·평소와 같음 포함), '오늘 할 일'은 고리로 끝낸 정도만 */
+function ridgeText(){
+  const t=today(); const tl=S.logs[t]; const pd=lastLogBefore(t,60); const pl=pd?S.logs[pd]:null;
+  const band=v=>v<=2?"관해 범위 안입니다":v<=4?"증상이 조금 있는 범위입니다":"활동기 기준(5점 이상)입니다";
+  const yd=pd===addDays(t,-1); const ref=yd?"어제":"지난 기록", refWa=yd?"어제와":"지난 기록과";
+  if(tl){const v=sccai(tl), pv=pl?sccai(pl):null;
+    const head=v>=5?"증상이 활발합니다":pv==null?(v<=2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
+    return {head,sub:`증상 점수 ${v}점, ${band(v)}${tl.quick?" (빠른 기록)":""}`}}
+  if(S.stageMode==="auto"&&currentStage().stale){const l0=lastLogBefore(t,3650); return {head:"요즘 증상이 어떻습니까?",sub:`${l0?`마지막 기록 ${md(l0)}. `:""}기록하면 식단 단계를 다시 맞춥니다`}}
+  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(sccai(pl))}`};
+  return {head:"증상을 기록하면 흐름이 보입니다",sub:"하루 한 번 배변·피·급박감을 적으면 2주 흐름이 여기에 그려집니다"};
+}
+function ridgeSVG(){
+  const t=today(), N=15, from=addDays(t,-(N-1));
+  const pts=[...Array(N)].map((_,i)=>{const d=addDays(from,i), l=S.logs[d]; return {i,d,v:l?sccai(l):null,q:!!(l&&l.quick)}});
+  const have=pts.filter(p=>p.v!=null);
+  // 그래프 폭 = 화면에 그려지는 폭(글자가 화면 크기와 상관없이 같은 크기로 보이게). 휴대폰은 화면 폭 - 68, PC는 640px 띠 안
+  const W=Math.round(Math.max(240,Math.min(600,Math.min(innerWidth||390,640)-68))), X0=6, X1=W-6, YT=10, YB=92, f=n=>n.toFixed(1);
+  // 세로 눈금은 6점 이상(5점 활동기 기준이 그래프 위쪽에 오게)
+  const mx=Math.max(6,...have.map(p=>p.v)); const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YB-(Math.min(v,mx)/mx)*(YB-YT);
+  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(YB-y(2))}" rx="6" class="band"/>`;
+  const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
+  // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
+  const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
+  const bl=`<text x="8" y="${f(YB-5)}" class="bl">관해 범위</text>`;
+  if(have.length<2) return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록이 2일 이상 쌓이면 보입니다">${band}${bl}<text x="${f(W/2)}" y="44" text-anchor="middle" class="r-empty">기록이 쌓이면 2주 흐름이 보입니다</text>${labels}</svg>`;
+  const segs=[]; let cur=[];   // 3일 넘게 비면 선을 끊는다(없는 날을 이어 그리지 않게)
+  for(const p of have){ if(cur.length&&p.i-cur[cur.length-1].i>3){segs.push(cur); cur=[]} cur.push(p) } if(cur.length) segs.push(cur);
+  const path=sg=>{let d=`M${f(x(sg[0].i))},${f(y(sg[0].v))}`; for(let k=1;k<sg.length;k++){const a=sg[k-1], b=sg[k], m=f((x(a.i)+x(b.i))/2); d+=` C${m},${f(y(a.v))} ${m},${f(y(b.v))} ${f(x(b.i))},${f(y(b.v))}`} return d};
+  const lines=segs.filter(sg=>sg.length>1).map(sg=>{const d=path(sg); return `<path d="${d} L${f(x(sg[sg.length-1].i))},${YB} L${f(x(sg[0].i))},${YB} Z" class="area"/><path d="${d}" class="line"/>`}).join("");
+  const last=have[have.length-1];
+  const dots=have.filter(p=>p.q||p===last||segs.some(sg=>sg.length===1&&sg[0]===p)).map(p=>`<circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="${p===last?5.5:3.6}" class="${p.q?"qdot":"dot"}"/>`).join("");
+  const vs=have.map(p=>p.v);
+  const aria=`최근 2주 증상 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 관해 범위(2점 이하)${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
+  return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="${aria}">${band}${lines}${bl}${dots}${labels}</svg>`;
+}
+function ridgeHTML(cs){
+  const t=today(); const tl=S.logs[t]; const ll=lastLogBefore(t,7); const d0=new Date(t+"T00:00:00"); const r=ridgeText();
+  const btns=tl?`<button class="btn" data-act="wizardDate" data-v="${t}">오늘 기록 고치기</button><button class="btn" data-go="log">기록 보기</button>`
+    :`<button class="btn primary" data-act="wizard">오늘 증상 기록</button><button class="btn" data-act="wizardQuick" aria-label="빠른 기록: 배변 횟수·피·급박감 세 가지만">빠른 기록</button>${ll?`<button class="btn" data-act="quickSame" aria-label="평소와 같음: ${md(ll)} 기록과 같게 저장">평소와 같음</button>`:""}`;
+  return `<section class="ridge" aria-labelledby="ridgeT">
+    <div class="r-top"><p class="r-date">${d0.getMonth()+1}월 ${d0.getDate()}일 ${WD[d0.getDay()]}요일</p><button class="r-stage chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div>
+    <h2 class="r-head" id="ridgeT">${esc(r.head)}</h2><p class="r-sub">${esc(r.sub)}</p>
+    ${ridgeSVG()}
+    <div class="r-btns">${btns}</div></section>`;
+}
 function tasksHTML(){
-  const t=today(); const tl=S.logs[t]; const ll=lastLogBefore(t,7);
-  // v1.10.0 디자인 1: 홈의 증상 기록 입구를 이 줄 하나로(예전 '요즘 증상' 안내·바로가기 타일·알림의 버튼을 합침)
-  const stale=!tl&&S.stageMode==="auto"&&currentStage().stale; const ll0=stale?lastLogBefore(t,3650):null;
+  const t=today(); const tl=S.logs[t];
   const mealN=SLOTS.filter(sl=>isAte(t,sl)||isSkipped(t,sl)).length;
   const tg=targets(); const cups=+S.water[t]||0; const goalCups=Math.max(1,Math.round(tg.water/S.cupMl));
   const done=[!!tl,mealN>=SLOTS.length,cups>=goalCups];
-  const row=(ok,n,title,sub,acts)=>`<div class="task${ok?" is-done":""}"><span class="tk-main"><span class="tk-n" aria-hidden="true">${ok?ic("check"):n}</span><span class="lt"><b>${title}${ok?'<span class="sr-only"> 완료</span>':""}</b><small>${sub}</small></span></span><span class="tk-act">${acts}</span></div>`;
+  const ring=(ok,p)=>`<span class="tk-n${!ok&&p>0?" part":""}" aria-hidden="true"${!ok&&p>0?` style="--p:${Math.round(p*100)}%"`:""}>${ok?ic("check"):""}</span>`;
+  const row=(ok,p,title,sub,acts)=>`<div class="task${ok?" is-done":""}"><span class="tk-main">${ring(ok,p)}<span class="lt"><b>${title}${ok?'<span class="sr-only"> 완료</span>':""}</b><small>${sub}</small></span></span>${acts?`<span class="tk-act">${acts}</span>`:""}</div>`;
   return `<section class="card tasks" aria-labelledby="tasksT"><div class="row between"><h2 id="tasksT">오늘 할 일</h2><span class="hint">${done.filter(Boolean).length}/3 완료</span></div>
-    ${row(done[0],1,"증상 기록",tl?`증상 점수 ${sccai(tl)}점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:stale?`요즘 증상이 어떻습니까? ${ll0?`마지막 기록 ${md(ll0)}. `:"아직 기록이 없습니다. "}기록하면 식단 단계를 다시 맞춥니다`:"아직 기록하지 않았습니다",tl?`<button class="btn sm" data-act="wizardDate" data-v="${t}">고치기</button>`:`<button class="btn sm primary" data-act="wizard">기록</button><button class="btn sm" data-act="wizardQuick" aria-label="빠른 기록: 배변 횟수·피·급박감 세 가지만">빠른 기록</button>${ll?`<button class="btn sm" data-act="quickSame" aria-label="평소와 같음: ${md(ll)} 기록과 같게 저장">평소와 같음</button>`:""}`)}
-    ${row(done[1],2,"끼니 표시",`'먹음'·'안 먹음'을 표시한 끼니 ${mealN}/${SLOTS.length}`,`<button class="btn sm" data-act="goMeals">끼니 보기</button>`)}
-    ${row(done[2],3,"물 마시기",`${cups}잔(${cups*S.cupMl}ml) · 목표 약 ${goalCups}잔`,`<button class="btn sm primary" data-act="cupAdd" aria-label="물 한 잔(${S.cupMl}ml) 마셨습니다">+1잔</button>`)}
+    ${row(done[0],0,"증상 기록",tl?`증상 점수 ${sccai(tl)}점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:"아직 기록하지 않았습니다. 위 '오늘 증상 기록'을 누르십시오","")}
+    ${row(done[1],mealN/SLOTS.length,"끼니 표시",`'먹음'·'안 먹음'을 표시한 끼니 ${mealN}/${SLOTS.length}`,`<button class="btn sm" data-act="goMeals">끼니 보기</button>`)}
+    ${row(done[2],cups/goalCups,"물 마시기",`${cups}잔(${cups*S.cupMl}ml) · 목표 약 ${goalCups}잔`,`<button class="btn sm primary" data-act="cupAdd" aria-label="물 한 잔(${S.cupMl}ml) 마셨습니다">+1잔</button>`)}
   </section>`;
 }
 function viewPlan(){
@@ -3500,8 +3546,8 @@ function viewPlan(){
   const note=PLAN_NOTE; PLAN_NOTE="";
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
-  <div class="hero">
-    <div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div>
+  ${isToday?ridgeHTML(cs):`<div class="hero"><div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div></div>`}
+  <div class="hero hero-days">
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
   ${note?`<div class="banner info">${esc(note)}</div>`:""}
@@ -4308,7 +4354,7 @@ function wBasis(f){const s=f?.src; if(!s) return {k:"",l:""}; const n=String(s.n
 const GRP_L={fructan:"프럭탄",gos:"갈락토올리고당(GOS)",lactose:"유당",fructose:"과당(과잉)",sorbitol:"솔비톨",mannitol:"만니톨",polyol:"당알코올"};
 function fservHTML(id){const x=FSERV[id]; if(!x) return "";
   const has=x.lo||x.mid||x.hi;
-  const cell=(c,cls,l,first)=>`<div class="${cls}"><b>${c?(c[0]!=null?`${c[0]}g${first?"까지":"부터"}`:esc(c[1]||"")):"확인 안 됨"}</b>${l}${c&&c[0]!=null&&c[1]?`<br><small class="muted">${esc(c[1])}</small>`:""}</div>`;
+  const cell=(c,cls,l,first)=>`<div class="${cls}${c&&c[0]!=null?"":" na"}"><b>${c?(c[0]!=null?`${c[0]}g${first?"까지":"부터"}`:esc(c[1]||"")):"확인 안 됨"}</b>${l}${c&&c[0]!=null&&c[1]?`<br><small class="muted">${esc(c[1])}</small>`:""}</div>`;
   return `<div class="why-card inset"><b>먹는 양에 따른 FODMAP(Monash 신호등 방식)</b>
     ${has?`<div class="fsv" role="img" aria-label="FODMAP 낮음 ${x.lo?.[0]??"확인 안 됨"}, 중간 ${x.mid?.[0]??"확인 안 됨"}, 높음 ${x.hi?.[0]??"확인 안 됨"}">${cell(x.lo,"lo","낮음",true)}${cell(x.mid,"mid","중간")}${cell(x.hi,"hi","높음")}</div>`:`<p class="hint" style="margin:6px 0 0">양에 따른 수치는 공개 자료에서 확인하지 못했습니다.</p>`}
     ${x.grp.length?`<p class="hint" style="margin:4px 0 0">주된 FODMAP: ${x.grp.map(g=>GLOSS[{fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g]]?term({fructan:"fructan",gos:"gos",lactose:"lactose",polyol:"polyol",sorbitol:"polyol",mannitol:"polyol"}[g],GRP_L[g]||g):(GRP_L[g]||g)).join("·")}</p>`:""}
@@ -4404,6 +4450,10 @@ function altFoods(f,c=ctx()){
     const pool=FOODS.filter(g=>good(g)&&!out.includes(g)).map(g=>[sc(g),g]).filter(x=>x[0]>=1.5).sort((a,b)=>b[0]-a[0]||a[1].tags.length-b[1].tags.length||a[1].name.localeCompare(b[1].name,"ko"));
     for(const [,g] of pool){if(out.length>=3) break; out.push(g)}}
   return out.slice(0,3)}
+/* v1.11.0 디자인 A: 음식 정보 머리 아래 세 칸(종류·1회 양·열량) */
+function factsHTML(f){const sv=SERV[f.id]; const u=sv&&/잔|컵|캔|병|팩/.test(sv[1])?"ml":"g";
+  const k=hasNut(f,"k")?(sv?`${Math.round(f.k*sv[0]/100)}kcal`:`${Math.round(f.k)}kcal`):"자료 없음";
+  return `<div class="facts" role="group" aria-label="${esc(f.name)} 요약"><div><small>종류</small><b>${isProd(f)?"시판 제품":esc(f.cat)}</b></div><div><small>1회</small><b>${sv?`${sv[0]}${u}`:"-"}</b></div><div><small>열량${sv||!hasNut(f,"k")?"":"(100g)"}</small><b>${k}</b></div></div>`}
 const firstSent=t=>{const m=String(t||"").match(/^.+?[.!?](?=\s|$)/); return m?m[0]:String(t||"")};
 let FDET=null;
 // v1.10.0 디자인 6: 영양 칸은 자료가 있는 값만 보이고, 없는 값은 아래 한 줄('자료 없음')로
@@ -4414,6 +4464,7 @@ function showFood(id){
   S.seen=[id,...(S.seen||[]).filter(x=>x!==id)].slice(0,12);   // v1.9.0 U-7: 최근 본 음식(찾아보기 맨 위에)
   const alts=badLv(s.level)?altFoods(f):[]; const fam=PFAM[id];
   openSheet(`<div class="row" style="gap:14px">${fIcon(id,"lg")}<div style="flex:1"><h2>${esc(f.name)}</h2><span class="pill ${s.level}">${LV[s.level]}</span>${isProd(f)?`<span class="hint fsize">시판${PSIZE[id]?` · 총 ${esc(PSIZE[id])}`:""}</span>`:""}</div><button class="star" data-act="favToggle" data-v="${id}" aria-pressed="${favOn(id)}" aria-label="${esc(f.name)} 즐겨찾기">${favOn(id)?"★":"☆"}</button></div>
+   ${factsHTML(f)}
    ${s.reasons.length?`<p class="${badLv(s.level)?"crit-t":"warn-t"} why-sum">${esc(s.reasons[0])}${s.reasons.length>1?` <span class="muted">외 ${s.reasons.length-1}가지</span>`:""}</p>`:`<p class="why-sum">${esc(firstSent(f.why))}</p>`}
    ${s.note?`<p class="crit-t ham-note"><span aria-hidden="true">✕ </span>${esc(s.note)}</p>`:""}
    <details class="why-more"><summary>판정 이유와 근거 자세히</summary>
@@ -4666,6 +4717,9 @@ function scrSettingsBody(){
     <div class="sec-label">어려운 말 풀이</div>
     <details class="card gloss-all"><summary><b>앱에 나오는 용어 ${Object.keys(GLOSS).length}개</b></summary>
       <dl class="gloss-dl">${Object.entries(GLOSS).sort((a,b)=>a[1][0].localeCompare(b[1][0],"ko")).map(([k,g])=>`<dt>${esc(g[0])}</dt><dd>${esc(g[1])}${sup(g[2])}</dd>`).join("")}</dl></details>
+    <div class="sec-label">글꼴·오픈 소스</div>
+    <div class="card stack"><p class="hint" style="margin:0"><b>UC Table Sans</b>: Pretendard 1.3.9(© Kil Hyung-jin, 길형진)를 이 앱이 쓰는 글자만 남기고 이름을 바꾼 글꼴입니다. SIL Open Font License 1.1을 따릅니다.</p>
+      <p class="hint" style="margin:0">그림 PDF: html2canvas·jsPDF(MIT) · 바코드 읽기: @zxing/library(Apache-2.0). 라이선스 전문은 저장소의 vendor/·src/brand/에 있습니다.</p></div>
     <div class="sec-label">앱 안내</div>
     ${infoBody("me")}`;
   return "";
@@ -5953,6 +6007,8 @@ function dayCheck(){const t=today(); if(t===LAST_DAY) return; if(SCR&&SCR.name==
 document.addEventListener("visibilitychange",()=>{if(!document.hidden) dayCheck()});
 window.addEventListener("pageshow",dayCheck);
 setInterval(dayCheck,60000);
+// v1.11.0 디자인: 화면 폭이 바뀌면(휴대폰 회전·PC 창 크기) 홈 능선 그래프를 그 폭으로 다시 그린다
+{let rw=innerWidth, rt=null; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(()=>{if(Math.abs(innerWidth-rw)>24&&S.tab==="plan"&&!SCR&&!document.querySelector("#sheetRoot .sheet")){rw=innerWidth; render()}},200)})}
 // v1.11.0 W-1: 홈 화면 아이콘의 바로가기(?go=log 증상 기록, ?go=food 음식 찾기)
 try{const go=new URLSearchParams(location.search).get("go"); if(go){ if(S.consent&&!onbActive()&&(go==="log"||go==="food")) S.tab=go; history.replaceState(null,"",location.pathname)}}catch(e){}
 // v1.11.0 W-2: 설치형 앱(PWA)이 새 버전을 받으면 '새 버전이 준비됐습니다' 안내(다시 열면 바뀜, 기록은 그대로)

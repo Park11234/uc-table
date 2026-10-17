@@ -61,7 +61,7 @@ await p.evaluate(()=>{S.tab="plan";SCR=null;render()}); await p.click('.mrow[dat
 console.log('open meal', await p.evaluate(()=>[SCR&&SCR.name,history.length,NAV.depth]));
 await p.goBack(); await p.waitForTimeout(200);
 console.log('after back', await p.evaluate(()=>[SCR,NAV.depth]));
-await p.click('.tasks [data-act=wizard]'); await p.waitForTimeout(100);
+await p.click('.ridge [data-act=wizard]'); await p.waitForTimeout(100);
 await p.click('[data-act=step][data-k=day][data-v="1"]');
 await p.goBack(); await p.waitForTimeout(200);
 console.log('wizard dirty back', await p.evaluate(()=>[SCR&&SCR.name,!!document.querySelector('#sheetRoot').firstChild,NAV.depth]));
@@ -71,7 +71,7 @@ await p.click('[data-act=back]'); await p.waitForTimeout(150); await p.click('[d
 console.log('discard', await p.evaluate(()=>[SCR,!!document.querySelector('#sheetRoot').firstChild,NAV.depth,NAV.skip]));
 // double tap
 // v1.9.0 U-1: 급박감 질문이 있는 쪽까지 '다음'(배변 쪽 → 급박감·피·몸 상태 쪽). 그 쪽은 답하기 전 '다음'이 막혀 있다
-await p.click('.tasks [data-act=wizard]'); await p.waitForTimeout(100);
+await p.click('.ridge [data-act=wizard]'); await p.waitForTimeout(100);
 for(let i=0;i<5&&await p.evaluate(()=>WZ.step<wzStepOf("urg"));i++) await p.click('[data-act=wzNext]');
 const stepBefore=await p.evaluate(()=>WZ.step);
 await p.dblclick('[data-act=set][data-k=urg][data-v="1"]'); await p.waitForTimeout(500);

@@ -19,11 +19,12 @@ app.src.html에는 화면·판정 규칙·식단 코드가 모두 들어 있고,
   /*@GEN:psize@*/ /*@GEN:pfam@*/ /*@GEN:idmap@*/  v1.10.0 시판 제품 용량·같은 제품 묶음·옛 id ← generated/gen_out.json
   /*@GEN:added@*/  v1.10.0 확인 날짜(그 음식을 넣은 날, 날짜별로 묶음) ← generated/gen_out.json(src/data/added.json)
   /*@GEN:logo@*/   UC TABLE 로고(SVG 글자열)                ← src/brand/logo-mono.svg (tools/brand.cjs)
+  /*@GEN:font@*/   v1.11.0 UC Table Sans 글꼴(Pretendard를 줄여 이름을 바꿈, data URL)           ← src/brand/uc-table-sans.woff2 (tools/font_subset.py)
 
 식약처 원본 CSV가 있으면 generate_dataset.py로 gen_out.json부터 다시 만들 수 있다.
 같은 입력이면 늘 같은 결과(바이트 단위)가 나온다(CI에서 확인).
 """
-import json, os, re, sys
+import base64, json, os, re, sys
 D = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(D))
 sys.path.insert(0, D)
@@ -78,6 +79,8 @@ def render():
         'idmap': js(o.get('idmap', {})),
         'added': js(by_date(o.get('added', {}))),
         'logo': js(open(os.path.join(ROOT, 'src', 'brand', 'logo-mono.svg'), encoding='utf-8').read().strip()),
+        # v1.11.0 디자인: Pretendard(OFL-1.1) 가변 글꼴을 앱 글자 + KS X 1001 한글로 줄인 것(tools/font_subset.py). PWA는 build_offline.py가 따로 파일로 뺀다
+        'font': js('data:font/woff2;base64,' + base64.b64encode(open(os.path.join(ROOT, 'src', 'brand', 'uc-table-sans.woff2'), 'rb').read()).decode('ascii')),
     }
     found = re.findall(r'/\*@GEN:(\w+)@\*/', s)
     assert sorted(found) == sorted(blocks), ('표시자 불일치', found)

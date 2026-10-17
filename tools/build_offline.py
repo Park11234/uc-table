@@ -6,6 +6,9 @@ v1.9.0
   - 그림 PDF 라이브러리(html2canvas·jsPDF, 약 563KB)는 처음에 실행하지 않는다(P-1)
       · 오프라인 단일 파일: 문서 끝에 <script type="text/plain" id="lib-…">로 넣어 두고 '그림 PDF 저장' 때 실행
       · PWA: public/vendor/에 따로 두고 그때 불러온다(서비스 워커가 미리 보관)
+v1.11.0
+  - 앱 글꼴 'UC Table Sans'(Pretendard를 줄여 이름을 바꾼 것, OFL-1.1): 오프라인 단일 파일은 data URL 그대로,
+    PWA는 public/fonts/uc-table-sans.woff2로 따로 두어 첫 화면(index.html)을 가볍게 하고 서비스 워커가 보관
 v1.10.0
   - 바코드 읽기 라이브러리(@zxing/library 0.21.3 UMD, 약 336KB)도 같은 방식(쓸 때만 실행)
   - PWA는 화면 뼈대(index.html: 글꼴·색·첫 화면 문구)와 앱 코드(app.js)를 나눈다(P-2).
@@ -31,6 +34,9 @@ s = s.replace('<title>%s</title>\n' % title, '', 1)
 # 앱 원본 = <style>…</style> + 화면 뼈대 마크업 + <script>…</script> 여러 개
 css_end = s.index('</style>') + len('</style>')
 style = s[:css_end]
+FONT_RE = re.compile(r'url\("data:font/woff2;base64,[A-Za-z0-9+/=]+"\)')
+assert len(FONT_RE.findall(style)) == 1, '앱 글꼴(data URL)이 하나여야 함'
+FONT_FILE = os.path.join(ROOT, 'src', 'brand', 'uc-table-sans.woff2')
 rest = s[css_end:]
 first_script = rest.index('<script>')
 markup = rest[:first_script]
@@ -53,8 +59,8 @@ HEAD = '''<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#2462E6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F7FB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D131C" media="(prefers-color-scheme: dark)">
 <meta name="description" content="궤양성 대장염 식단·증상 기록 앱(오프라인). 의료기기가 아니며 진단·치료를 하지 않습니다.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -74,11 +80,12 @@ def pwa(app_name):
     """PWA 뼈대: 글꼴·색·첫 화면 문구를 먼저 그리고, 앱 코드(app.js)는 defer로 받는다."""
     head = HEAD + ('<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">'
                    '<link rel="apple-touch-icon" href="apple-touch-icon.png">\n'
+                   '<link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>\n'
                    '<script>window.UC_VENDOR=1</script>\n'
                    '<script defer src="%s"></script>\n' % app_name)
     sw = ('<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){'
           'navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>\n')
-    return head + '</head>\n<body>\n' + style + markup + sw + '</body>\n</html>\n'
+    return head + '</head>\n<body>\n' + FONT_RE.sub('url("fonts/uc-table-sans.woff2")', style) + markup + sw + '</body>\n</html>\n'
 
 
 os.makedirs(OUT, exist_ok=True)
@@ -91,6 +98,9 @@ app_hash = hashlib.sha256(app_js.encode('utf-8')).hexdigest()[:10]
 open(os.path.join(PUB, 'app.js'), 'w', encoding='utf-8').write(app_js)
 index_html = pwa('app.js?v=' + app_hash)
 open(os.path.join(PUB, 'index.html'), 'w', encoding='utf-8').write(index_html)
+fd = os.path.join(PUB, 'fonts'); os.makedirs(fd, exist_ok=True)
+shutil.copyfile(FONT_FILE, os.path.join(fd, 'uc-table-sans.woff2'))
+shutil.copyfile(os.path.join(ROOT, 'src', 'brand', 'Pretendard-OFL.txt'), os.path.join(fd, 'Pretendard-OFL.txt'))
 vd = os.path.join(PUB, 'vendor'); os.makedirs(vd, exist_ok=True)
 for lid, fn, code in libs:
     open(os.path.join(vd, fn), 'w', encoding='utf-8').write(code)
@@ -104,7 +114,7 @@ man = {"id": "./", "name": "UC TABLE", "short_name": "UC TABLE", "description": 
        "start_url": "./index.html", "scope": "./", "display": "standalone", "categories": ["health", "medical", "food"],
        "shortcuts": [{"name": "오늘 증상 기록", "short_name": "증상 기록", "url": "./index.html?go=log"},
                      {"name": "음식 찾기", "short_name": "음식 찾기", "url": "./index.html?go=food"}],
-       "background_color": "#1F242B", "theme_color": "#2462E6", "lang": "ko",
+       "background_color": "#0D131C", "theme_color": "#1F5EDB", "lang": "ko",
        "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                  {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
@@ -112,7 +122,7 @@ open(os.path.join(PUB, 'manifest.webmanifest'), 'w', encoding='utf-8').write(jso
 
 # 캐시 이름: 미리 보관하는 파일 전체의 해시(어느 하나라도 바뀌면 새 캐시)
 ASSETS = ["./", "./index.html", "./app.js?v=" + app_hash, "./manifest.webmanifest", "./icon-192.png", "./icon-512.png",
-          "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html"] + \
+          "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html", "./fonts/uc-table-sans.woff2"] + \
          ["./vendor/" + fn for lid, fn, code in libs if fn != 'zxing.min.js']   # v1.11.0 L8: 바코드 라이브러리(336KB)는 처음 쓸 때 받아 보관
 hv = hashlib.sha256()
 for a in ASSETS:

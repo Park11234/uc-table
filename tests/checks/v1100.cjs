@@ -30,13 +30,13 @@ const SEED=()=>{
 
   console.log('== 홈(디자인 1·2·10)');
   {const p=await open();
-    const h=await p.evaluate(()=>{SCR=null; S.tab="plan"; render(); return {wiz:document.querySelectorAll('#main [data-act=wizard]').length, inTasks:!!document.querySelector('.tasks [data-act=wizard]'),
-      quick:!!document.querySelector('.tasks [data-act=wizardQuick]'), tile:!!document.querySelector('.tile[data-act=wizard]'), cupAdd:document.querySelectorAll('#main [data-act=cupAdd]').length,
+    const h=await p.evaluate(()=>{SCR=null; S.tab="plan"; render(); return {wiz:document.querySelectorAll('#main [data-act=wizard]').length, inTasks:!!document.querySelector('.ridge [data-act=wizard]'),
+      quick:!!document.querySelector('.ridge [data-act=wizardQuick]'), tile:!!document.querySelector('.tile[data-act=wizard]'), cupAdd:document.querySelectorAll('#main [data-act=cupAdd]').length,
       mact:[...document.querySelector('.mwrap .mact').querySelectorAll('button')].map(x=>x.dataset.act), H:document.documentElement.scrollHeight}});
-    need(h.wiz===1&&h.inTasks&&h.quick&&!h.tile,`디자인 1 홈의 증상 기록 입구는 '오늘 할 일' 한 곳(+빠른 기록) (${h.wiz}개)`);
+    need(h.wiz===1&&h.inTasks&&h.quick&&!h.tile,`디자인 1 홈의 증상 기록 입구는 한 곳(+빠른 기록), v1.11.0 디자인 A: 맨 위 상태 띠 (${h.wiz}개)`);
     need(h.cupAdd===1,`디자인 1 '+1잔'은 한 곳 (${h.cupAdd}개)`);
     need(JSON.stringify(h.mact)===JSON.stringify(["ateToggle","mealMore"]),`디자인 2 끼니 줄 버튼은 '먹음'과 '바꾸기' 둘 (${h.mact})`);
-    need(h.H<2100,`디자인 1 홈 길이 줄임(${h.H}px)`);
+    need(h.H<2300,`디자인 1 홈 길이 줄임(${h.H}px, v1.11.0 디자인 A의 상태 띠·그래프를 넣어 2,100 → 2,300px)`);
     await p.click('.mwrap [data-act=mealMore]'); await p.waitForTimeout(150);
     const sh=await p.evaluate(()=>[...document.querySelectorAll('#sheetRoot button[data-act]')].map(x=>x.dataset.act));
     need(sh.includes("skipToggleDate")&&sh.includes("menuPick")&&sh.includes("swapMeal"),`디자인 2 '바꾸기'에 안 먹음·메뉴 고르기·다른 메뉴 (${sh})`);
@@ -91,7 +91,7 @@ const SEED=()=>{
     need(w.opt,'사용자 6 가스·피로는 선택');
     const mm=await p.evaluate(()=>[bloodMismatch({day:3,night:0,bloody:2,blood:0}),bloodMismatch({day:3,night:0,bloody:0,blood:2}),bloodMismatch({day:3,night:0,bloody:1,blood:1})]);
     need(mm[0]&&mm[1]&&!mm[2],'개발자 8 피 섞인 변 횟수와 피의 정도가 맞지 않으면 알림');
-    await p.evaluate(()=>{delete S.logs[today()]; SCR=null; S.tab="plan"; render()}); await p.click('.tasks [data-act=wizardQuick]'); await p.waitForTimeout(200);
+    await p.evaluate(()=>{delete S.logs[today()]; SCR=null; S.tab="plan"; render()}); await p.click('.ridge [data-act=wizardQuick]'); await p.waitForTimeout(200);
     await p.click('[data-act=step][data-k=day][data-v="1"]'); await p.click('[data-act=set][data-k=urg][data-v="1"]'); await p.click('[data-act=set][data-k=blood][data-v="0"]'); await p.waitForTimeout(100);
     const q1=await p.evaluate(()=>document.querySelectorAll('.wq').length);
     await p.click('[data-act=wzNext]'); await p.waitForTimeout(150); await p.click('[data-act=saveLog]'); await p.waitForTimeout(200);

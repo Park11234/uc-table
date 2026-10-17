@@ -263,7 +263,7 @@ const SEED=()=>{
 
   console.log('== U-2 쉬운 말 먼저·용어 풀이');
   {const p=await open();
-    const r=await p.evaluate(()=>{S.stageMode="1"; S.tab="plan"; SCR=null; render(); const chip=document.querySelector('.cal-head .chip-btn')?.innerText||"";
+    const r=await p.evaluate(()=>{S.stageMode="1"; S.tab="plan"; SCR=null; render(); const chip=document.querySelector('.ridge .r-stage')?.innerText||"";
       SCR=null; openScr("set-stage"); const st=document.querySelector('#main').innerText; SCR=null; openScr("set-about"); const ab=document.querySelector('#main').innerText;
       const f=FOODS.find(x=>FSERV[x.id]&&FSERV[x.id].grp.includes("fructan")); SCR=null; S.tab="food"; render(); showFood(f.id); const fb=!!document.querySelector('#sheetRoot .term[data-v=fructan]'); closeSheet();
       return {n:Object.keys(GLOSS).length,chip,st:/섬유를 줄인 식사\(저잔사식\)/.test(st)&&/골고루 먹는 식사\(지중해식\)/.test(st),ab:/앱에 나오는 용어 \d+개/.test(ab),fb,
