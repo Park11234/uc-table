@@ -1,4 +1,4 @@
-// UC TABLE 로고·앱 아이콘(v1.8.0)
+// UC TABLE 로고·앱 아이콘(v1.8.0, v1.12.0 새 색 '맑은 파랑': 파랑 타일·흰 글자)
 //   node tools/brand.cjs            src/brand/*.svg를 만들고 public/의 아이콘 PNG(192·512·maskable·apple-touch)를 그린다
 //   node tools/brand.cjs --preview  위에 더해 .test-out/brand/에 확인용 그림(홈 화면 흉내)을 만든다
 // 글꼴 파일을 쓰지 않고 글자를 선(같은 굵기의 직선·원호)으로 직접 그린다. 그래서 어느 기기에서나 같은 모양이고 저작권이 걸린 글꼴이 없다.
@@ -33,7 +33,12 @@ function logoSVG(color='currentColor'){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${WM_BOX.join(' ')}" fill="none" stroke="${color}" stroke-width="${SW}" stroke-linecap="butt" stroke-linejoin="miter"><path d="${wordmark().join('')}"/></svg>`;
 }
 
-/* ---------- 앱 아이콘: 흰 타일 위 3×3 칸에 잎 · U C / T A B / L E · 물방울 ---------- */
+/* ---------- 앱 아이콘: 3×3 칸에 잎 · U C / T A B / L E · 물방울 ----------
+   v1.12.0: 앱의 새 색(맑은 파랑 #1F5EDB, 짙은 파랑 #1749B0)으로. 파랑 타일 위 흰 글자, 잎은 초록, 물방울은 흰색에 가까운 하늘색 */
+const BLUE='#1F5EDB', BLUE_DEEP='#1749B0', BLUE_TOP='#3B79EE';
+const THEMES={
+ blue:{tile:[BLUE_TOP,BLUE_DEEP], ink:['#FFFFFF','#EEF3FF'], leaf:['#7BE3A6','#2EAF68'], vein:'#F2FFF7', drop:['#FFFFFF','#BCD3FF'], dropHi:BLUE, shadow:'#0B2C6E', shadowOp:.30, edge:null},
+ white:{tile:['#FFFFFF','#EEF2F8'], ink:['#2B6BE8',BLUE_DEEP], leaf:['#5FD08E','#1F8A52'], vein:'#E9FFF2', drop:['#7DB4FF',BLUE], dropHi:'#fff', shadow:'#0E1A2E', shadowOp:.18, edge:'#000'}};
 const H=92, W2=21;           // 대문자 높이, 획 굵기
 function capital(ch,cx,cy){
   const t=cy-H/2, b=cy+H/2, h=W2/2;
@@ -50,29 +55,29 @@ function capital(ch,cx,cy){
     case 'E': return `<path d="M${cx+32} ${t+h}H${cx-28+h}V${b-h}H${cx+32}M${cx-28+h} ${cy}H${cx+24}"/>`;
   }
 }
-function leaf(cx,cy){   // 잎(식단): 비스듬한 아몬드 모양 + 잎맥
-  return `<g transform="translate(${cx} ${cy}) rotate(-38) scale(1.1)"><path d="M0 -50C30 -30 30 30 0 50C-30 30 -30 -30 0 -50Z" fill="url(#gLeaf)"/><path d="M0 -36V40" stroke="#E9FFF2" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M0 -50C30 -30 30 30 0 50" stroke="#fff" stroke-opacity=".28" stroke-width="3" fill="none"/></g>`;
+function leaf(cx,cy,T){   // 잎(식단): 비스듬한 아몬드 모양 + 잎맥
+  return `<g transform="translate(${cx} ${cy}) rotate(-38) scale(1.1)"><path d="M0 -50C30 -30 30 30 0 50C-30 30 -30 -30 0 -50Z" fill="url(#gLeaf)"/><path d="M0 -36V40" stroke="${T.vein}" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M0 -50C30 -30 30 30 0 50" stroke="#fff" stroke-opacity=".28" stroke-width="3" fill="none"/></g>`;
 }
-function drop(cx,cy){   // 물방울(수분)
-  return `<g transform="translate(${cx} ${cy+4}) scale(1.1)"><path d="M0 -50C14 -30 34 -8 34 14A34 34 0 0 1 -34 14C-34 -8 -14 -30 0 -50Z" fill="url(#gDrop)"/><path d="M-17 6C-19 18 -13 28 -4 31" stroke="#fff" stroke-opacity=".8" stroke-width="6" stroke-linecap="round" fill="none"/></g>`;
+function drop(cx,cy,T){   // 물방울(수분)
+  return `<g transform="translate(${cx} ${cy+4}) scale(1.1)"><path d="M0 -50C14 -30 34 -8 34 14A34 34 0 0 1 -34 14C-34 -8 -14 -30 0 -50Z" fill="url(#gDrop)"/><path d="M-17 6C-19 18 -13 28 -4 31" stroke="${T.dropHi}" stroke-opacity=".8" stroke-width="6" stroke-linecap="round" fill="none"/></g>`;
 }
-function iconSVG({maskable=false, opaque=false}={}){
+function iconSVG({maskable=false, opaque=false, theme='blue'}={}){ const T=THEMES[theme];
   const S=512, cell=118, scale=maskable?0.8:1;    // maskable: 기기마다 원·둥근 사각형으로 잘려도 안전 영역(가운데 80%) 안에 들어오게
   const g0=S/2-cell*1.5;
   const C=(i)=>g0+cell*(i+0.5);
   const cells=[['leaf'],['U'],['C'],['T'],['A'],['B'],['L'],['E'],['drop']];
   let letters='', shapes='';   // 글자(같은 선 굵기·색)와 그림(잎·물방울)을 따로 모은다
   cells.forEach(([k],n)=>{ const cx=C(n%3), cy=C(Math.floor(n/3));
-    if(k==='leaf') shapes+=leaf(cx,cy); else if(k==='drop') shapes+=drop(cx,cy); else letters+=capital(k,cx,cy); });
+    if(k==='leaf') shapes+=leaf(cx,cy,T); else if(k==='drop') shapes+=drop(cx,cy,T); else letters+=capital(k,cx,cy); });
   const tile = maskable||opaque ? `<rect width="512" height="512" fill="url(#gTile)"/>`
-    : `<rect x="0" y="0" width="512" height="512" rx="114" fill="url(#gTile)"/><rect x="1.5" y="1.5" width="509" height="509" rx="112.5" fill="none" stroke="#000" stroke-opacity=".07" stroke-width="3"/>`;
+    : `<rect x="0" y="0" width="512" height="512" rx="114" fill="url(#gTile)"/>${T.edge?`<rect x="1.5" y="1.5" width="509" height="509" rx="112.5" fill="none" stroke="${T.edge}" stroke-opacity=".07" stroke-width="3"/>`:""}`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
 <defs>
- <linearGradient id="gTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#ECEFF4"/></linearGradient>
- <linearGradient id="gInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A4250"/><stop offset="1" stop-color="#1D232C"/></linearGradient>
- <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5FD08E"/><stop offset="1" stop-color="#1F8A52"/></linearGradient>
- <linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DB4FF"/><stop offset="1" stop-color="#2462E6"/></linearGradient>
- <filter id="soft" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="4.5" flood-color="#1D232C" flood-opacity=".22"/></filter>
+ <linearGradient id="gTile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.tile[0]}"/><stop offset="1" stop-color="${T.tile[1]}"/></linearGradient>
+ <linearGradient id="gInk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.ink[0]}"/><stop offset="1" stop-color="${T.ink[1]}"/></linearGradient>
+ <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${T.leaf[0]}"/><stop offset="1" stop-color="${T.leaf[1]}"/></linearGradient>
+ <linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${T.drop[0]}"/><stop offset="1" stop-color="${T.drop[1]}"/></linearGradient>
+ <filter id="soft" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="4.5" flood-color="${T.shadow}" flood-opacity="${T.shadowOp}"/></filter>
 </defs>
 ${tile}
 <g transform="translate(256 256) scale(${scale}) translate(-256 -256)" filter="url(#soft)">
@@ -86,7 +91,7 @@ module.exports={logoSVG,iconSVG,WM_BOX};
 
 if(require.main===module){(async()=>{
   const B=path.join(ROOT,'src','brand'); fs.mkdirSync(B,{recursive:true});
-  fs.writeFileSync(path.join(B,'logo.svg'),logoSVG('#2462E6')+'\n');
+  fs.writeFileSync(path.join(B,'logo.svg'),logoSVG(BLUE)+'\n');
   fs.writeFileSync(path.join(B,'logo-mono.svg'),logoSVG()+'\n');   // 앱 안에서 쓰는 것(글자색 = 주위 글자색)
   fs.writeFileSync(path.join(B,'icon.svg'),iconSVG()+'\n');
   fs.writeFileSync(path.join(B,'icon-maskable.svg'),iconSVG({maskable:true})+'\n');
@@ -104,7 +109,7 @@ if(require.main===module){(async()=>{
   await shot(iconSVG({opaque:true}),180,path.join(PUB,'apple-touch-icon.png'),false);
   // 문서·대표 이미지용 로고 PNG(투명 배경, 너비 1200)
   { const w=1200, h=Math.round(1200*WM_BOX[3]/WM_BOX[2]); await p.setViewportSize({width:w,height:h});
-    await p.setContent(`<html><body style="margin:0;background:transparent">${logoSVG('#2462E6').replace('<svg ',`<svg width="${w}" height="${h}" `)}</body></html>`);
+    await p.setContent(`<html><body style="margin:0;background:transparent">${logoSVG(BLUE).replace('<svg ',`<svg width="${w}" height="${h}" `)}</body></html>`);
     await p.screenshot({path:path.join(B,'logo.png'),omitBackground:true,clip:{x:0,y:0,width:w,height:h}}); }
   if(process.argv.includes('--preview')){
     const O=path.join(ROOT,'.test-out','brand'); fs.mkdirSync(O,{recursive:true});
@@ -117,8 +122,8 @@ if(require.main===module){(async()=>{
        <figure style="margin:0;text-align:center"><img src="data:image/png;base64,${m}" width="180" style="border-radius:32%"><figcaption>maskable → 둥근 사각형</figcaption></figure>
        <figure style="margin:0;text-align:center"><img src="data:image/png;base64,${a}" width="64"><figcaption>64px</figcaption></figure>
       </div>
-      <div style="background:#F4F6F9;padding:30px 28px;margin:0 28px;border-radius:16px;color:#2462E6;width:320px">${logoSVG()}</div>
-      <div style="background:#12161D;padding:30px 28px;margin:16px 28px;border-radius:16px;color:#7EAAFF;width:320px">${logoSVG()}</div></body></html>`);
+      <div style="background:#F5F7FB;padding:30px 28px;margin:0 28px;border-radius:16px;color:#1F5EDB;width:320px">${logoSVG()}</div>
+      <div style="background:#0D131C;padding:30px 28px;margin:16px 28px;border-radius:16px;color:#84AAFF;width:320px">${logoSVG()}</div></body></html>`);
     await p.screenshot({path:path.join(O,'preview.png')});
   }
   await b.close(); console.log('brand ok');
