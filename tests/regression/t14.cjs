@@ -28,7 +28,7 @@ const rateOpen=async p=>{const b=await p.$('[data-act=rateOpen]'); if(b){await b
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('t13.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('t14.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};S.plan=null;render()});
 await p.click('.mrow[data-k="0"]'); await p.waitForTimeout(300);
 await rateOpen(p); await p.click('[data-act=rateSet][data-j="0"][data-v=bad]'); await p.click('[data-act=rateSave]'); await p.waitForTimeout(200);

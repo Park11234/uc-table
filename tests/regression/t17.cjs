@@ -55,11 +55,14 @@ console.log('B guard', await p.evaluate(()=>[Object.keys(S.logs).length, SCR, S.
 // v1.9.0 F-9: 화면이 바뀐 직후 0.4초 동안은 같은 자리에 새로 나타난 버튼(다음 쪽의 '다음')이 비활성(.cool)으로 보이고, 그 뒤에는 그대로 눌린다.
 //  마법사가 4쪽으로 묶여(U-1) 옛 7번째 단계가 없으므로, 답할 질문이 없는 날짜 쪽(0) → 배변 쪽(1) → 급박감 쪽(2)으로 확인한다
 await p.evaluate(()=>{S.logs={};SCR=null;openWizard();WZ.step=0;render()});
-await p.waitForTimeout(450);   // 앞 단계(연타 가드)의 0.4초가 지난 뒤부터 지켜본다
+// 앞 단계(연타 가드)의 0.4초 비활성이 끝난 뒤부터 지켜본다. v1.12.0 C-09: 고정 450ms 대신 조건으로 기다린다
+// (페이지가 잠깐 바쁘면 0.4초 타이머가 늦게 돌아, 450ms 뒤에도 앞 단계의 비활성이 남아 있을 수 있음)
+const coolDone=()=>p.waitForFunction(()=>{const b=document.querySelector('[data-act=wzNext]'); return !!b&&!b.disabled&&!b.classList.contains('cool')},null,{timeout:5000}).catch(()=>{});
+await coolDone();
 await p.evaluate(()=>{window.__cool=null; new MutationObserver(()=>{const b=document.querySelector('[data-act=wzNext].cool'); if(b&&!window.__cool) window.__cool={step:WZ.step,dis:b.disabled}}).observe(document.getElementById('main'),{subtree:true,attributes:true,attributeFilter:['class']})});
 const nb=await p.locator('[data-act=wzNext]').boundingBox();
 await p.mouse.click(nb.x+nb.width/2, nb.y+nb.height/2);
-await p.waitForTimeout(450); await p.waitForFunction(()=>!document.querySelector('[data-act=wzNext]').disabled,null,{timeout:5000}).catch(()=>{});   // 0.4초 뒤 같은 자리 다시
+await p.waitForFunction(()=>WZ.step===1,null,{timeout:5000}).catch(()=>{}); await coolDone();   // 0.4초 비활성이 끝난 뒤 같은 자리 다시
 await p.mouse.click(nb.x+nb.width/2, nb.y+nb.height/2);
 console.log('B same-button', JSON.stringify(await p.evaluate(()=>[window.__cool,WZ.step,document.querySelector('[data-act=wzNext]')?.disabled])));
 console.log('errors',errs); expect(()=>{const a=jsonOf('A'); return a.slice(0,6).every(x=>x[1]===null)&&a[6][1]===20&&a[7][1]===5000&&a[8][1]===100},'영양 기준량 방어');

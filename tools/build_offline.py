@@ -81,7 +81,6 @@ def pwa(app_name):
     head = HEAD + ('<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">'
                    '<link rel="apple-touch-icon" href="apple-touch-icon.png">\n'
                    '<link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>\n'
-                   '<script>window.UC_VENDOR=1</script>\n'
                    '<script defer src="%s"></script>\n' % app_name)
     sw = ('<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){'
           'navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>\n')
@@ -110,7 +109,9 @@ for lid, fn, code in libs:
 
 # 홈 화면 아이콘 아래 이름은 길면 잘리므로 짧은 이름을 따로 둔다
 # v1.11.0 A-12: 화면 방향을 고정하지 않는다(WCAG 1.3.4). W-1: id·분류·바로가기(증상 기록·음식 찾기)
-man = {"id": "./", "name": "UC TABLE", "short_name": "UC TABLE", "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미). 의료기기가 아닙니다.",
+# v1.12.0 검토 C-17: id는 표준대로 시작 주소의 출처를 기준으로 풀리므로 "./"는 사이트 맨 위(https://park11234.github.io/)가 된다.
+#   id가 없던 예전 설치본의 정체(시작 주소 …/uc-table/index.html)와 같게 경로를 적는다
+man = {"id": "/uc-table/index.html", "name": "UC TABLE", "short_name": "UC TABLE", "description": "궤양성 대장염 식단·증상 기록(UC 식단 관리 도우미). 의료기기가 아닙니다.",
        "start_url": "./index.html", "scope": "./", "display": "standalone", "categories": ["health", "medical", "food"],
        "shortcuts": [{"name": "오늘 증상 기록", "short_name": "증상 기록", "url": "./index.html?go=log"},
                      {"name": "음식 찾기", "short_name": "음식 찾기", "url": "./index.html?go=food"}],

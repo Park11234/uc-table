@@ -34,8 +34,8 @@ const p=await ctx.newPage();
 const errs=[];p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push('console:'+m.text())});
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 const body=fs.readFileSync(APP,'utf8');
-fs.writeFileSync(T('app.html'),'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+body+'</body></html>');
-await p.goto('file://'+WRAP('app.html')); await p.waitForTimeout(500);
+fs.writeFileSync(T('pass2.html'),'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+body+'</body></html>');
+await p.goto('file://'+WRAP('pass2.html')); await p.waitForTimeout(500);
 // S1 신규 사용자: 동의 화면 → 시작
 out('S1 welcome', await p.evaluate(()=>[!!document.querySelector('#consentGo'), document.querySelector('#consentGo').disabled]));
 await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);

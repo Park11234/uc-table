@@ -26,7 +26,7 @@ const FAILS=[]; const expect=(c,m)=>{let ok=false; try{ok=typeof c==='function'?
 const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); process.exitCode=1 } else console.log('검증 통과') };
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:360,height:740}});
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('app.html')); await p.waitForTimeout(300);
+await p.goto('file://'+WRAP('ovf.html')); await p.waitForTimeout(300);
 for(const [th,fs_] of [["light","md"],["light","xl"],["dark","xl"]]){
 const r=await p.evaluate(([th,fs_])=>{S.consent={date:today()};S.theme=th;S.fontSize=fs_;SCR={name:"care"};render();
   const W=innerWidth; const bad=[];

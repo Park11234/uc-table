@@ -27,7 +27,7 @@ const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); p
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:360,height:740}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('t17.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('t18.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};for(let i=0;i<3;i++){const d=addDays(today(),-i);S.logs[d]={date:d,day:1,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:""}}render()});
 console.log('stage', await p.evaluate(()=>currentStage().stage));
 // 예시 식단의 짠 식품은 한 끼 상한(SALTY_CAP, 40g) 안에서만(날짜마다 고르는 메뉴가 달라 짠 식품 자체는 나올 수 있음)
