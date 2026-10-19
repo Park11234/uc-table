@@ -168,6 +168,29 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
     need(/불러오기/.test(r.sheet),`C-20 고른 백업 파일의 비교 창이 열림 (${JSON.stringify(r)})`);
     await p.context().close()}
 
+  console.log('== C-21 갑각류 교차 반응: 새우·게 가운데 하나에 알레르기가 있으면 다른 갑각류도 피하기');
+  {const p=await open();
+    const r=await p.evaluate(()=>{const F0=n=>FOODS.find(x=>x.name===n);
+      const lv=(n,al)=>{S.profile.allergies=al; save(); const s=foodStatus(F0(n)); return [s.level,s.reasons.join(" / ")]};
+      const o={crab:lv("게살(삶은 것)",["shrimp"]),shrimp:lv("새우",["crab"]),none:lv("게살(삶은 것)",[]),both:lv("게살(삶은 것)",["shrimp","crab"]),fish:lv("흰살생선(대구·가자미 등)",["shrimp"])};
+      S.profile.allergies=["shrimp"]; save();
+      o.alts=altFoods(F0("새우")).map(g=>g.name+(g.tags.includes("crab")?"(게)":""));
+      const m=ruleCheck({name:"꽃게탕",ingr:[]}); o.menu=[m.level,m.reasons.filter(x=>/교차/.test(x)).length,m.reasons.join(" / ")];
+      const m2=ruleCheck({name:"게살 볶음밥",ingr:["게살","밥"]}); o.menu2=[m2.level,m2.reasons.filter(x=>/교차/.test(x)).length];
+      const L=labelCheck("밀가루, 게살(게살 30%), 정제소금","게살 크로켓"); o.label=[L.overall,L.rows.filter(x=>/교차/.test(x.title+x.why)).length];
+      S.profile.allergies=[]; save(); const L0=labelCheck("밀가루, 게살(게살 30%), 정제소금","게살 크로켓"); o.label0=L0.rows.some(x=>/교차/.test(x.title+x.why));
+      return o});
+    need(r.crab[0]==="avoid"&&/교차/.test(r.crab[1])&&/주치의/.test(r.crab[1]),`C-21 새우 알레르기 · 게살 = 피하기, 교차 반응·주치의 상의 (${r.crab.join(": ").slice(0,90)})`);
+    need(r.shrimp[0]==="avoid"&&/교차/.test(r.shrimp[1]),`C-21 게 알레르기 · 새우 = 피하기 (${r.shrimp[0]})`);
+    need(r.none[0]!=="avoid"&&!/교차/.test(r.none[1]),`C-21 알레르기가 없으면 게살은 원래 판정 (${r.none[0]})`);
+    need(r.both[0]==="ban",`C-21 새우·게 둘 다 알레르기면 게살은 그대로 절대 금지 (${r.both[0]})`);
+    need(!/교차/.test(r.fish[1]),`C-21 갑각류가 아닌 음식에는 교차 반응 이유가 붙지 않음 (${r.fish[0]})`);
+    need(r.alts.length>0&&!r.alts.some(x=>/\(게\)/.test(x)),`C-21 새우의 '대신 이것'에 게가 나오지 않음 (${r.alts.join(", ")})`);
+    need(r.menu[0]==="avoid"&&r.menu[1]===1,`C-21 외식 판정 꽃게탕 = 피하기, 교차 반응 이유 한 번 (${r.menu[0]}, ${r.menu[1]}회: ${String(r.menu[2]).slice(0,80)})`);
+    need(r.menu2[0]==="avoid"&&r.menu2[1]===1,`C-21 목록 밖 외식 메뉴(게살 볶음밥)도 피하기 (${r.menu2.join(", ")})`);
+    need(r.label[0]==="avoid"&&r.label[1]===1&&!r.label0,`C-21 포장 원재료의 게살 = 피하기(새우 알레르기일 때만) (${r.label.join(", ")}, 알레르기 없음: ${r.label0})`);
+    await p.context().close()}
+
   await b.close();
   if(F.length){console.error('FAIL\n'+F.join('\n')); process.exitCode=1} else console.log('검증 통과');
 })();

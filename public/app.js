@@ -2002,6 +2002,11 @@ const ALLERGY_OPTS=[["egg","알류(달걀 등)"],["dairy","우유"],["buckwheat"
 const ALLERGY_EXTRA=[["fish","생선 전반"],["sesame","참깨"],["nut","기타 견과류"]];
 const ALLERGY_ALL=[...ALLERGY_OPTS,...ALLERGY_EXTRA];
 const allergyLabel=a=>(ALLERGY_ALL.find(o=>o[0]===a)||[a,a])[1];
+/* v1.12.0 C-21: 갑각류(새우·게)는 서로 교차 반응이 흔하다. 하나에 알레르기가 있으면 다른 갑각류도 주치의와 상의하기 전에는 피하기
+   (국내 표시 기준은 새우·게를 따로 두므로 둘 중 하나만 골라도 다른 쪽이 '좋음'으로 보이고 '대신 이것'에 나오던 것을 막음) */
+const CRUST=["shrimp","crab"];
+const crustCross=(c,tags)=>{const mine=CRUST.filter(a=>c.allergies.includes(a)); return mine.length?CRUST.filter(a=>tags.includes(a)&&!c.allergies.includes(a)).map(a=>[mine[0],a]):[]};
+const crustWhy=(own,other)=>`${allergyLabel(own)} 알레르기가 있으면 ${allergyLabel(other)} 같은 다른 갑각류에도 반응할 수 있습니다(교차 반응). 주치의와 상의하기 전에는 피하십시오`;
 /* v1.11.0 F-13: 검사 수치·약 메모 — 진료 때 받은 검사 결과와 약을 바꾼 날을 적어 두고 진료용 PDF에 함께 보인다(기기 안에만, 판정에는 쓰지 않음) */
 const LAB_KINDS=[["crp","CRP","mg/L"],["calpro","대변 칼프로텍틴","μg/g"],["hb","혈색소","g/dL"],["alb","알부민","g/dL"],["med","약 바꿈",""],["etc","기타",""]];
 const labOf=k=>LAB_KINDS.find(x=>x[0]===k)||LAB_KINDS[5];
@@ -2665,6 +2670,7 @@ function foodStatus(f,c=ctx()){
   if(f.ms===9&&!av.length&&!bn.length) set("avoid","근거 자료에서 피하도록 권고");
   // v1.11.0 R-15: 음식 알레르기는 완전히 피하는 것이 원칙이라 앱의 가장 강한 판정(절대 금지)
   for(const a of c.allergies) if(f.tags.includes(a)) set("ban",`알레르기(${allergyLabel(a)}): 먹지 마십시오`);
+  if(!c.crustDone) for(const [o,a] of crustCross(c,f.tags)) set("avoid",crustWhy(o,a));   // v1.12.0 C-21
   for(const w of c.alWords||[]){ if(nameHit(f,w)) set("ban",`내가 적은 알레르기(${w}): 먹지 마십시오`); else if(ingrHit(f,w)) set("ban",`원재료에 내가 적은 알레르기(${w}) 있음(포장 표시): 먹지 마십시오`) }
   if(S.profile.lactose&&f.tags.includes("lactose")) set("avoid","유당불내증");
   for(const [o,t] of TAGRULE) if(orderOn(o)&&f.tags.includes(t)) set("avoid",`의료진 지시: ${orderLabel(o)}`);
@@ -3009,6 +3015,7 @@ function ruleCheck(item){
   const up=(l,r)=>{if(LV_RANK[l]>LV_RANK[lv])lv=l;R.push(r)};
   const okd=(S.okMenus||[]).includes(String(item.name).replace(/\s/g,""));
   for(const a of c.allergies) if(tags.includes(a)) up("ban",`알레르기 재료 가능성(${allergyLabel(a)}): 먹지 마십시오`);   // v1.11.0 R-15
+  const cc=crustCross(c,tags); for(const [o,a] of cc) up("avoid",crustWhy(o,a));   // v1.12.0 C-21
   if(S.profile.lactose&&tags.includes("lactose")) up("avoid","유당 가능성");
   for(const [o,t] of TAGRULE) if(orderOn(o)&&tags.includes(t)) up("avoid",`의료진 지시: ${orderLabel(o)}`);
   const f0=exactFood(item.name);
@@ -3024,7 +3031,7 @@ function ruleCheck(item){
   if(c.immunoMeds&&!(f0&&f0.tags.includes("raw"))){const rw=rawWords([item.name,...(item.ingr||[]),item.cook||""].join(",")); if(rw.length){up("avoid",rawWhy(c.immunoMeds,rw)); X.push(89)}}
   if(f0){
     // v1.12.0 검토 C-01: 목록 음식 자체의 알레르기 표시와 직접 적은 알레르기(포장 원재료)도 본다. 이름·적은 재료에서 이미 찾은 것은 겹쳐 적지 않는다
-    const s=foodStatus(f0,{...c,allergies:c.allergies.filter(a=>!tags.includes(a)),words:[],alWords:(c.alWords||[]).filter(w=>!x.includes(w.replace(/\s/g,""))),trig:[]});
+    const s=foodStatus(f0,{...c,allergies:c.allergies.filter(a=>!tags.includes(a)),words:[],alWords:(c.alWords||[]).filter(w=>!x.includes(w.replace(/\s/g,""))),trig:[],crustDone:cc.length>0});
     const soft=okd&&s.level==="avoid"&&f0.tags.includes("spicy")&&f0.ms!==9&&!AVOID_TAG.some(([t])=>f0.tags.includes(t))&&!BAN_TAG.some(([t])=>f0.tags.includes(t));
     if(s.level!=="ok") for(const r of s.reasons) up(soft?"caution":s.level,`${f0.name}: ${r}${soft?" (내가 괜찮았다고 표시함)":""}`);
   } else {
@@ -3140,6 +3147,7 @@ function labelCheck(rawText,name=""){
   const legal=LEGAL_ALLERGY_IDS.filter(a=>tags.includes(a));
   const mine=[...c.allergies].filter(a=>tags.includes(a));
   if(mine.length) add("ban","내 알레르기 원재료",mine.map(allergyLabel),"선택한 알레르기 원재료가 표시되어 있습니다. 먹지 마십시오.",[28]);   // v1.11.0 R-15
+  { const cr=crustCross(c,tags); if(cr.length) add("avoid","다른 갑각류(교차 반응)",cr.map(([,a])=>allergyLabel(a)),crustWhy(...cr[0])+".",[]) }   // v1.12.0 C-21
   if(legal.length) rows.push({lv:"info",title:"표시된 알레르기 유발 원재료",found:legal.map(allergyLabel),why:"법정 표시 대상 중 이 원재료명에서 찾은 항목입니다. 옮겨 적다 빠진 글자가 있으면 놓칠 수 있으니 포장의 알레르기 표시를 함께 확인하십시오.",refs:[28]});
   if(cross){const ct=tagsOfText(cross,cross.split(/[,()\s]/).filter(Boolean)).filter(a=>LEGAL_ALLERGY_IDS.includes(a)&&!legal.includes(a)); const cm=ct.filter(a=>c.allergies.includes(a));
     if(cm.length) add("caution","같은 제조시설 사용(혼입 가능성)",cm.map(allergyLabel),"원재료는 아니지만 같은 시설에서 쓰는 알레르기 원재료입니다. 알레르기가 심하면 피하십시오.",[28]);
