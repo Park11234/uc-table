@@ -14,8 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script>window.UC_VENDOR=1</script>
-<script defer src="app.js?v=84c56b59d0"></script>
+<script defer src="app.js?v=e94ff3fffa"></script>
 </head>
 <body>
 <style>
@@ -25,7 +24,8 @@
   --bg:#F5F7FB; --bg2:#F5F7FB; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF2F8; --ink:#0E1A2E; --muted:#4B5A70; --line:#E6EBF2; --line-strong:#8693A6;
   --accent:#1F5EDB; --accent-deep:#1749B0; --accent-soft:#E8EFFF; --on-soft:#1749B0; --fill:#1F5EDB; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#E3ECFF;
   --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
-  --ok:#1F6E3D; --ok-soft:#E1F2E6; --ok-ink:#1F6E3D; --warn:#8A5200; --warn-soft:#FFEFD3; --warn-fill:#C27400; --warn-ink:#8A5200; --later:#4B5A70; --later-soft:#EDF1F7; --avoid:#A8261B; --avoid-soft:#FCE6E3; --ban-bg:#7A1B13; --ban-ink:#FFFFFF;
+  /* v1.12.0 C-22: 판정 색을 적록 색약도 구분하게(좋음은 청록 쪽, 주의는 노란 호박, 피하기는 진홍, 다음 단계는 남회색). 글자 4.5:1 이상 */
+  --ok:#0B6E55; --ok-soft:#E2F3EC; --ok-ink:#0B6E55; --warn:#8C6400; --warn-soft:#FFF3D1; --warn-fill:#B88200; --warn-ink:#8C6400; --later:#4A5785; --later-soft:#ECEEF7; --avoid:#9B2335; --avoid-soft:#FCE4E6; --ban-bg:#6E1420; --ban-ink:#FFFFFF;
   --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#A8261B; --danger-fill:#A8261B;
   --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
   /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
@@ -41,7 +41,7 @@
   --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
   --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
   --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
-  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#C8344A; --ban-ink:#FFFFFF;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
   --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
   --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
@@ -51,7 +51,7 @@
   --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
   --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
   --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
-  --ok:#62D695; --ok-soft:#12301F; --ok-ink:#62D695; --warn:#F3B85A; --warn-soft:#3A2A10; --warn-fill:#F3B85A; --warn-ink:#F3B85A; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8E80; --avoid-soft:#3D1A16; --ban-bg:#B3261E; --ban-ink:#FFFFFF;
+  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#C8344A; --ban-ink:#FFFFFF;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
   --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
   --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
   --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
@@ -638,8 +638,9 @@ th{color:var(--muted);font-weight:500}
 .sheet{background:var(--surface);width:100%;max-width:560px;max-height:86%;overflow:auto;border-radius:26px 26px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px))}
 .sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 14px}
 /* v1.11.0 R-11: 시트 맨 끝 버튼 줄(닫기·오늘 먹었습니다 등)은 시트 아래에 붙여 내용을 내리지 않아도 보이게 */
-.sheet>.grid2:last-child:has(>.btn),.sheet>.btn.full:last-child{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
-.sheet>.btn.full:last-child{width:calc(100% + 36px)}
+/* v1.12.0 검토 C-18: :has()를 모르는 옛 브라우저가 규칙 전체를 버리지 않게, :has() 규칙과 넓은 버튼 규칙을 따로 둔다 */
+.sheet>.grid2:last-child:has(>.btn){position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
+.sheet>.btn.full:last-child{position:sticky;bottom:calc(-22px - env(safe-area-inset-bottom,0px));z-index:1;background:var(--surface);margin-left:-18px;margin-right:-18px;margin-bottom:calc(-22px - env(safe-area-inset-bottom,0px));padding:12px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line);width:calc(100% + 36px)}
 .refitem{padding-block:10px;border-top:1px solid var(--line);font-size:0.875rem}
 .refitem:first-of-type{border-top:0}
 .refitem .n{display:inline-block;min-width:28px;font-weight:700;color:var(--accent-deep)}

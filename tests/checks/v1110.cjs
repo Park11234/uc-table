@@ -223,7 +223,7 @@ const SEED=()=>{
   console.log('== 낮음 항목(L1~L5·L8·L11·A-12·A-15·W-1·W-2·F-1)');
   {const PUB=path.join(ROOT,'public'); const man=JSON.parse(fs.readFileSync(path.join(PUB,'manifest.webmanifest'),'utf8')); const sw=fs.readFileSync(path.join(PUB,'sw.js'),'utf8');
     need(!("orientation" in man),'A-12 매니페스트에 화면 방향 고정 없음');
-    need(man.id==="./"&&Array.isArray(man.shortcuts)&&man.shortcuts.length>=2&&(man.categories||[]).includes("health"),'W-1 매니페스트 id·바로가기·분류');
+    need((u=>new URL(man.id,new URL(man.start_url,u).origin).href===new URL(man.start_url,u).href)("https://park11234.github.io/uc-table/manifest.webmanifest")&&Array.isArray(man.shortcuts)&&man.shortcuts.length>=2&&(man.categories||[]).includes("health"),'W-1 매니페스트 id·바로가기·분류');
     need(!/zxing/.test(sw.match(/const ASSETS=(\[.*?\]);/)[1])&&/html2canvas/.test(sw),'L8 바코드 라이브러리는 미리 보관하지 않음(그림 PDF 라이브러리는 보관)');
     const p=await open({init:`window.claude={use:async n=>n==="downloads"?{save:async({filename})=>{(window.__fn=window.__fn||[]).push(filename);return {status:"saved"}}}:null}`});
     const r=await p.evaluate(async()=>{const o={};

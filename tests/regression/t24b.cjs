@@ -28,8 +28,8 @@ const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); p
 p.on('pageerror',e=>console.log('ERR',e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 const body=fs.readFileSync(APP,'utf8');
-fs.writeFileSync(T('t24.html'),'<!doctype html><html><head><meta charset="utf-8"></head><body>'+body+'</body></html>');
-await p.goto('file://'+WRAP('t24.html'));await p.waitForTimeout(400);
+fs.writeFileSync(T('t24b.html'),'<!doctype html><html><head><meta charset="utf-8"></head><body>'+body+'</body></html>');
+await p.goto('file://'+WRAP('t24b.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};S.plan=null;render()});
 console.log('vi', await p.evaluate(()=>S.plan.days[0].meals.map(m=>[m.title,m.vi])));
 console.log('direct', await p.evaluate(()=>{const ok=swapMeal(0,0);return [ok,JSON.stringify(S.swaps),S.plan.days[0].meals[0].title]}));

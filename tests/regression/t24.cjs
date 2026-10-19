@@ -27,7 +27,7 @@ const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); p
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 p.on('pageerror',e=>console.log('ERR',e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
-await p.goto('file://'+WRAP('t23.html'));await p.waitForTimeout(400);
+await p.goto('file://'+WRAP('t24.html'));await p.waitForTimeout(400);
 await p.evaluate(()=>{S.consent={date:today()};render()});
 console.log('stage', await p.evaluate(()=>currentStage().stage));
 console.log('direct swap', await p.evaluate(()=>{const before=S.plan.days[0].meals[0].title;const ok=swapMeal(0,0);return [before,ok,S.plan.days[0].meals[0].title]}));
