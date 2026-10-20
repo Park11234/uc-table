@@ -64,9 +64,9 @@ await p.evaluate(()=>{S.weights=[{date:today(),kg:50}];S.profile.weight="50";ren
 expect(await p.evaluate(()=>{const t=targets(); return t.bmi.low&&t.kpk===35&&t.k===1750}),'저체중이면 35kcal/kg');
 // 3. 홈: 첫 화면 안에 끼니, 한 줄 요약
 await p.evaluate(()=>{S.weights=[{date:today(),kg:63}];S.profile.weight="63";SCR=null;S.tab="plan";render();window.scrollTo(0,0)}); await p.waitForTimeout(300);
-// v1.9.0: 홈 맨 위는 '오늘 할 일'(증상 기록·끼니 표시·물). 끼니 목록은 그 아래로 내려가고, 할 일의 '끼니 표시'가 끼니로 바로 데려간다
-const home=await p.evaluate(()=>{const t=document.querySelector('.tasks'); const g=document.querySelector('[data-act=goMeals]'); return {taskTop:t?t.getBoundingClientRect().top:9999,vh:innerHeight,goMeals:!!g,meals:!!document.querySelector('.mrow'),sum:!!document.querySelector('.sumline .sl-main'),card:!!document.querySelector('#dayNutri'),ring:!!document.querySelector('.ring')}});
-console.log('home',JSON.stringify(home)); expect(home.taskTop<home.vh-200&&home.goMeals&&home.meals&&home.sum&&!home.card&&!home.ring,'홈 첫 화면 안에 오늘 할 일·요약, 끼니 바로 가기(v1.10.0: 겹치던 영양 막대 카드는 요약 줄→오늘 영양 화면으로)');
+// v1.9.0: 홈 맨 위는 '오늘 할 일'(증상 기록·끼니 표시·물). v1.12.0 후속 디자인(사용자 결정): 그래프 바로 아래 오늘 끼니, 할 일은 그 아래(할 일의 '끼니 표시'는 그대로 끼니로 데려감)
+const home=await p.evaluate(()=>{const t=document.querySelector('.tasks'); const m=document.querySelector('.list.meals .mrow'); const g=document.querySelector('[data-act=goMeals]'); return {taskTop:t?t.getBoundingClientRect().top:9999,mealTop:m?m.getBoundingClientRect().top:9999,vh:innerHeight,goMeals:!!g,meals:!!document.querySelector('.mrow'),sum:!!document.querySelector('.sumline .sl-main'),card:!!document.querySelector('#dayNutri'),ring:!!document.querySelector('.ring')}});
+console.log('home',JSON.stringify(home)); expect(home.mealTop<home.vh-200&&home.taskTop<9999&&home.goMeals&&home.meals&&home.sum&&!home.card&&!home.ring,'홈 첫 화면 안에 오늘 끼니, 그 아래 오늘 할 일·요약·끼니 바로 가기(v1.10.0: 겹치던 영양 막대 카드는 요약 줄→오늘 영양 화면으로)');
 // 4. 먹은 양 선택(반·전부·더 많이)
 await p.click('.mwrap:nth-child(1) [data-act=ateToggle]'); await p.waitForTimeout(200);
 const k1=await p.evaluate(()=>Math.round(eatenTotals(today()).k));

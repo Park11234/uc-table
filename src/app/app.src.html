@@ -2,14 +2,16 @@
 <style>
 @font-face{font-family:"UC Table Sans";src:url(/*@GEN:font@*/) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 :root{
-  /* v1.11.0 디자인 A '잔잔한 능선' · 맑은 파랑(사용자 확정 2026-10-17): 바탕·카드·머리 띠·강조 한 가지 파랑, 그림자 없이 바탕색 차이로 구역 */
-  --bg:#F5F7FB; --bg2:#F5F7FB; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#EEF2F8; --ink:#0E1A2E; --muted:#4B5A70; --line:#E6EBF2; --line-strong:#8693A6;
-  --accent:#1F5EDB; --accent-deep:#1749B0; --accent-soft:#E8EFFF; --on-soft:#1749B0; --fill:#1F5EDB; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#E3ECFF;
-  --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
+  /* v1.12.0 후속 디자인 '바다'(사용자 확정 시안 D, 2026-10-19): 맑은 물빛 바탕, 짙은 바다 파랑 머리 띠(--band)와 강조. 그림자 없이 바탕색 차이로 구역 */
+  --bg:#EAF4F8; --bg2:#EAF4F8; --surface:#FFFFFF; --card:#FFFFFF; --surface-2:#DCEEF7; --ink:#0B2540; --muted:#46607A; --line:#D3E5EE; --line-strong:#5F86A3;
+  --accent:#0B5E96; --accent-deep:#053B72; --accent-soft:#DCEEF7; --on-soft:#053B72; --fill:#0B5E96; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#DCEEF7;
+  --deco:#0B5E96; --deco-soft:#DCEEF7; --food-tint:#DCEEF7;
+  --band:linear-gradient(180deg,#053B72 0%,#0B5E96 100%); --band-top:#053B72; --band-bot:#0B5E96; --band-ink:#FFFFFF; --band-ink2:#CFE8F5; --band-line:#FFFFFF; --band-pop:#8EE0F0; --band-thr:#FFD97A;
+  --band-glass:rgba(255,255,255,.14); --band-btn:#FFFFFF; --band-btn-ink:#053B72; --logo:#FFFFFF; --tabbar:#FFFFFF;
   /* v1.12.0 C-22: 판정 색을 적록 색약도 구분하게(좋음은 청록 쪽, 주의는 노란 호박, 피하기는 진홍, 다음 단계는 남회색). 글자 4.5:1 이상 */
   --ok:#0B6E55; --ok-soft:#E2F3EC; --ok-ink:#0B6E55; --warn:#8C6400; --warn-soft:#FFF3D1; --warn-fill:#B88200; --warn-ink:#8C6400; --later:#4A5785; --later-soft:#ECEEF7; --avoid:#9B2335; --avoid-soft:#FCE4E6; --ban-bg:#6E1420; --ban-ink:#FFFFFF;
   --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#9B2335; --danger-fill:#A8261B;   /* 이유 글자(crit-t)는 색약 모의에서 주의 글자와 색 차이 12 이상: 피하기 색과 같은 #9B2335 */
-  --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
+  --shadow:none; --scrim:rgba(5,30,60,.45); --fab-shadow:none; --ridge-band:rgba(255,255,255,.10); --ridge-area:rgba(255,255,255,.16);
   /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
   --display:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
   --body:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
@@ -20,23 +22,27 @@
 /* 화면 모드: 앱 설정(data-app-theme)이 뷰어 테마(data-theme)보다 우선 */
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]):not([data-app-theme="light"]){
-  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
-  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
-  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
-  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#C8344A; --ban-ink:#FFFFFF;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
+  --bg:#0D1647; --bg2:#0D1647; --surface:#16205E; --card:#16205E; --surface-2:#222E7A; --ink:#F2F4FF; --muted:#B8C0EE; --line:#2A3690; --line-strong:#7D8BE0;
+  --accent:#F6E7A8; --accent-deep:#FFF1C2; --accent-soft:#222E7A; --on-soft:#F6E7A8; --fill:#F6E7A8; --fill-ink:#0D1647; --accent-ink:#0D1647; --field:#101A55;
+  --deco:#F6E7A8; --deco-soft:#222E7A; --food-tint:#222E7A;
+  --band:#070F36; --band-top:#070F36; --band-bot:#070F36; --band-ink:#F2F4FF; --band-ink2:#B8C0EE; --band-line:#E9ECFF; --band-pop:#F6E7A8; --band-thr:#8FA2FF;
+  --band-glass:rgba(255,255,255,.10); --band-btn:#F6E7A8; --band-btn-ink:#0D1647; --logo:#F6E7A8; --tabbar:#0A1240;
+  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#FFB4AB; --ban-ink:#3B0A06;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
   --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
-  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
-  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(143,162,255,.14); --ridge-area:rgba(233,236,255,.14);
+  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#050A24;
   }
 }
 :root[data-theme="dark"]:not([data-app-theme="light"]),:root[data-app-theme="dark"]{
-  --bg:#0D131C; --bg2:#0D131C; --surface:#161E2A; --card:#161E2A; --surface-2:#1F2937; --ink:#E8EEF7; --muted:#A3B1C6; --line:#283446; --line-strong:#66768E;
-  --accent:#84AAFF; --accent-deep:#AFC8FF; --accent-soft:#1C2B4A; --on-soft:#AFC8FF; --fill:#2E66DA; --fill-ink:#FFFFFF; --accent-ink:#FFFFFF; --field:#15233D;
-  --deco:#84AAFF; --deco-soft:#1C2B4A; --food-tint:#1C2B4A;
-  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#C8344A; --ban-ink:#FFFFFF;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
+  --bg:#0D1647; --bg2:#0D1647; --surface:#16205E; --card:#16205E; --surface-2:#222E7A; --ink:#F2F4FF; --muted:#B8C0EE; --line:#2A3690; --line-strong:#7D8BE0;
+  --accent:#F6E7A8; --accent-deep:#FFF1C2; --accent-soft:#222E7A; --on-soft:#F6E7A8; --fill:#F6E7A8; --fill-ink:#0D1647; --accent-ink:#0D1647; --field:#101A55;
+  --deco:#F6E7A8; --deco-soft:#222E7A; --food-tint:#222E7A;
+  --band:#070F36; --band-top:#070F36; --band-bot:#070F36; --band-ink:#F2F4FF; --band-ink2:#B8C0EE; --band-line:#E9ECFF; --band-pop:#F6E7A8; --band-thr:#8FA2FF;
+  --band-glass:rgba(255,255,255,.10); --band-btn:#F6E7A8; --band-btn-ink:#0D1647; --logo:#F6E7A8; --tabbar:#0A1240;
+  --ok:#55D2AC; --ok-soft:#12302A; --ok-ink:#55D2AC; --warn:#F2C94C; --warn-soft:#3A2E10; --warn-fill:#E8B830; --warn-ink:#F2C94C; --later:#B0BCCD; --later-soft:#232D3B; --avoid:#FF8A8A; --avoid-soft:#3D1A1E; --ban-bg:#FFB4AB; --ban-ink:#3B0A06;   /* v1.12.0 C-22: 절대 금지 바탕은 페이지·카드와 3:1 이상 */
   --crit:#FF8E80; --crit-soft:#3D1A16; --crit-ink:#FF8E80; --danger-fill:#C62839;
-  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(132,170,255,.12); --ridge-area:rgba(132,170,255,.20);
-  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#06080B;
+  --shadow:none; --scrim:rgba(0,0,0,.6); --fab-shadow:none; color-scheme:dark; --ridge-band:rgba(143,162,255,.14); --ridge-area:rgba(233,236,255,.14);
+  --star:#F0B347; --rt-s-bg:#1E3A28; --rt-s-ink:#9FDDB2; --rt-h-bg:#3D2A12; --rt-h-ink:#F4C58A; --rt-2-bg:#2E2440; --rt-2-ink:#CDB8F0; --pc-bg:#050A24;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}   /* v1.11.0 R-01: 기본 여백 8px이 실제 앱에만 남아 화면이 16px 넘치고 좌우가 좁았음 */
@@ -770,6 +776,32 @@ body{-webkit-font-smoothing:antialiased;letter-spacing:-.005em}
 .ridge .r-btns .btn.primary{flex:1 1 100%}
 .ridge .r-btns .btn:not(.primary){background:var(--surface);color:var(--ink)}
 .ridge .r-note{font-size:0.8125rem;color:var(--muted);margin:8px 0 0}
+/* ===== v1.12.0 후속 디자인 '바다'(밝게)·'한밤'(어둡게) — 사용자 확정 시안(2026-10-19) =====
+   제목 막대와 홈 상태 띠를 짙은 머리 띠 한 덩어리로 잇고(--band), 바로 아래 오늘 끼니를 큰 글자 카드로. 판정 색·모양은 그대로 */
+.appbar{background:var(--band-top);color:var(--band-ink);box-shadow:none}
+.appbar .logo{color:var(--logo)}
+.appbar .icon-btn{color:var(--band-ink)}
+.appbar .icon-btn:active{background:var(--band-glass)}
+.appbar :focus-visible,.ridge :focus-visible{outline-color:var(--band-ink)}
+.ridge{background:var(--band);color:var(--band-ink);border-radius:0;margin:0 -16px 18px;padding:4px 18px 18px}
+.view>.ridge:first-child{margin-top:-12px}   /* 제목 막대와 틈 없이 잇기(.view 위 여백만큼) */
+.ridge .r-date,.ridge .r-sub,.ridge .r-note{color:var(--band-ink2)}
+.ridge .r-stage{background:var(--band-glass);color:var(--band-ink)}
+.ridge .r-stage .chev{color:var(--band-ink2)}
+.ridge .r-chart .thr{stroke:var(--band-thr);stroke-width:1.6;stroke-dasharray:5 4}
+.ridge .r-chart .line{stroke:var(--band-line)}
+.ridge .r-chart .dot{fill:var(--band-pop);stroke:var(--band-bot)}
+.ridge .r-chart .qdot{fill:var(--band-bot);stroke:var(--band-line)}
+.ridge .r-chart text,.ridge .r-chart .r-empty{fill:var(--band-ink2)}
+.ridge .r-chart .bl{fill:var(--band-thr);stroke:var(--band-bot)}
+.ridge .r-btns .btn:not(.primary){background:var(--band-glass);color:var(--band-ink)}
+.ridge .r-btns .btn.primary{background:var(--band-btn);color:var(--band-btn-ink)}
+.tabs{background:var(--tabbar);border-top:1px solid var(--line)}
+.tab[aria-current="page"],.tab.on{background:var(--accent-soft);color:var(--accent)}
+#meals h2{font-size:1.3125rem}
+.list.meals{background:transparent;overflow:visible;display:flex;flex-direction:column;gap:10px}
+.list.meals>.mwrap{background:var(--card);border:0;border-radius:18px;box-shadow:0 0 0 1px var(--line)}
+.list.meals .mrow b{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;line-height:1.3}
 /* 음식 정보: 세 칸 요약, 차분한 회색 상자, FODMAP 띠 */
 .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 2px}
 .facts>div{background:var(--surface-2);border-radius:16px;padding:9px 12px;min-width:0}
@@ -2684,7 +2716,7 @@ function ridgeSVG(){
   const W=Math.round(Math.max(240,Math.min(600,Math.min(innerWidth||390,640)-68))), X0=6, X1=W-6, YT=10, YZ=89, BB=96, f=n=>n.toFixed(1);
   // 세로 눈금은 6점 이상(5점 활동기 기준이 그래프 위쪽에 오게)
   const mx=Math.max(6,...have.map(p=>p.v)); const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YZ-(Math.min(v,mx)/mx)*(YZ-YT);
-  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(BB-y(2))}" rx="6" class="band"/>`;
+  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(BB-y(2))}" rx="6" class="band"/><line x1="0" x2="${W}" y1="${f(y(2))}" y2="${f(y(2))}" class="thr"/>`;
   const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
   // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
   const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
@@ -2737,6 +2769,22 @@ function viewPlan(){
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
   ${isToday?ridgeHTML(cs):`<div class="hero"><div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div></div>`}
+  <div class="sec-title" id="meals"><h2 id="mealsT" tabindex="-1">${isToday?"오늘":md(d.date)} 끼니</h2>${d.checked?`<button class="hint linkish" data-act="checkInfo" data-v="${esc(d.checked)}">${d.checked==="통과"?"앱 규칙 검사 통과":"검사: "+esc(d.checked)} ${ic("info")}</button>`:`<span class="hint"></span>`}</div>
+  <div class="list meals">
+  ${d.meals.map((m,k)=>{const mt=totals(m.items);const bad=P.sample?[]:mealIssues(m,c);const skip=isSkipped(d.date,m.slot);const ate=isAte(d.date,m.slot);const future=d.date>today();const r=ateRatio(d.date,m.slot);return `
+    <div class="mwrap${skip?" skipped":""}">
+    <button class="mrow" data-act="meal" data-k="${k}" ${m.empty?"disabled":""}>
+      ${fIcon(m.items[0]?.[0])}
+      <span class="lt"><span class="slot">${esc(m.slot)}</span><b>${esc(m.title)}</b>${m.empty?`<small>${esc(m.tip)}</small>`:`<small>${m.side?`곁들임 ${esc(m.side)} · `:""}${Math.round(mt.k)}kcal · 단백질 ${Math.round(mt.p)}g</small>`}${bad.length?`<small class="crit-t">지금 조건에 안 맞음: ${esc(bad.map(id=>FOOD[id].name).join(", "))}</small>`:""}</span>
+      ${skip?`<span class="skip-tag">안 먹음</span>`:ate?`<span class="done" aria-label="먹은 끼니">${ic("check")}</span>`:""}${m.empty?"":ic("chev","chev")}
+    </button>
+    ${m.empty?"":`<div class="mact">
+      ${future?`<span class="hint">그날이 되면 기록할 수 있습니다</span>`:`<button class="mate ${ate?"on":""}" data-act="ateToggle" data-k="${k}" aria-pressed="${ate}" aria-label="${esc(m.slot)} 먹음">${ic("check")} 먹음</button>
+      ${ate&&ateMenu(d.date,m.slot)?`<span class="ratio" role="group" aria-label="${esc(m.slot)} 먹은 양">${[[0.5,"반"],[1,"전부"],[1.5,"더 많이"]].map(([x,l])=>`<button data-act="ateRatio" data-k="${k}" data-v="${x}" aria-pressed="${r===x}">${l}</button>`).join("")}</span>`:""}`}
+      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
+    </div>`}
+    </div>`}).join("")}
+  </div>
   <div class="hero hero-days">
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
@@ -2759,22 +2807,6 @@ function viewPlan(){
   </div>
   ${(!P.sample&&P.partial)?`<div class="banner warn"><strong>예전에 만든 식단이 ${P.days.length}일까지만 있습니다</strong><br>AI 식단 만들기는 없어졌습니다. 앱 규칙 식단으로 바꾸면 날마다 내 조건에 맞는 메뉴로 채워집니다.<div class="b-act"><button class="btn sm primary" data-act="toSample">앱 규칙 식단으로 바꾸기</button></div></div>`:""}
   ${issues.length?`<div class="banner warn"><strong>지금 조건에 맞지 않는 식품이 있습니다</strong><br>식단을 만든 뒤 내 정보나 식단 단계가 바뀌었습니다(${issues.map(x=>md(P.days[x.k].date)).join(", ")}). 앱 규칙 식단으로 바꿀 수 있습니다.<div style="margin-top:8px"><button class="btn sm" data-act="toSample">앱 규칙 식단으로 바꾸기</button></div></div>`:""}
-  <div class="sec-title" id="meals"><h2 id="mealsT" tabindex="-1">${isToday?"오늘":md(d.date)} 끼니</h2>${d.checked?`<button class="hint linkish" data-act="checkInfo" data-v="${esc(d.checked)}">${d.checked==="통과"?"앱 규칙 검사 통과":"검사: "+esc(d.checked)} ${ic("info")}</button>`:`<span class="hint"></span>`}</div>
-  <div class="list">
-  ${d.meals.map((m,k)=>{const mt=totals(m.items);const bad=P.sample?[]:mealIssues(m,c);const skip=isSkipped(d.date,m.slot);const ate=isAte(d.date,m.slot);const future=d.date>today();const r=ateRatio(d.date,m.slot);return `
-    <div class="mwrap${skip?" skipped":""}">
-    <button class="mrow" data-act="meal" data-k="${k}" ${m.empty?"disabled":""}>
-      ${fIcon(m.items[0]?.[0])}
-      <span class="lt"><span class="slot">${esc(m.slot)}</span><b>${esc(m.title)}</b>${m.empty?`<small>${esc(m.tip)}</small>`:`<small>${m.side?`곁들임 ${esc(m.side)} · `:""}${Math.round(mt.k)}kcal · 단백질 ${Math.round(mt.p)}g</small>`}${bad.length?`<small class="crit-t">지금 조건에 안 맞음: ${esc(bad.map(id=>FOOD[id].name).join(", "))}</small>`:""}</span>
-      ${skip?`<span class="skip-tag">안 먹음</span>`:ate?`<span class="done" aria-label="먹은 끼니">${ic("check")}</span>`:""}${m.empty?"":ic("chev","chev")}
-    </button>
-    ${m.empty?"":`<div class="mact">
-      ${future?`<span class="hint">그날이 되면 기록할 수 있습니다</span>`:`<button class="mate ${ate?"on":""}" data-act="ateToggle" data-k="${k}" aria-pressed="${ate}" aria-label="${esc(m.slot)} 먹음">${ic("check")} 먹음</button>
-      ${ate&&ateMenu(d.date,m.slot)?`<span class="ratio" role="group" aria-label="${esc(m.slot)} 먹은 양">${[[0.5,"반"],[1,"전부"],[1.5,"더 많이"]].map(([x,l])=>`<button data-act="ateRatio" data-k="${k}" data-v="${x}" aria-pressed="${r===x}">${l}</button>`).join("")}</span>`:""}`}
-      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
-    </div>`}
-    </div>`}).join("")}
-  </div>
   ${(!S.profile.height||!bodyWeight())?`<button class="card note-card" data-act="openScr" data-v="set-profile" style="width:100%;text-align:left"><span class="lic t-warm">${ic("user")}</span><span class="lt"><b>키·몸무게를 넣으면 목표가 정확해집니다</b><small>지금은 60kg 기준으로 열량·단백질·수분 목표를 보여 주고 있습니다.</small></span>${ic("chev","chev")}</button>`:""}
   ${backupNudgeHTML()}
   ${P.sample?`<button class="btn ghost full" data-act="shopOpen" style="margin:0 0 12px">${ic("cart")} 일주일 장보기 목록</button>`:""}

@@ -6,7 +6,7 @@ import os, subprocess
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT = os.path.join(ROOT, 'src', 'brand', 'uc-table-sans.woff2')
-BG, FIELD, INK, MUTED, SOFT, DEEP, BLUE = (245, 247, 251), (227, 236, 255), (14, 26, 46), (75, 90, 112), (232, 239, 255), (23, 73, 176), (31, 94, 219)
+BG, FIELD, INK, MUTED, SOFT, DEEP, BLUE = (234, 244, 248), (5, 59, 114), (11, 37, 64), (70, 96, 122), (220, 238, 247), (5, 59, 114), (11, 94, 150)   # v1.12.0 후속 디자인 '바다'
 
 
 def font(weight, size):
@@ -25,7 +25,7 @@ N = numbers()
 W, H = 1280, 640
 im = Image.new('RGB', (W, H), BG)
 d = ImageDraw.Draw(im)
-# 오른쪽: 홈 상태 띠와 같은 연한 파랑 판 위에 휴대폰 화면 2장
+# 오른쪽: 머리 띠와 같은 짙은 바다 파랑 판 위에 휴대폰 화면 2장
 d.rounded_rectangle([700, 40, 1240, 600], radius=44, fill=FIELD)
 
 

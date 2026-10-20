@@ -59,8 +59,8 @@ HEAD = '''<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#F5F7FB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0D131C" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#053B72" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#070F36" media="(prefers-color-scheme: dark)">
 <meta name="description" content="궤양성 대장염 식단·증상 기록 앱(오프라인). 의료기기가 아니며 진단·치료를 하지 않습니다.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -115,7 +115,7 @@ man = {"id": "/uc-table/index.html", "name": "UC TABLE", "short_name": "UC TABLE
        "start_url": "./index.html", "scope": "./", "display": "standalone", "categories": ["health", "medical", "food"],
        "shortcuts": [{"name": "오늘 증상 기록", "short_name": "증상 기록", "url": "./index.html?go=log"},
                      {"name": "음식 찾기", "short_name": "음식 찾기", "url": "./index.html?go=food"}],
-       "background_color": "#0D131C", "theme_color": "#1F5EDB", "lang": "ko",
+       "background_color": "#070F36", "theme_color": "#053B72", "lang": "ko",
        "icons": [{"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                  {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}

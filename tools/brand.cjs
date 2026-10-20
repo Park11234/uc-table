@@ -1,4 +1,4 @@
-// UC TABLE 로고·앱 아이콘(v1.8.0, v1.12.0 새 색 '맑은 파랑': 파랑 타일·흰 글자)
+// UC TABLE 로고·앱 아이콘(v1.8.0, v1.12.0 후속 새 색 '바다': 바다 파랑 타일·흰 글자)
 //   node tools/brand.cjs            src/brand/*.svg를 만들고 public/의 아이콘 PNG(192·512·maskable·apple-touch)를 그린다
 //   node tools/brand.cjs --preview  위에 더해 .test-out/brand/에 확인용 그림(홈 화면 흉내)을 만든다
 // 글꼴 파일을 쓰지 않고 글자를 선(같은 굵기의 직선·원호)으로 직접 그린다. 그래서 어느 기기에서나 같은 모양이고 저작권이 걸린 글꼴이 없다.
@@ -34,11 +34,11 @@ function logoSVG(color='currentColor'){
 }
 
 /* ---------- 앱 아이콘: 3×3 칸에 잎 · U C / T A B / L E · 물방울 ----------
-   v1.12.0: 앱의 새 색(맑은 파랑 #1F5EDB, 짙은 파랑 #1749B0)으로. 파랑 타일 위 흰 글자, 잎은 초록, 물방울은 흰색에 가까운 하늘색 */
-const BLUE='#1F5EDB', BLUE_DEEP='#1749B0', BLUE_TOP='#3B79EE';
+   v1.12.0 후속: 앱의 새 색(바다 파랑 #0B5E96, 짙은 바다 #053B72)으로. 파랑 타일 위 흰 글자, 잎은 초록, 물방울은 흰색에 가까운 하늘색 */
+const BLUE='#0B5E96', BLUE_DEEP='#053B72', BLUE_TOP='#1A7BB8';
 const THEMES={
- blue:{tile:[BLUE_TOP,BLUE_DEEP], ink:['#FFFFFF','#EEF3FF'], leaf:['#7BE3A6','#2EAF68'], vein:'#F2FFF7', drop:['#FFFFFF','#BCD3FF'], dropHi:BLUE, shadow:'#0B2C6E', shadowOp:.30, edge:null},
- white:{tile:['#FFFFFF','#EEF2F8'], ink:['#2B6BE8',BLUE_DEEP], leaf:['#5FD08E','#1F8A52'], vein:'#E9FFF2', drop:['#7DB4FF',BLUE], dropHi:'#fff', shadow:'#0E1A2E', shadowOp:.18, edge:'#000'}};
+ blue:{tile:[BLUE_TOP,BLUE_DEEP], ink:['#FFFFFF','#EAF6FB'], leaf:['#7BE3A6','#2EAF68'], vein:'#F2FFF7', drop:['#FFFFFF','#BFE3F2'], dropHi:BLUE, shadow:'#022347', shadowOp:.30, edge:null},
+ white:{tile:['#FFFFFF','#EAF4F8'], ink:[BLUE_TOP,BLUE_DEEP], leaf:['#5FD08E','#1F8A52'], vein:'#E9FFF2', drop:['#7DB4FF',BLUE], dropHi:'#fff', shadow:'#0E1A2E', shadowOp:.18, edge:'#000'}};
 const H=92, W2=21;           // 대문자 높이, 획 굵기
 function capital(ch,cx,cy){
   const t=cy-H/2, b=cy+H/2, h=W2/2;
@@ -122,8 +122,8 @@ if(require.main===module){(async()=>{
        <figure style="margin:0;text-align:center"><img src="data:image/png;base64,${m}" width="180" style="border-radius:32%"><figcaption>maskable → 둥근 사각형</figcaption></figure>
        <figure style="margin:0;text-align:center"><img src="data:image/png;base64,${a}" width="64"><figcaption>64px</figcaption></figure>
       </div>
-      <div style="background:#F5F7FB;padding:30px 28px;margin:0 28px;border-radius:16px;color:#1F5EDB;width:320px">${logoSVG()}</div>
-      <div style="background:#0D131C;padding:30px 28px;margin:16px 28px;border-radius:16px;color:#84AAFF;width:320px">${logoSVG()}</div></body></html>`);
+      <div style="background:#053B72;padding:30px 28px;margin:0 28px;border-radius:16px;color:#FFFFFF;width:320px">${logoSVG()}</div>
+      <div style="background:#070F36;padding:30px 28px;margin:16px 28px;border-radius:16px;color:#F6E7A8;width:320px">${logoSVG()}</div></body></html>`);
     await p.screenshot({path:path.join(O,'preview.png')});
   }
   await b.close(); console.log('brand ok');

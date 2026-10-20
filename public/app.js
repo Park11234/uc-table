@@ -3560,7 +3560,7 @@ function ridgeSVG(){
   const W=Math.round(Math.max(240,Math.min(600,Math.min(innerWidth||390,640)-68))), X0=6, X1=W-6, YT=10, YZ=89, BB=96, f=n=>n.toFixed(1);
   // 세로 눈금은 6점 이상(5점 활동기 기준이 그래프 위쪽에 오게)
   const mx=Math.max(6,...have.map(p=>p.v)); const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YZ-(Math.min(v,mx)/mx)*(YZ-YT);
-  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(BB-y(2))}" rx="6" class="band"/>`;
+  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(BB-y(2))}" rx="6" class="band"/><line x1="0" x2="${W}" y1="${f(y(2))}" y2="${f(y(2))}" class="thr"/>`;
   const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
   // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
   const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
@@ -3613,6 +3613,22 @@ function viewPlan(){
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
   ${isToday?ridgeHTML(cs):`<div class="hero"><div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div></div>`}
+  <div class="sec-title" id="meals"><h2 id="mealsT" tabindex="-1">${isToday?"오늘":md(d.date)} 끼니</h2>${d.checked?`<button class="hint linkish" data-act="checkInfo" data-v="${esc(d.checked)}">${d.checked==="통과"?"앱 규칙 검사 통과":"검사: "+esc(d.checked)} ${ic("info")}</button>`:`<span class="hint"></span>`}</div>
+  <div class="list meals">
+  ${d.meals.map((m,k)=>{const mt=totals(m.items);const bad=P.sample?[]:mealIssues(m,c);const skip=isSkipped(d.date,m.slot);const ate=isAte(d.date,m.slot);const future=d.date>today();const r=ateRatio(d.date,m.slot);return `
+    <div class="mwrap${skip?" skipped":""}">
+    <button class="mrow" data-act="meal" data-k="${k}" ${m.empty?"disabled":""}>
+      ${fIcon(m.items[0]?.[0])}
+      <span class="lt"><span class="slot">${esc(m.slot)}</span><b>${esc(m.title)}</b>${m.empty?`<small>${esc(m.tip)}</small>`:`<small>${m.side?`곁들임 ${esc(m.side)} · `:""}${Math.round(mt.k)}kcal · 단백질 ${Math.round(mt.p)}g</small>`}${bad.length?`<small class="crit-t">지금 조건에 안 맞음: ${esc(bad.map(id=>FOOD[id].name).join(", "))}</small>`:""}</span>
+      ${skip?`<span class="skip-tag">안 먹음</span>`:ate?`<span class="done" aria-label="먹은 끼니">${ic("check")}</span>`:""}${m.empty?"":ic("chev","chev")}
+    </button>
+    ${m.empty?"":`<div class="mact">
+      ${future?`<span class="hint">그날이 되면 기록할 수 있습니다</span>`:`<button class="mate ${ate?"on":""}" data-act="ateToggle" data-k="${k}" aria-pressed="${ate}" aria-label="${esc(m.slot)} 먹음">${ic("check")} 먹음</button>
+      ${ate&&ateMenu(d.date,m.slot)?`<span class="ratio" role="group" aria-label="${esc(m.slot)} 먹은 양">${[[0.5,"반"],[1,"전부"],[1.5,"더 많이"]].map(([x,l])=>`<button data-act="ateRatio" data-k="${k}" data-v="${x}" aria-pressed="${r===x}">${l}</button>`).join("")}</span>`:""}`}
+      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
+    </div>`}
+    </div>`}).join("")}
+  </div>
   <div class="hero hero-days">
     <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
@@ -3635,22 +3651,6 @@ function viewPlan(){
   </div>
   ${(!P.sample&&P.partial)?`<div class="banner warn"><strong>예전에 만든 식단이 ${P.days.length}일까지만 있습니다</strong><br>AI 식단 만들기는 없어졌습니다. 앱 규칙 식단으로 바꾸면 날마다 내 조건에 맞는 메뉴로 채워집니다.<div class="b-act"><button class="btn sm primary" data-act="toSample">앱 규칙 식단으로 바꾸기</button></div></div>`:""}
   ${issues.length?`<div class="banner warn"><strong>지금 조건에 맞지 않는 식품이 있습니다</strong><br>식단을 만든 뒤 내 정보나 식단 단계가 바뀌었습니다(${issues.map(x=>md(P.days[x.k].date)).join(", ")}). 앱 규칙 식단으로 바꿀 수 있습니다.<div style="margin-top:8px"><button class="btn sm" data-act="toSample">앱 규칙 식단으로 바꾸기</button></div></div>`:""}
-  <div class="sec-title" id="meals"><h2 id="mealsT" tabindex="-1">${isToday?"오늘":md(d.date)} 끼니</h2>${d.checked?`<button class="hint linkish" data-act="checkInfo" data-v="${esc(d.checked)}">${d.checked==="통과"?"앱 규칙 검사 통과":"검사: "+esc(d.checked)} ${ic("info")}</button>`:`<span class="hint"></span>`}</div>
-  <div class="list">
-  ${d.meals.map((m,k)=>{const mt=totals(m.items);const bad=P.sample?[]:mealIssues(m,c);const skip=isSkipped(d.date,m.slot);const ate=isAte(d.date,m.slot);const future=d.date>today();const r=ateRatio(d.date,m.slot);return `
-    <div class="mwrap${skip?" skipped":""}">
-    <button class="mrow" data-act="meal" data-k="${k}" ${m.empty?"disabled":""}>
-      ${fIcon(m.items[0]?.[0])}
-      <span class="lt"><span class="slot">${esc(m.slot)}</span><b>${esc(m.title)}</b>${m.empty?`<small>${esc(m.tip)}</small>`:`<small>${m.side?`곁들임 ${esc(m.side)} · `:""}${Math.round(mt.k)}kcal · 단백질 ${Math.round(mt.p)}g</small>`}${bad.length?`<small class="crit-t">지금 조건에 안 맞음: ${esc(bad.map(id=>FOOD[id].name).join(", "))}</small>`:""}</span>
-      ${skip?`<span class="skip-tag">안 먹음</span>`:ate?`<span class="done" aria-label="먹은 끼니">${ic("check")}</span>`:""}${m.empty?"":ic("chev","chev")}
-    </button>
-    ${m.empty?"":`<div class="mact">
-      ${future?`<span class="hint">그날이 되면 기록할 수 있습니다</span>`:`<button class="mate ${ate?"on":""}" data-act="ateToggle" data-k="${k}" aria-pressed="${ate}" aria-label="${esc(m.slot)} 먹음">${ic("check")} 먹음</button>
-      ${ate&&ateMenu(d.date,m.slot)?`<span class="ratio" role="group" aria-label="${esc(m.slot)} 먹은 양">${[[0.5,"반"],[1,"전부"],[1.5,"더 많이"]].map(([x,l])=>`<button data-act="ateRatio" data-k="${k}" data-v="${x}" aria-pressed="${r===x}">${l}</button>`).join("")}</span>`:""}`}
-      ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
-    </div>`}
-    </div>`}).join("")}
-  </div>
   ${(!S.profile.height||!bodyWeight())?`<button class="card note-card" data-act="openScr" data-v="set-profile" style="width:100%;text-align:left"><span class="lic t-warm">${ic("user")}</span><span class="lt"><b>키·몸무게를 넣으면 목표가 정확해집니다</b><small>지금은 60kg 기준으로 열량·단백질·수분 목표를 보여 주고 있습니다.</small></span>${ic("chev","chev")}</button>`:""}
   ${backupNudgeHTML()}
   ${P.sample?`<button class="btn ghost full" data-act="shopOpen" style="margin:0 0 12px">${ic("cart")} 일주일 장보기 목록</button>`:""}
