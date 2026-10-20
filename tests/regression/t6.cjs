@@ -50,7 +50,7 @@ await p.click('[data-act=lbRate][data-v=bad]'); await p.waitForTimeout(400); awa
 console.log(await p.evaluate(()=>JSON.stringify({x:S.extras[today()],t:S.triggers,r:S.ratings.slice(-1)})));
 await p.click('.tab[data-tab=food]'); await p.waitForTimeout(400); await p.screenshot({path:T('lb6.png'),fullPage:true}); await p.evaluate(()=>openScr('nutri')); await p.waitForTimeout(400); await p.screenshot({path:T('n6.png')});
 console.log('errors',errs); {const em=jsonOf('empty'); expect(()=>em[0]==='idle'&&/옮겨 적거나/.test(em[1]),'빈 입력 안내'); expect(()=>{const h=jsonOf('half'); return h[0]==='idle'&&h[1]===true&&h[2]==='170'&&h[3]===true},'기준량 없는 영양정보 안내·입력 유지');
- const r=lineJSON('{"n":'); expect(()=>r.n===40&&r.c.overall==='caution','옮겨 적은 표 판정');
+ const r=lineJSON('{"n":'); expect(()=>r.n===40&&r.c.overall==='avoid','옮겨 적은 표 판정');   // 원재료에 말티톨(당알코올)이 있어 피하기(주의 → 피하기)
  expect(()=>r.c.rows.some(x=>x.title==='당알코올(폴리올)')&&r.c.rows.some(x=>x.title.startsWith('프럭탄')),'원재료 점검');
  const fib=lineJSON('[{"lv":"caution","title":"식이섬유"'); expect(()=>fib[0].found[0]==='먹을 양 기준 2.5g','섬유 계산');
  const s=lineJSON('{"x":'); expect(()=>s.x[0].amt===20&&s.t.some(t=>t.name==='초코 단백질 바'&&t.sym.includes('pain'))&&s.r[0].rating==='bad','평가 저장');}

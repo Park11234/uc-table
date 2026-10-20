@@ -8,7 +8,7 @@
   --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
   /* v1.12.0 C-22: 판정 색을 적록 색약도 구분하게(좋음은 청록 쪽, 주의는 노란 호박, 피하기는 진홍, 다음 단계는 남회색). 글자 4.5:1 이상 */
   --ok:#0B6E55; --ok-soft:#E2F3EC; --ok-ink:#0B6E55; --warn:#8C6400; --warn-soft:#FFF3D1; --warn-fill:#B88200; --warn-ink:#8C6400; --later:#4A5785; --later-soft:#ECEEF7; --avoid:#9B2335; --avoid-soft:#FCE4E6; --ban-bg:#6E1420; --ban-ink:#FFFFFF;
-  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#A8261B; --danger-fill:#A8261B;
+  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#9B2335; --danger-fill:#A8261B;   /* 이유 글자(crit-t)는 색약 모의에서 주의 글자와 색 차이 12 이상: 피하기 색과 같은 #9B2335 */
   --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
   /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
   --display:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;
@@ -1128,10 +1128,10 @@ const FOOD = Object.fromEntries(FOODS.map(f=>[f.id,f]));
 const ALLERGY_OPTS=[["egg","알류(달걀 등)"],["dairy","우유"],["buckwheat","메밀"],["peanut","땅콩"],["soy","대두"],["wheat","밀"],["mackerel","고등어"],["crab","게"],["shrimp","새우"],["pork","돼지고기"],["peach","복숭아"],["tomato","토마토"],["sulfite","아황산류"],["walnut","호두"],["chicken","닭고기"],["beef","쇠고기"],["squid","오징어"],["clam","조개류(굴·전복·홍합 포함)"],["pine","잣"]];
 const ALLERGY_EXTRA=[["fish","생선 전반"],["sesame","참깨"],["nut","기타 견과류"]];
 const ALLERGY_ALL=[...ALLERGY_OPTS,...ALLERGY_EXTRA];
-const allergyLabel=a=>(ALLERGY_ALL.find(o=>o[0]===a)||[a,a])[1];
+const allergyLabel=a=>a==="crust"?"랍스터·가재·크릴":(ALLERGY_ALL.find(o=>o[0]===a)||[a,a])[1];   // crust: 고르는 알레르기가 아니라 교차 반응 표시만
 /* v1.12.0 C-21: 갑각류(새우·게)는 서로 교차 반응이 흔하다. 하나에 알레르기가 있으면 다른 갑각류도 주치의와 상의하기 전에는 피하기
    (국내 표시 기준은 새우·게를 따로 두므로 둘 중 하나만 골라도 다른 쪽이 '좋음'으로 보이고 '대신 이것'에 나오던 것을 막음) */
-const CRUST=["shrimp","crab"];
+const CRUST=["shrimp","crab","crust"];   // crust = 랍스터·가재·크릴(법정 표시 대상이 아니라 교차 반응으로만 본다)
 const crustCross=(c,tags)=>{const mine=CRUST.filter(a=>c.allergies.includes(a)); return mine.length?CRUST.filter(a=>tags.includes(a)&&!c.allergies.includes(a)).map(a=>[mine[0],a]):[]};
 const crustWhy=(own,other)=>`${allergyLabel(own)} 알레르기가 있으면 ${allergyLabel(other)} 같은 다른 갑각류에도 반응할 수 있습니다(교차 반응). 주치의와 상의하기 전에는 피하십시오`;
 /* v1.11.0 F-13: 검사 수치·약 메모 — 진료 때 받은 검사 결과와 약을 바꾼 날을 적어 두고 진료용 PDF에 함께 보인다(기기 안에만, 판정에는 쓰지 않음) */
@@ -1322,6 +1322,7 @@ function recipeNotes(r,c=ctx()){
   const tags=tagsOfText(r.ingr,r.ingr.split(/[,/]/).map(x=>x.trim().split(" ")[0]));
   const al=c.allergies.filter(a=>tags.includes(a));
   if(al.length) out.unshift({t:`알레르기 재료 가능성(${al.map(allergyLabel).join(", ")})`,found:"",fix:"이 레시피는 쓰지 마십시오",refs:[28],hard:true});
+  const cc=crustCross(c,tags); if(cc.length) out.push({t:"다른 갑각류(교차 반응)",found:cc.map(([,a])=>allergyLabel(a)).join("·"),fix:crustWhy(...cc[0]),refs:[]});   // 교차 반응은 경고만(레시피를 빼지는 않음)
   const ing=r.ingr.replace(/\s/g,"");
   for(const w of String(S.profile.allergyOther||"").split(/[,\n、]/).map(x=>x.trim().replace(/\s/g,"")).filter(Boolean)) if(ing.includes(w)) out.unshift({t:`내가 적은 알레르기(${w})`,found:"",fix:"이 레시피는 쓰지 마십시오",refs:[],hard:true});
   for(const w of String(S.profile.dislikes||"").split(/[,\n、]/).map(x=>x.trim().replace(/\s/g,"")).filter(x=>x.length>=2)) if(ing.includes(w)) out.push({t:`싫어하는 음식(${w})`,found:"",fix:"빼고 만들어 주십시오",refs:[]});
@@ -1410,7 +1411,7 @@ function normalizeState(o){
   s.ateMeals={}; for(const [k,v] of Object.entries(obj(o.ateMeals)||{})){ if(!/^\d{4}-\d{2}-\d{2}$/.test(k)) continue; const day={};
     for(const [sl,m] of Object.entries(obj(v)||{})) if(SLOTS.includes(sl)&&obj(m)) day[sl]={t:String(m.t||""),it:arr(m.it).filter(x=>Array.isArray(x)&&FOOD[x[0]]&&+x[1]>0).map(x=>[x[0],Math.round(+x[1])]),...([0.5,1.5].includes(+m.r)?{r:+m.r}:{})};
     if(Object.keys(day).length) s.ateMeals[k]=day } const nn=v=>{const n=+v; return isFinite(n)&&n>=0?n:0};
-  s.extras={}; for(const [k,v] of Object.entries(obj(o.extras)||{})) if(isDate(k)&&Array.isArray(v)) s.extras[k]=v.filter(x=>obj(x)&&typeof x.name==="string").map(x=>{const y={...x,unit:tx(x.unit),amt:x.amt==null?null:+x.amt||null,kcal:nn(x.kcal),p:nn(x.p),fi:nn(x.fi),ca:nn(x.ca)}; if(!["B","L","D","S"].includes(y.slot)) delete y.slot; return y});
+  s.extras={}; for(const [k,v] of Object.entries(obj(o.extras)||{})) if(isDate(k)&&Array.isArray(v)) s.extras[k]=v.filter(x=>obj(x)&&typeof x.name==="string").map(x=>{const y={...x,unit:tx(x.unit),amt:x.amt==null?null:+x.amt||null,kcal:nn(x.kcal),p:nn(x.p),fi:nn(x.fi),ca:nn(x.ca),na:nn(x.na),vd:nn(x.vd)}; if(!["B","L","D","S"].includes(y.slot)) delete y.slot; return y});
   s.ratings=arr(o.ratings).filter(r=>obj(r)&&isDate(r.date)&&["good","ok","bad"].includes(r.rating)).map(r=>({...r,slot:tx(r.slot),title:tx(r.title),...("name" in r?{name:tx(r.name)}:{}),...("note" in r?{note:tx(r.note)}:{}),foodId:typeof r.foodId==="string"&&FOOD[r.foodId]?r.foodId:null}));
   const ra=obj(o.reintro)&&obj(o.reintro.active);
   s.reintro=obj(o.reintro)?{active:ra&&typeof ra.name==="string"&&isDate(ra.start)&&Array.isArray(ra.days)?{...ra,days:ra.days.map(x=>obj(x)||{})}:null,
@@ -1459,7 +1460,7 @@ let LOAD_FAIL=false, LOAD_RAW="";
 /* v1.8.0 저장 안전장치: 다른 창(탭)이 먼저 저장했으면 이 창의 오래된 기록으로 덮어쓰지 않는다(REV),
    백업 뒤 기록이 바뀐 날을 센다(chgDays) */
 const REV_KEY=KEY+".rev"; let MY_REV=0, STALE=false, LAST_JS="", LAST_DATA="";
-const DATA_KEYS=["profile","orders","triggers","logs","weights","water","ratings","reintro","extras","skips","swaps","ate","ateMeals","okMenus","myMenus","care","favs","qs","goals"];
+const DATA_KEYS=["profile","orders","triggers","logs","weights","water","ratings","reintro","extras","skips","swaps","ate","ateMeals","okMenus","myMenus","care","favs","qs","goals","labs","barcodes","stageInit"];
 const dataSig=x=>JSON.stringify(DATA_KEYS.map(k=>x[k]));
 // v1.10.0 안드로이드 앱: 앱 주소가 file://에서 https(앱 안 assets)로 바뀌어, 예전 주소에 있던 기록을 처음 한 번 옮겨 온다(MainActivity가 넘겨 줌)
 try{if(window.UCTableAndroid&&typeof window.UCTableAndroid.takeMigrated==="function"&&!localStorage.getItem(KEY)){const m=window.UCTableAndroid.takeMigrated(); if(m) localStorage.setItem(KEY,m)}}catch(e){}
@@ -1781,18 +1782,20 @@ function guessFoodId(name){
 }
 // 근거별 피하기·주의 태그(길병원[39]·대한장연구학회[37]·IOIBD[3]·AGA[2])
 // v1.9.0 절대 금지: 피하기보다 강한 앱 기준. 원재료명에 아질산나트륨·아질산칼륨·질산나트륨·질산칼륨(발색제)이 있는 제품
-const BAN_TAG=[["nitrite","아질산나트륨(발색제)을 넣은 가공육: 앱 기준 절대 금지(가공육은 되도록 먹지 않도록 안내, 대한장연구학회·IOIBD·ECCO)"]];
+const BAN_TAG=[["nitrite","아질산나트륨(발색제)을 넣은 가공육: 앱 기준 절대 금지(가공육은 되도록 먹지 않도록 안내, 대한장연구학회·IOIBD·ECCO)"],["alcohol","앱 기준 절대 금지(대한장연구학회는 금주를 권하고, 길병원은 과도한 술을 증상 악화 음식으로 안내)"]];
 const LV_RANK={ok:0,caution:1,later:2,avoid:3,ban:4};
 const badLv=l=>l==="avoid"||l==="later"||l==="ban";   // 식단에서 빼는 판정
 // v1.11.0 M3: 햄·소시지가 흔히 들어가는 일반 음식(김밥·오므라이스·볶음밥, 'hamopt')은 판정은 두고 이 안내를 붙인다
 const HAM_NOTE="햄·소시지는 빼고 드십시오. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.";   // v1.11.0 R-12
-const AVOID_TAG=[["fried","튀김은 과도한 지방이라 피하도록 안내(길병원)"],["processed","가공육·가공품은 되도록 먹지 않도록 안내(대한장연구학회·길병원)"],["alcohol","술은 증상을 악화시킬 수 있어 피하도록 안내(길병원·대한장연구학회)"],["soda","탄산·가당 음료는 피하도록 안내(길병원·대한장연구학회)"],["choco","초콜릿 같은 단당류 간식은 피하도록 안내(길병원)"],["upf","초가공식품은 피하거나 줄이도록 권고(길병원·AGA)"],["renal","신장질환자용(단백질·전해질 조절) 제품: 의료진이 지시하지 않았다면 피하기"],["tube","경관(튜브) 급식 전용 제품"]];
+const AVOID_TAG=[["fried","튀김은 과도한 지방이라 피하도록 안내(길병원)"],["processed","가공육·가공품은 되도록 먹지 않도록 안내(대한장연구학회·길병원)"],["soda","탄산·가당 음료는 피하도록 안내(길병원·대한장연구학회)"],["choco","초콜릿 같은 단당류 간식은 피하도록 안내(길병원)"],["upf","초가공식품은 피하거나 줄이도록 권고(길병원·AGA)"],["renal","신장질환자용(단백질·전해질 조절) 제품: 의료진이 지시하지 않았다면 피하기"],["tube","경관(튜브) 급식 전용 제품"]];
 const CAUTION_TAG=[["legume","콩류는 증상 악화를 잘 일으키는 음식(길병원)"],["citrus","오렌지·레몬 같은 신 과일은 증상 악화를 잘 일으키는 음식(길병원)"],["juice","과일주스는 증상 악화를 잘 일으키는 음식(길병원)"],["pickled","절인 채소는 증상 악화를 잘 일으키는 음식(길병원)"],["sour","신 음식은 증상 악화를 잘 일으키는 음식(길병원)"],["marg","마가린은 증상 악화 음식(길병원), 트랜스지방은 피하기(IOIBD)"],["sugar","당분이 많은 음식은 증상을 일으키기 쉬움(대한장연구학회·길병원)"],["shell","조개·소라는 증상을 일으키기 쉬운 음식(대한장연구학회)"],["tough","질긴 음식·산나물·해초·견과·팝콘은 증상을 일으키기 쉬움(대한장연구학회)"],["raw","익히지 않은 동물성 식품은 저잔사식 제한(길병원), 먹는다면 신선한 것으로"],["upf2","초가공식품은 줄이도록 권고(AGA)"],["sweetener","감미료로 단맛을 낸 가공식품: 인공감미료 함유 식품은 제한 권고(IOIBD), 인공 감미료는 증상을 일으키기 쉬움(대한장연구학회)"],["polyol","당알코올(자일리톨·솔비톨·말티톨 등)은 흡수가 느려 복부팽만·설사를 일으킬 수 있음(Monash)"],["dz","특정 질환용 영양조제식품(당뇨·암·고혈압): 해당 질환이 있거나 의료진이 권할 때"],["elemental","아미노산 성분영양식: 의료진 지시에 따라 사용"],["unverified","원재료명을 확인하지 못한 제품: 포장의 원재료명 확인"]];
 function foodStatus(f,c=ctx()){
   const R=[], X=[]; let lv="ok";
   const set=(l,r)=>{if(LV_RANK[l]>LV_RANK[lv])lv=l;R.push([l,r])};
   const bn=BAN_TAG.filter(([t])=>f.tags.includes(t)); for(const [,r] of bn) set("ban",r);
   const av=AVOID_TAG.filter(([t])=>f.tags.includes(t)); for(const [,r] of av) set("avoid",r);
+  if(alcIngr(f.id)) set("ban",`원재료에 알코올(${alcWords(INGR[f.id],true).join("·")})이 들어 있음(포장 표시): 앱 기준 절대 금지`);
+  if(polyIngr(f.id)||f.tags.includes("polyol")){ set("avoid",polyIngr(f.id)?`원재료에 당알코올(${polyWords(INGR[f.id]).join("·")})이 들어 있음(포장 표시): ${POLY_WHY}`:`당알코올이 든 제품: ${POLY_WHY}`); X.push(47,3) }
   if(f.ms===9&&!av.length&&!bn.length) set("avoid","근거 자료에서 피하도록 권고");
   // v1.11.0 R-15: 음식 알레르기는 완전히 피하는 것이 원칙이라 앱의 가장 강한 판정(절대 금지)
   for(const a of c.allergies) if(f.tags.includes(a)) set("ban",`알레르기(${allergyLabel(a)}): 먹지 마십시오`);
@@ -2118,17 +2121,41 @@ const DL_FALLBACK={save:async({filename,data})=>{const blob=data instanceof Blob
   if(!DL) DL=DL_FALLBACK;
 })();
 /* ===== 외식·편의점 메뉴 판정 ===== */
-const KW={dairy:["우유","치즈","크림","버터","요거트","요구르트","라떼","생크림","아이스크림","유청","카제인","분유","연유","유크림","유당","락토스","유단백","발효유"],lactose:["우유","라떼","아이스크림","생크림","밀크","유청","분유","연유","유크림","유당","락토스"],egg:["달걀","계란","마요","메추리알","난백","난황","전란","알류","난류"],buckwheat:["메밀","소바"],peanut:["땅콩"],soy:["대두","두부","간장","된장","두유","콩국","청국장","콩기름","쯔유","고추장"],wheat:["밀가루","빵","면","파스타","튀김옷","만두","라면","우동","짜장","짬뽕","수제비","소맥","글루텐","세몰리나","듀럼","강력분","중력분","박력분","호밀","밀배아","밀기울","밀쌀","통밀","세이탄","튀김가루","부침가루","빵가루","간장","쯔유","고추장","굴소스"],mackerel:["고등어"],crab:["게살","꽃게","대게","홍게","킹크랩","게장","크랩"],shrimp:["새우","새우젓","쉬림프"],pork:["돼지","삼겹","제육","돈가스","돈까스","햄","소시지","베이컨","순대","족발","보쌈","돈육","돈지","라드"],peach:["복숭아","황도","백도"],tomato:["토마토","케첩","케찹"],sulfite:["와인","건포도","말린 과일","건과일","곶감"],walnut:["호두"],chicken:["닭","치킨","계육"],beef:["소고기","쇠고기","불고기","갈비탕","곰탕","차돌","스테이크","육회","사골","우육","우지"],squid:["오징어"],clam:["조개","전복","홍합","바지락","꼬막","가리비","재첩","굴국","굴전","생굴","굴밥","굴소스","굴엑기스","키조개","관자"],pine:["잣"],fish:["생선","연어","참치","고등어","대구","멸치","어묵","장어","갈치","꽁치","액젓","까나리","참치액","쯔유","가쓰오","가다랑어","게맛살","맛살","어간장","피시소스"],sesame:["참깨","타히니","참기름","깨소금","통깨","볶음깨"],nut:["아몬드","캐슈","피스타치오","마카다미아","견과","헤이즐넛"],spicy:["고추","매운","김치","고춧가루","청양","마라","불닭","떡볶이","짬뽕","고추장","닭발","얼큰","매콤","칼칼","제육","낙지볶음","주꾸미","쭈꾸미","매운탕","육개장","닭볶음탕","닭도리탕","순두부찌개","비빔","쫄면","칠리","할라피뇨","스리라차","와사비","겨자","라볶이","깐풍","양장피","짬뽕"],redmeat:["소고기","쇠고기","돼지","갈비","삼겹","제육","불고기","스테이크","차돌","곱창","순대"],processed:["햄","소시지","베이컨","스팸","살라미","페퍼로니"],upf:["컵라면","라면","탄산","핫도그","너겟","과자"],fatty:["튀김","치킨","돈가스","돈까스","크림","버터","까르보나라","부침개","파전","김치전","해물전","감자전","육전","동그랑땡","빈대떡","강정","프라이드","후라이드","가라아게","텐더","커틀릿"],alcohol:["술","맥주","소주","와인","막걸리"],caffeine:["커피","아메리카노","에스프레소","에너지드링크","콜라"],fodmap:["양파","마늘","버섯","아스파라거스","사과","복숭아","수박","꿀","우유","요거트","아이스크림","캐슈","피스타치오","렌틸","병아리콩","강낭콩","밀가루","연두부","순두부"]};
+const KW={dairy:["우유","치즈","크림","버터","요거트","요구르트","라떼","생크림","아이스크림","유청","카제인","분유","연유","유크림","유당","락토스","유단백","발효유"],lactose:["우유","라떼","아이스크림","생크림","밀크","유청","분유","연유","유크림","유당","락토스"],egg:["달걀","계란","마요","메추리알","난백","난황","전란","알류","난류"],buckwheat:["메밀","소바"],peanut:["땅콩"],soy:["대두","두부","간장","된장","두유","콩국","청국장","콩기름","쯔유","고추장"],wheat:["밀가루","빵","면","파스타","튀김옷","만두","라면","우동","짜장","짬뽕","수제비","소맥","글루텐","세몰리나","듀럼","강력분","중력분","박력분","호밀","밀배아","밀기울","밀쌀","통밀","세이탄","튀김가루","부침가루","빵가루","간장","쯔유","고추장","굴소스"],mackerel:["고등어"],crab:["게살","꽃게","대게","홍게","킹크랩","게장","크랩","게맛살"],crust:["랍스터","가재","크릴"],shrimp:["새우","새우젓","쉬림프","대하"],pork:["돼지","삼겹","제육","돈가스","돈까스","햄","소시지","베이컨","순대","족발","보쌈","돈육","돈지","라드"],peach:["복숭아","황도","백도"],tomato:["토마토","케첩","케찹"],sulfite:["와인","건포도","말린 과일","건과일","곶감"],walnut:["호두"],chicken:["닭","치킨","계육"],beef:["소고기","쇠고기","불고기","갈비탕","곰탕","차돌","스테이크","육회","사골","우육","우지"],squid:["오징어"],clam:["조개","전복","홍합","바지락","꼬막","가리비","재첩","굴국","굴전","생굴","굴밥","굴소스","굴엑기스","키조개","관자"],pine:["잣"],fish:["생선","연어","참치","고등어","대구","멸치","어묵","장어","갈치","꽁치","액젓","까나리","참치액","쯔유","가쓰오","가다랑어","게맛살","맛살","어간장","피시소스"],sesame:["참깨","타히니","참기름","깨소금","통깨","볶음깨"],nut:["아몬드","캐슈","피스타치오","마카다미아","견과","헤이즐넛"],spicy:["고추","매운","김치","고춧가루","청양","마라","불닭","떡볶이","짬뽕","고추장","닭발","얼큰","매콤","칼칼","제육","낙지볶음","주꾸미","쭈꾸미","매운탕","육개장","닭볶음탕","닭도리탕","순두부찌개","비빔","쫄면","칠리","할라피뇨","스리라차","와사비","겨자","라볶이","깐풍","양장피","짬뽕"],redmeat:["소고기","쇠고기","돼지","갈비","삼겹","제육","불고기","스테이크","차돌","곱창","순대"],processed:["햄","소시지","베이컨","스팸","살라미","페퍼로니"],upf:["컵라면","라면","탄산","핫도그","너겟","과자"],fatty:["튀김","치킨","돈가스","돈까스","크림","버터","까르보나라","부침개","파전","김치전","해물전","감자전","육전","동그랑땡","빈대떡","강정","프라이드","후라이드","가라아게","텐더","커틀릿"],alcohol:["술","맥주","소주","와인","막걸리","동동주","청주","정종","포도주","복분자주","약주","탁주","과일주","인삼주","고량주","데킬라","사케","양주","칵테일","위스키","보드카","럼주","브랜디","샴페인","리큐르","하이볼","증류주","과실주","매실주","에탄올","에틸알코올","알코올","알콜","주정"],caffeine:["커피","아메리카노","에스프레소","에너지드링크","콜라"],fodmap:["양파","마늘","버섯","아스파라거스","사과","복숭아","수박","꿀","우유","요거트","아이스크림","캐슈","피스타치오","렌틸","병아리콩","강낭콩","밀가루","연두부","순두부"]};
 const KW_EXACT={clam:["굴","조개류"],crab:["게"],egg:["알"],fish:["회"],wheat:["밀"],soy:["콩"],sesame:["깨"],fatty:["전","부침"]};
 // 잘못 걸리는 말 빼기: 유당 분해 우유, 맵지 않은 김치, 닭갈비
 /* v1.12.0 검토 C-03: 날것·덜 익힌 생선·조개·고기·달걀 낱말. 면역을 누르는 약을 쓰면 외식 판정·포장 원재료 검사에서도 피하기(CDC[89]).
    쉼표·괄호로 나눈 마디마다 본다. 젓갈(명란젓·새우젓·액젓 등)은 넣지 않고(사용자 결정), 익히는 요리(숙회·유부초밥·볶음·구이·탕 등)는 뺀다.
    '스시'는 '…시즈닝·…시럽', '우니'는 '브라우니'에 걸려 쓰지 않는다(성게). 오래된 사파리를 위해 뒤를 보는 정규식은 쓰지 않는다 */
-const RAW_W=/사시미|스시(?!즈|럽)|초밥|육회|회(?=$|정식|세트|한상|백반|덮밥|무침|국수|냉면|비빔밥)|생굴|굴회|석화|게장|새우장|연어장|전복장|간장새우|생연어|훈제연어|날치알|연어알|성게|멍게|산낙지|탕탕이|단새우|홍어|과메기|세꼬시|뭉티기|세비체|카르파초|포케|타르타르|날달걀|생달걀|날계란|생계란|반숙|수란|온천달걀|온천계란/;
-const RAW_NOT=/젓|숙회|유부초밥|소스|볶음|구이|조림|튀김|찜|국$|국밥|국물|탕$|전골|죽|찌개|전$|그라탕|그라탱|파스타|리조또|피자/;
-function rawWords(t){const out=new Set(); for(const ph of String(t).normalize("NFC").split(/[,，、()\[\]{}·\/\n;:+&]+/)){const w=ph.replace(/\s/g,""); if(w&&RAW_W.test(w)&&!RAW_NOT.test(w)) out.add(ph.trim())} return [...out]}
+const RAW_W=/사시미|스시(?!즈|럽)|초밥|육회|회(?=$|정식|세트|한상|백반|덮밥|무침|국수|냉면|비빔밥)|생굴|굴회|석화|게장|새우장|연어장|전복장|간장새우|생연어|훈제연어|날치알|연어알|성게|멍게|해삼|개불|생간(?!장)|굴무침|산낙지|탕탕이|단새우|홍어|과메기|세꼬시|뭉티기|세비체|카르파초|포케|타르타르|날달걀|생달걀|날계란|생계란|반숙|수란|온천달걀|온천계란/;
+const RAW_NOT=/젓|숙회|유부초밥|장어|계란초밥|달걀초밥|식초|석회|소스|볶음|구이|조림|튀김|찜|국$|국밥|국물|탕$|전골|죽|찌개|전$|그라탕|그라탱|파스타|리조또|피자/;   // shortcut: 장어는 통째로 제외(늘 익혀 내므로 장어초밥·장어스시가 걸리지 않게). 날 장어회가 생기면 장어초밥·장어스시만 제외로 좁힌다
+const RAW_QTY=/(?:\s*\d+(?:\.\d+)?\s*(?:인분|인|마리|조각|점|피스|판|팩|접시|그릇|개|kg|g)?|\s+(?:소|중|대|특대))+$/;   // 끝의 양·크기 말("2인분"·"대")은 떼고 본다. shortcut: 맨 끝 말만 뗌(가운데·앞 수식어는 못 뗌), 놓치는 표기가 나오면 여기에 추가
+function rawWords(t){const out=new Set(); for(const ph of String(t).normalize("NFC").split(/[,，、()\[\]{}·\/\n;:+&]+/)){const w=ph.replace(RAW_QTY,"").replace(/\s/g,""); if(w&&RAW_W.test(w)&&!RAW_NOT.test(w)) out.add(ph.trim())} return [...out]}
 const rawWhy=(m,w)=>`면역을 누르는 약(${m})을 쓰는 동안 날것·덜 익힌 음식(${w.join("·")})은 식중독 위험이 커 피하기(미국 질병통제예방센터 CDC)`;
-const KW_EXCL={wheat:/곤약면|당면|두부면|해초면|다시마면|녹두면|쌀국수/g,lactose:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,fodmap:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,spicy:/(백김치|물김치|나박김치|동치미)/g,redmeat:/닭갈비|닭불고기|오리불고기/g,beef:/테이크핏|닭갈비|돼지불고기|닭불고기|오리불고기|제육불고기/g,pork:/햄버거|햄버그/g,dairy:/땅콩버터/g,pine:/감잣국|감자국/g};
+const KW_EXCL={wheat:/곤약면|당면|두부면|해초면|다시마면|녹두면|쌀국수/g,lactose:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,fodmap:/(유당분해|락토프리|무유당|유당제거)(우유|밀크)?/g,spicy:/(백김치|물김치|나박김치|동치미)/g,redmeat:/닭갈비|닭불고기|오리불고기/g,beef:/테이크핏|닭갈비|돼지불고기|닭불고기|오리불고기|제육불고기/g,pork:/햄버거|햄버그/g,dairy:/땅콩버터/g,pine:/감잣국|감자국/g,crust:/가재미/g,
+  alcohol:/맛술|미림|맛링|요리술|조리술|요리주|조리주|생강술|당알코올|당알콜|슈가알코올|다가알코올|폴리알코올|(무|논)알(코올|콜)|알코올프리|알콜프리|노알코올|맥주효모|맥주맥|맥주보리|와인식초|포도주스|과일주스|매실주스|복분자주스|인삼주스|영양주|양주시|양주불고기|양주별산대|칵테일새우|칵테일소스|칵테일토마토|칵테일과일|후르츠칵테일|프루트칵테일|사케동|사케덮밥|사케롤|사케마키|사케마끼|사케초밥|사케스시|사케구이|사케샐러드|사케니기리|큰술|작은술|한술|두술|반술|술술|기술|수술|예술|미술|마술|학술|전술|술국|술안주|곤약주|(?:술|막걸리|맥주|와인|포도주|소주|청주|정종)+(?=빵|떡|삼겹살|목살|수육|보쌈|족발|스테이크|소스|찜|조림|구이|튀김|반죽|홍합|바지락|커리|카레|스튜|라구|파스타|리조또)/g};   // 당알코올류(에탄올 아님)·숟가락 단위·무알코올·주스·술이 아닌 낱말
+/* 알코올(에탄올): 술·주정·에탄올은 앱 기준 절대 금지. 요리에 넣어 끓이는 맛술·미림은 막지 않는다(사용자 결정). 당알코올(말티톨 등)은 에탄올이 아니라 따로 '피하기'(polyWords).
+   재료 칸(ing=true: 포장 원재료·붙여넣은 원재료명·재료 목록)에서는 청주·과실주·와인·소주도 요리용으로 보고, 메뉴·제품 이름에서는 마시는 술로 본다.
+   요리용 낱말은 뒤의 '3%'와 괄호 묶음(겹괄호 포함, 예 맛술(물엿(옥수수),주정))까지 함께 지운다. '무알코올 맥주'는 이름에 맥주가 있어 그대로 금지(남은 알코올을 알 수 없어서).
+   술을 넣어 익히는 요리 이름(술빵·막걸리 수육·와인삼겹살·와인 소스·맥주 반죽 튀김 등: 술 낱말 바로 뒤에 익히는 요리 낱말)도 막지 않는다(사용자 결정).
+   익혀도 알코올이 일부 남지만(USDA) 요리용과 같게 본다. 치킨은 '맥주 치킨 세트' 같은 묶음이 흔해 넣지 않고, 젤리·아이스크림처럼 익히지 않는 것은 그대로 금지.
+   shortcut: 지명·요리 이름은 다 거르지 못한다('청주 한우'처럼 도시 이름도 금지로 나옴, 사케·양주·칵테일 요리는 KW_EXCL에 적은 것만 뺌). 걸리면 KW_EXCL.alcohol에 낱말을 더한다 */
+const COOK_ALWAYS=/맛술|미림|맛링|요리술|조리술|요리주|조리주|생강술/g, COOK_ALC=/청주|과실주|과일주|포도주|와인|소주|정종|매실주/g, COOK_NAME=/맛술|미림|맛링|요리술|조리술|요리주|조리주/;
+const OPEN_BR="([{\uFF08\uFF3B\uFF5B", CLOSE_BR=")]}\uFF09\uFF3D\uFF5D";   // 전각 괄호는 글꼴에 없어 코드 값으로 적는다
+const dropWords=(x,re)=>{let out="",last=0,m; re.lastIndex=0;
+  while((m=re.exec(x))){ out+=x.slice(last,m.index); let i=m.index+m[0].length;
+    const pc=/^\d+(?:\.\d+)?%/.exec(x.slice(i)); if(pc) i+=pc[0].length;
+    if(OPEN_BR.includes(x.charAt(i)||"\0")){ let d=0,j=i; for(;j<x.length;j++){ if(OPEN_BR.includes(x[j])) d++; else if(CLOSE_BR.includes(x[j])&&--d===0) break } if(j<x.length) i=j+1 }   // 닫는 괄호가 없으면 낱말만 지운다
+    last=i; re.lastIndex=i }
+  return out+x.slice(last)};
+const alcWords=(t,ing=false)=>{let x=dropWords(String(t).normalize("NFC").replace(/\s/g,""),COOK_ALWAYS).replace(KW_EXCL.alcohol,""); if(ing) x=dropWords(x,COOK_ALC); return KW.alcohol.filter(w=>x.includes(w))};
+const ALC_INGR=new Map(); const alcIngr=id=>{if(!ALC_INGR.has(id)) ALC_INGR.set(id,!!INGR[id]&&!COOK_NAME.test(String(FOOD[id]?.name||"").replace(/\s/g,""))&&alcWords(INGR[id],true).length>0); return ALC_INGR.get(id)};   // 맛술·미림 제품 자체의 주정은 요리용이라 막지 않는다
+/* 당알코올(폴리올: 말티톨·자일리톨·솔비톨 등)은 에탄올이 아니지만 '피하기'(사용자 결정). 근거: 소장에서 천천히 흡수돼 복부팽만·설사(Monash[47]), IOIBD는 감미료가 든 식품 제한을 권함(매우 낮은 근거[3]).
+   절대 금지가 아닌 이유: 알코올보다 근거가 약하고 소량 첨가물로 든 제품이 많다. shortcut: 들어 있는 양은 보지 않고 원재료에 이름이 있으면 모두 피하기, 양을 보려면 영양성분표 입력을 쓴다 */
+const POLY=/당알코올|당알콜|슈가알코올|다가알코올|폴리알코올|말티톨|자일리톨|솔비톨|소르비톨|소비톨|솔비탈|에리스리톨|에리트리톨|이소말트|락티톨|만니톨|폴리글리시톨|폴리글리티톨/g;
+const polyWords=t=>[...new Set(String(t).normalize("NFC").replace(/\s/g,"").match(POLY)||[])];
+const POLY_WHY="장에서 흡수가 느려 복부팽만·설사를 늘릴 수 있어 피하기(Monash·IOIBD)";
+const POLY_INGR=new Map(); const polyIngr=id=>{if(!POLY_INGR.has(id)) POLY_INGR.set(id,!!INGR[id]&&polyWords(INGR[id]).length>0); return POLY_INGR.get(id)};
 function tagsOfText(t,ingr=[]){const x=String(t).normalize("NFC").replace(/\s/g,"");const toks=ingr.map(i=>String(i).normalize("NFC").replace(/\s/g,""));
   const hit=Object.entries(KW).filter(([k,ws])=>{const y=KW_EXCL[k]?x.replace(KW_EXCL[k],""):x; return ws.some(w=>y.includes(w))}).map(([k])=>k);
   for(const [k,ws] of Object.entries(KW_EXACT)) if(toks.some(tk=>ws.includes(tk))) hit.push(k);
@@ -2140,14 +2167,16 @@ function ruleCheck(item){
   const up=(l,r)=>{if(LV_RANK[l]>LV_RANK[lv])lv=l;R.push(r)};
   const okd=(S.okMenus||[]).includes(String(item.name).replace(/\s/g,""));
   for(const a of c.allergies) if(tags.includes(a)) up("ban",`알레르기 재료 가능성(${allergyLabel(a)}): 먹지 마십시오`);   // v1.11.0 R-15
+  { const aw=[...new Set([...alcWords(item.name),...alcWords((item.ingr||[]).join(" ")+" "+(item.cook||""),true)])]; if(aw.length) up("ban",`알코올 포함 가능성(${aw.join("·")}): 먹지 마십시오`) }   // 술·주정 등. 요리용 맛술·미림은 제외
   const cc=crustCross(c,tags); for(const [o,a] of cc) up("avoid",crustWhy(o,a));   // v1.12.0 C-21
   if(S.profile.lactose&&tags.includes("lactose")) up("avoid","유당 가능성");
   for(const [o,t] of TAGRULE) if(orderOn(o)&&tags.includes(t)) up("avoid",`의료진 지시: ${orderLabel(o)}`);
   const f0=exactFood(item.name);
   if(!f0){
-    for(const [t,l] of [["processed","가공육(햄·베이컨 등)"],["upf","초가공식품"],["alcohol","술"]]) if(tags.includes(t)) up("avoid",`${l} 포함 가능성`);
+    for(const [t,l] of [["processed","가공육(햄·베이컨 등)"],["upf","초가공식품"]]) if(tags.includes(t)) up("avoid",`${l} 포함 가능성`);
     if(tags.includes("spicy")&&c.stage<3) up(okd?"caution":"avoid",okd?"맵거나 자극적인 양념(내가 괜찮았다고 표시함)":"맵고 자극적인 양념은 피하도록 안내(대한장연구학회·길병원)");
   }
+  { const pw=polyWords(f0?[...(item.ingr||[]),item.cook||""].join(" "):text); if(pw.length){ up("avoid",`당알코올 포함 가능성(${pw.join("·")}): ${POLY_WHY}`); X.push(47,3) } }   // 목록 음식이면 이름은 foodStatus가 보므로 적은 재료·조리만
   const x=text.replace(/\s/g,"");
   for(const t of S.triggers){const k=t.name.split("(")[0].replace(/\s/g,""); if(k&&x.includes(k)) up("avoid",`개인 주의 음식(${t.name})`)}
   for(const w of c.alWords||[]) if(w&&x.includes(w.replace(/\s/g,""))) up("ban",`내가 적은 알레르기(${w}): 먹지 마십시오`);   // v1.11.0 R-15
@@ -2288,6 +2317,7 @@ function labelCheck(rawText,name=""){
     const fod=["polyol","fructan","hfcs"].includes(g.id);
     let lv="caution";
     if(g.id==="sulfite"&&c.allergies.includes("sulfite")) lv="avoid";
+    if(g.id==="polyol") lv="avoid";   // 당알코올은 피하기(사용자 결정, 근거 Monash·IOIBD)
     if(fod&&(orderOn("lowfodmap")||c.gasHeavy)) lv="avoid";
     add(lv,g.label,hit.slice(0,3),g.why,g.refs,g.codes.length?`식약처 원재료코드표(식품첨가물) 등록 명칭 기준`:"코드표에 없는 이름(앱 추가)");
   }
@@ -2295,6 +2325,8 @@ function labelCheck(rawText,name=""){
   if(myr.length) add("caution","미리스트산이 많은 기름",myr,"팜유·코코넛유 등 미리스트산 급원은 줄이도록 권고됩니다.",[3]);
   const fodKw=KW.fodmap.filter(w=>x.includes(nrm(w)));
   if(fodKw.length) add(orderOn("lowfodmap")||c.gasHeavy?"avoid":"caution","가스 유발 성분(FODMAP)이 많은 원재료",fodKw,"가스·복부팽만을 늘릴 수 있습니다.",[20]);
+  { const pw=polyWords(text); if(pw.length&&!rows.some(r=>r.title==="당알코올(폴리올)")) add("avoid","당알코올(폴리올)",pw,"당알코올은 소장에서 천천히 흡수돼 복부팽만·설사를 늘릴 수 있고, 알코올(에탄올)과는 다르지만 앱은 피하기로 봅니다.",[47,3],"코드표에 없는 이름(앱 추가)") }
+  { const nm=String(name||""), al=[...new Set([...alcWords(nm),...(COOK_NAME.test(nm.replace(/\s/g,""))?[]:alcWords(String(rawText).replace(CROSS_RE," "),true))])]; if(al.length) add("ban","알코올",al,"술·주정(에탄올) 같은 알코올이 든 제품은 앱 기준 절대 금지입니다. 요리에 넣는 맛술·미림·청주는 해당하지 않고, 당알코올(말티톨 등)은 알코올이 아니라 따로 피하기입니다.",[41,37,39]) }
   { const nit=["아질산나트륨","아질산칼륨","질산나트륨","질산칼륨"].filter(w=>x.includes(w)); if(nit.length) add("ban","아질산염(발색제)",nit,"아질산나트륨 같은 발색제를 넣은 가공육은 앱 기준 절대 금지입니다.",[37,3,50]) }
   if(tags.includes("processed")) add("avoid","가공육",KW.processed.filter(w=>x.includes(w)),"가공육은 줄이거나 피하도록 권고됩니다.",[3,7]);
   if(tags.includes("spicy")&&c.stage<3) add("avoid","매운 양념",KW.spicy.filter(w=>x.includes(w)),"앱 기본 설정으로 활동기에는 맵고 자극적인 양념을 제외합니다(근거 자료의 직접 권고는 아님).",[]);
@@ -2327,7 +2359,7 @@ function nutriCheck(n,eat){
   if(orderOn("lowfat")&&fat!=null&&fat>=(liquid?1.5:3)) out.push({lv:"caution",title:"지방",found:[`100${u}당 ${fat}g`],why:`저지방 기준(100${u}당 ${liquid?"1.5":"3"}g 미만)을 넘습니다. 의료진 지시(저지방)에 따라 양을 줄이십시오.`,refs:[29]});
   if(orderOn("lowsalt")&&na!=null&&na>=120) out.push({lv:"caution",title:"나트륨",found:[`100${u}당 ${na}mg`],why:"저나트륨 기준(100g당 120mg 미만)을 넘습니다. 의료진 지시(저염)에 따라 양을 줄이십시오.",refs:[29]});
   if(sug!=null&&sug>=(liquid?2.5:5)) out.push({lv:liquid?"caution":"info",title:"당류",found:[`100${u}당 ${sug}g`],why:liquid?"당을 넣은 음료(첨가당)는 줄이도록 권고됩니다.":`저당류 기준(100g당 5g 미만)을 넘습니다.`,refs:liquid?[2,16,29]:[29]});
-  if(nv("polyol")>0){const px=perEat("polyol"); out.push({lv:(orderOn("lowfodmap")||c.gasHeavy)?"avoid":"caution",title:"당알코올",found:[`먹을 양 기준 ${px}g`],why:"당알코올은 종류에 따라 FODMAP으로 작용해 가스·설사를 늘릴 수 있습니다.",refs:[20]})}
+  if(nv("polyol")>0){const px=perEat("polyol"); out.push({lv:"avoid",title:"당알코올",found:[`먹을 양 기준 ${px}g`],why:"당알코올은 종류에 따라 FODMAP으로 작용해 가스·설사를 늘릴 수 있어 피하기입니다.",refs:[20,47]})}
   if(nv("trans")>0) out.push({lv:"caution",title:"트랜스지방",found:[`${nv("trans")}g(표시 기준량당)`],why:"트랜스지방은 피하도록 권고됩니다.",refs:[3]});
   const tg=targets(); const k=perEat("kcal"), pr=perEat("protein");
   if(k!=null||pr!=null) out.push({lv:"info",title:"먹을 양의 영양",found:[`${r1(ate)}${u}: ${k??"-"}kcal · 단백질 ${pr??"-"}g`],why:`하루 목표 열량 ${tg.k}kcal, 단백질 ${tg.p}g 기준으로 참고하십시오.`,refs:[1]});
@@ -2637,7 +2669,7 @@ function ridgeText(){
   const band=l=>{const st=activity(l).stage; return st===3?"관해 기준에 맞습니다":st===2?"증상이 남아 있습니다":"활동기 기준입니다"};   // 기준 자세히는 식단 단계 화면
   const yd=pd===addDays(t,-1); const ref=yd?"어제":"지난 기록", refWa=yd?"어제와":"지난 기록과";
   if(tl){const v=sccai(tl), pv=pl?sccai(pl):null, st=activity(tl).stage;
-    const head=st===1?"증상이 활발합니다":pv==null?(st===3?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
+    const head=st===1?"증상이 활발합니다":pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
     return {head,sub:`증상 점수 ${v}점, ${band(tl)}${tl.quick?" (빠른 기록)":""}`}}
   if(S.stageMode==="auto"&&currentStage().stale){const l0=lastLogBefore(t,3650); return {head:"요즘 증상이 어떻습니까?",sub:`${l0?`마지막 기록 ${md(l0)}. `:""}기록하면 식단 단계를 다시 맞춥니다`}}
   if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(pl)}`};
@@ -3629,7 +3661,7 @@ function showFood(id){
    ${s.note?`<p class="crit-t ham-note"><span aria-hidden="true">✕ </span>${esc(s.note)}</p>`:""}
    <details class="why-more"><summary>판정 이유와 근거 자세히</summary>
      ${s.reasons.length>1?`<ul class="why-list">${s.reasons.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>`:""}
-     <p>${esc(f.why)}${sup([...(f.refs||[]),...(s.refs||[])])}</p>${chk?`<p class="hint" style="margin:4px 0 0">근거 확인 ${esc(chk)}</p>`:""}</details>
+     <p>${alcIngr(id)&&s.level==="ban"?`술·주정(에탄올)은 앱 기준 절대 금지입니다.${sup([41,37,39])}`:`${esc(f.why)}${sup([...(f.refs||[]),...(s.refs||[])])}`}</p>${chk?`<p class="hint" style="margin:4px 0 0">근거 확인 ${esc(chk)}</p>`:""}</details>
    ${alts.length?`<div class="alt-box"><b>대신 이것</b><span class="hint">지금 조건에서 먹을 수 있는 비슷한 음식</span><div class="alt-row">${alts.map(g=>{const l=foodStatus(g).level; return `<button class="alt-chip" data-act="foodInfo" data-id="${g.id}">${fIcon(g.id)}<span>${esc(g.name)}</span><span class="pill ${l}">${LV[l]}</span></button>`}).join("")}</div></div>`:""}
    ${qaForFood(id).length?`<p class="hint" style="margin:0 2px 6px">관련 질문</p><div class="list qa-rel" style="margin-bottom:12px">${qaForFood(id).map(qaRowHTML).join("")}</div>`:""}
    ${f.prep?`<div class="kv"><span>조리</span><b>${esc(f.prep)}</b></div>`:""}
@@ -4787,7 +4819,6 @@ document.addEventListener("click",e=>{
     case "riEnd": {const A=S.reintro.active; S.reintro.history.push({...A,end:today(),result:v});
       if(v==="pass"){S.triggers=S.triggers.filter(t=>!(t.name===A.name&&t.foodId===A.foodId)); toast(`${A.name}${euroReul(A.name)} 주의 목록에서 뺐습니다`)} else toast("결과를 기록했습니다");
       S.reintro.active=null; render(); break}
-    case "trigAddInputOld": {const t=$("#trigAdd").value.trim(); if(t&&!S.triggers.some(x=>x.name===t)){const f=bestFood(t);S.triggers.push({name:f?f.name:t,foodId:f?.id,date:today(),source:"직접"})} render(); break}
     case "delTrig": {const k=+a.dataset.k, nm=S.triggers[k]?.name||""; withUndo(["triggers"],()=>{S.triggers.splice(k,1)},`${nm}${euroReul(nm)} 주의 음식에서 뺐습니다`); break}
     case "cup": {const cur=+S.water[today()]||0; S.water[today()]=cur===+v?+v-1:+v; render(); break}
     case "saveW": {const kg=+$("#w_today").value; W_TXT=null; if(kg>20&&kg<300){S.weights=S.weights.filter(w=>w.date!==today());S.weights.push({date:today(),kg});S.profile.weight=kg;toast("몸무게를 기록했습니다")} render(); break}
@@ -5029,7 +5060,7 @@ async function folderOff(){ try{await idb("kv","readwrite",st=>st.delete("folder
 const RESET_SNAP="~before-reset";
 const snapLabel=d=>String(d).endsWith(RESET_SNAP)?`${md(String(d).slice(0,10))} 초기화 전 보관본`:`${md(d)} 보관본`;
 async function keepBeforeReset(){ if(LOAD_FAIL||!S.consent) return; const json=backupJSON(), n=Object.keys(S.logs).length;   // await 전에 지금 기록을 읽는다
-  try{ await idb("snaps","readwrite",st=>st.put({date:today()+RESET_SNAP,at:new Date().toISOString(),n,json})); AUTO.snaps=null }catch(e){} }
+  try{ await idb("snaps","readwrite",st=>st.put({date:today()+"T"+new Date().toTimeString().slice(0,8).replace(/:/g,"")+RESET_SNAP,at:new Date().toISOString(),n,json})); AUTO.snaps=null }catch(e){} }
 async function snapList(){ try{ AUTO.snaps=((await idb("snaps","readonly",st=>st.getAll()))||[]).map(x=>({date:x.date,at:x.at,n:x.n})).sort((a,b)=>a.date<b.date?1:-1) }catch(e){ AUTO.snaps=[] } return AUTO.snaps }
 async function snapRestore(date){ try{ const x=await idb("snaps","readonly",st=>st.get(date)); if(!x) return; restoreFromText(x.json) }catch(e){ alertMsg("보관본을 읽지 못했습니다.") } }
 function labsHTML(){const L=(S.labs||[]).map((x,i)=>({x,i})).sort((a,b)=>a.x.date<b.x.date?1:a.x.date>b.x.date?-1:b.i-a.i);
@@ -5102,7 +5133,10 @@ async function wipeLocalCopies(){ let ok=true; const tryDo=async f=>{try{await f
   try{if(window.UCTableAndroid&&typeof window.UCTableAndroid.wipeOld==="function") window.UCTableAndroid.wipeOld()}catch(e){ok=false}
   AUTO.folder=null; AUTO.perm="";
   await tryDo(()=>idb("snaps","readwrite",st=>st.clear())); await tryDo(()=>idb("kv","readwrite",st=>st.delete("folder"))); await tryDo(()=>idb("kv","readwrite",st=>st.delete("bkKey")));
-  Object.assign(ENC,{key:null,salt:"",iter:ENC_ITER,ready:true,err:false});
+  // 열쇠가 아직 남아 있거나 남았는지 알 수 없으면 '꺼짐'으로 두지 않는다(이번 실행이 평문 백업을 내보내지 않게, 다음 백업 때 다시 읽음).
+  // 저장소 자체를 열 수 없으면 열쇠도 있을 수 없으므로 그대로 꺼짐
+  let keyLeft=false; try{keyLeft=!!(await idb("kv","readonly",st=>st.get("bkKey")))}catch(e){keyLeft=await idbOpen().then(d=>{d.close(); return true},()=>false)}
+  Object.assign(ENC,{key:null,salt:"",iter:ENC_ITER,ready:!keyLeft,err:false});
   AUTO.snaps=null; return ok }
 /* 합치기(v1.9.0 F-7): 날짜 단위가 아니라 항목 단위로 합친다. 예전에는 같은 날짜가 있으면 백업 쪽을 통째로 버렸다.
    - 직접 기록한 음식·끼니(먹음·안 먹음)·끼니 메뉴: 같은 날이라도 없는 항목만 더함
@@ -5110,7 +5144,7 @@ async function wipeLocalCopies(){ let ok=true; const tryDo=async f=>{try{await f
    - 증상 기록·몸무게: 하루에 하나라 같은 날 서로 다르면 지금 기록을 남기고, 그 수를 불러오기 전에 보여 준다 */
 function mergeCore(cur,bk){
   const m=JSON.parse(JSON.stringify(cur)); const B=JSON.parse(JSON.stringify(bk));
-  const st={logAdd:0,logKeep:0,exAdd:0,mealAdd:0,wAdd:0,wKeep:0,waterUp:0};
+  const st={logAdd:0,logKeep:0,exAdd:0,mealAdd:0,wAdd:0,wKeep:0,waterUp:0,alAdd:0};
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
   for(const k of ["logs","water","extras","skips","ate","ateMeals","swaps","care"]) m[k]=m[k]||{};
   for(const [d,v] of Object.entries(B.logs||{})){ if(!(d in m.logs)){m.logs[d]=v; st.logAdd++} else if(!same(m.logs[d],v)) st.logKeep++ }
@@ -5138,6 +5172,11 @@ function mergeCore(cur,bk){
   m.favs=[...new Set([...(m.favs||[]),...(B.favs||[])])].slice(0,80);
   m.okMenus=[...new Set([...(m.okMenus||[]),...(B.okMenus||[])])];
   if(m.reintro&&B.reintro){m.reintro.history=byKey(m.reintro.history||[],B.reintro.history||[],h=>JSON.stringify(h)); if(!m.reintro.active&&B.reintro.active) m.reintro.active=B.reintro.active}
+  // 알레르기는 안전에 관한 값이라 한쪽만 남기지 않고 지금 것과 백업 것을 모두 둔다(아래 반복은 빈 칸만 채움)
+  { const al=m.profile.allergies||[], add=(B.profile?.allergies||[]).filter(a=>!al.includes(a)); m.profile.allergies=[...al,...add];
+    const wd=x=>String(x||"").split(/[,\n、]/).map(t=>t.trim()).filter(Boolean), key=t=>t.replace(/\s/g,""), have=new Set(wd(m.profile.allergyOther).map(key)), more=wd(B.profile?.allergyOther).filter(t=>!have.has(key(t)));
+    if(more.length) m.profile.allergyOther=[...wd(m.profile.allergyOther),...more].join(", ");
+    st.alAdd=add.length+more.length }
   for(const [k,v] of Object.entries(B.profile||{})){const c=m.profile[k]; if((c===""||c==null||(Array.isArray(c)&&!c.length))&&v!==""&&v!=null) m.profile[k]=v}
   if(!(m.orders.checked||[]).length&&!(m.orders.other||[]).length&&B.orders) m.orders=B.orders;
   if(!Object.keys(m.goals||{}).length&&B.goals) m.goals=B.goals;
@@ -5161,7 +5200,7 @@ function restoreFromText(txt){
       <tr><td>주의 음식</td><td class="num" style="text-align:right">${a.t}</td><td class="num" style="text-align:right">${b.t}</td></tr></tbody></table>
     ${older?`<p class="crit-t">백업이 지금 기록보다 오래됐습니다. '백업으로 바꾸기'를 하면 ${md(b.last)} 뒤의 기록이 사라집니다. 둘 다 남기려면 '합치기'를 고르십시오.</p>`:""}
     ${hasCur?(()=>{const m=mergeCore(S,cand).st; return `<p class="hint">합치기: 지금 기록은 그대로 두고, 백업에만 있는 항목을 더합니다(같은 날 기록도 항목 단위로). 바꾸기: 지금 기록을 모두 백업 내용으로 바꿉니다.</p>
-      <p class="hint" style="margin:0">합치면 증상 기록 ${m.logAdd}일, 몸무게 ${m.wAdd}개, 직접 기록한 음식 ${m.exAdd}개, 끼니 메뉴 ${m.mealAdd}개가 더해집니다.${m.logKeep||m.wKeep?` <b>같은 날 서로 다른 기록(증상 ${m.logKeep}일, 몸무게 ${m.wKeep}개)은 지금 기록을 남기고 백업 쪽은 쓰지 않습니다.</b>`:""}</p>`})():""}
+      <p class="hint" style="margin:0">합치면 증상 기록 ${m.logAdd}일, 몸무게 ${m.wAdd}개, 직접 기록한 음식 ${m.exAdd}개, 끼니 메뉴 ${m.mealAdd}개${m.alAdd?`, 알레르기 ${m.alAdd}개`:""}가 더해집니다.${m.logKeep||m.wKeep?` <b>같은 날 서로 다른 기록(증상 ${m.logKeep}일, 몸무게 ${m.wKeep}개)은 지금 기록을 남기고 백업 쪽은 쓰지 않습니다.</b>`:""}</p>`})():""}
     <p class="hint">어느 쪽을 골라도 불러오기 직전 기록은 기기 안에 따로 보관해, '데이터 백업'의 '불러오기 전 기록으로 되돌리기'로 돌아갈 수 있습니다.</p>
     <div class="stack" style="margin-top:12px">${hasCur?`<button class="btn primary full" data-act="restoreApply" data-v="merge">합치기</button><button class="btn full" data-act="restoreApply" data-v="replace">백업으로 바꾸기</button>`:`<button class="btn primary full" data-act="restoreApply" data-v="replace">불러오기</button>`}<button class="btn full" data-act="closeSheet">취소</button></div>`);
 }

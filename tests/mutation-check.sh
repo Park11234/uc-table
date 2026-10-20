@@ -86,7 +86,33 @@ mut={
  'raw_kw_off.html': rep('function rawWords(t){','function rawWords(t){return [];'),  # 목록 밖 외식 메뉴·포장 원재료의 날음식을 다시 못 봄(C-03)
  'reset_keep_off.html':rep('if(!all) keepBeforeReset(); ',''),  # 보관본을 남기고 초기화해도 오늘 보관본이 빈 기록으로 덮임(C-04)
  'own_off.html':   rep('const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:undefined;','const own=(o,k)=>o[k];'),  # constructor 등으로 검색하면 멈춤(C-05)
- 'ridge_score.html':rep('pv==null?(st===3?"편안한 하루입니다"','pv==null?(v<=2?"편안한 하루입니다"'),  # 홈 띠가 다시 점수만으로 편안한 하루(C-06)
+ 'ridge_score.html':rep('pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(v<=2?"편안한 하루입니다"'),  # 홈 띠가 다시 점수만으로 편안한 하루(C-06)
+ 'alc_ingr_off.html':rep('if(alcIngr(f.id)) set("ban"','if(false) set("ban"'),  # 원재료에 알코올이 든 포장 식품이 금지가 아님
+ 'alc_menu_off.html':rep('if(aw.length) up("ban",`알코올 포함 가능성','if(false) up("ban",`알코올 포함 가능성'),  # 외식 글의 알코올이 금지가 아님
+ 'alc_label_off.html':rep('if(al.length) add("ban","알코올"','if(false) add("ban","알코올"'),  # 붙여넣은 원재료명의 알코올이 금지가 아님
+ 'alc_sugar.html':rep('|당알코올|당알콜|슈가알코올|다가알코올|폴리알코올|(무|논)','|(무|논)'),  # 당알코올(말티톨)을 술로 오해해 절대 금지
+ 'alc_spoon.html':rep('|큰술|작은술|한술','|한술'),  # 큰술·작은술을 술로 오해
+ 'alc_juj.html':rep('"알콜","주정"]','"알콜"]'),  # 원재료 주정을 못 찾음
+ 'alc_cook_off.html':rep('const COOK_ALWAYS=/맛술|미림|맛링|','const COOK_ALWAYS=/맛링|').replace('alcohol:/맛술|미림|맛링|','alcohol:/맛링|',1),  # 요리용 맛술을 술로 오해해 막음
+ 'alc_cook_ing_off.html':rep('if(ing) x=dropWords(x,COOK_ALC);',''),
+ 'alc_cookdish_off.html':rep('|(?:술|막걸리|맥주|와인|포도주|소주|청주|정종)+(?=','|(?:술|막걸리|맥주|와인|포도주|소주|청주|정종)+(?=@@'),  # 술빵·와인 소스 같은 익힌 요리를 다시 막음  # 재료 칸의 청주·과실주·와인·소주를 막음
+ 'poly_ingr_off.html':rep('if(polyIngr(f.id)||f.tags.includes("polyol")){ set("avoid"','if(false){ set("avoid"'),  # 원재료 당알코올 제품이 피하기가 아님
+ 'poly_tag_off.html':rep('if(polyIngr(f.id)||f.tags.includes("polyol")){','if(polyIngr(f.id)){'),  # 원재료 자료 없는 당알코올 표시 음식이 피하기가 아님
+ 'poly_label_caution.html':rep('if(g.id==="polyol") lv="avoid";','if(false) lv="avoid";'),  # 원재료명 당알코올이 주의에 머묾
+ 'poly_label_extra_off.html':rep('if(pw.length&&!rows.some(r=>r.title==="당알코올(폴리올)")) add("avoid"','if(false) add("avoid"'),  # 에리스리톨·폴리글리시톨을 못 찾음
+ 'poly_menu_off.html':rep('if(pw.length){ up("avoid",`당알코올 포함 가능성','if(false){ up("avoid",`당알코올 포함 가능성'),  # 메뉴 글의 당알코올을 못 찾음
+ 'poly_nutri_caution.html':rep('out.push({lv:"avoid",title:"당알코올"','out.push({lv:"caution",title:"당알코올"'),  # 영양성분표 당알코올이 주의에 머묾
+ 'alc_ruleingr_off.html':rep('alcWords((item.ingr||[]).join(" ")+" "+(item.cook||""),true)','[]'),  # 적은 재료·조리 글의 주정을 못 봄
+ 'alc_label_name_cook.html':rep('...alcWords(nm),','...alcWords(nm,true),'),  # 제품 이름의 와인·청주를 요리용으로 봐 통과
+ 'alc_cookname_off.html':rep('COOK_NAME.test(nm.replace(/\\s/g,""))?[]:','false?[]:'),  # 맛술 제품 자체의 주정을 막음
+ 'alc_bracket_off.html':rep('if(OPEN_BR.includes(x.charAt(i)||"\\0"))','if(false)'),  # 요리용 술 뒤 괄호 속 주정을 막음
+ 'alc_pct_off.html':rep('if(pc) i+=pc[0].length;',''),  # 맛술3%(주정) 형식을 막음
+ 'alc_juice_off.html':rep('|포도주스|과일주스|매실주스|복분자주스|인삼주스',''),  # 주스를 술로 오해
+ 'alc_kw_podoju.html':rep('"포도주","복분자주"','"복분자주"'),  # 포도주를 못 찾음
+ 'alc_kw_alkol.html':rep('"알코올","알콜"','"알코올"'),  # 알콜 표기를 못 찾음
+ 'alc_detail_why.html':rep('alcIngr(id)&&s.level==="ban"?','false?'),  # 상세 화면에 먹는 방법 문장이 새어 나옴
+ 'poly_f0_off.html':rep('polyWords(f0?[...(item.ingr||[]),item.cook||""].join(" "):text)','polyWords(f0?"":text)'),  # 목록 음식 이름이면 적은 재료의 당알코올을 못 봄
+ 'ridge_stage_only.html':rep('pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(st===3?"편안한 하루입니다"'),  # 몸 상태가 최악이어도 편안한 하루(C-06 후속)
  'enc_failopen.html':rep('if(ENC_OK()&&!ENC.ready) throw new Error("enc-unknown"); ',''),  # 열쇠를 못 읽으면 평문 백업(C-07)
  'copy_await.html':rep('else if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write) await','else if(false) await'),  # 암호화를 켜면 복사가 기다린 뒤에(C-10)
  'share_await.html':rep('now=backupNow();\n  if(now==null){let out;','now=await backupOut();\n  if(now==null){let out;'),  # 암호화를 켜면 공유가 기다린 뒤에(C-10)
@@ -96,6 +122,11 @@ mut={
  'font_textsym.html':end('/* ♩ */'),                                     # 글꼴에 없는 기호(이모지 아님)가 들어옴. 유니코드 판(Node 판)에 따라 놓치지 않음
  'crust_off.html':rep('const crustCross=(c,tags)=>{','const crustCross=(c,tags)=>{return [];'),   # 갑각류 교차 반응 규칙이 통째로 빠짐(C-21)
  'crust_food_off.html':rep('  if(!c.crustDone) for(const [o,a] of crustCross(c,f.tags)) set("avoid",crustWhy(o,a));   // v1.12.0 C-21\n',''),   # 음식 판정에서만 빠져 '대신 이것'에 게가 다시 나옴(C-21)
+ # v1.12.0 검토 후속(보고서 5번): 단계 판정 기준을 한 칸씩 어긋나게
+ 'sc_gt5.html':    rep('if(sc>=5) return {stage:1','if(sc>5) return {stage:1'),            # SCCAI 5점이 활동기가 아님
+ 'sc_ge6.html':    rep('if(sc>=5) return {stage:1','if(sc>=6) return {stage:1'),           # SCCAI 6점부터 활동기
+ 'bloody_gt4.html':rep('if(bloody>=4) return {stage:1','if(bloody>4) return {stage:1'),    # 혈변 4회가 활동기가 아님
+ 'remit_le4.html': rep('if(total<=3&&blood===0&&bloody===0','if(total<=4&&blood===0&&bloody===0'),  # 하루 4회 배변도 관해
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -170,6 +201,32 @@ raw_kw_off.html tests/checks/v1120.cjs
 reset_keep_off.html tests/checks/v1120.cjs
 own_off.html tests/checks/v1120.cjs
 ridge_score.html tests/checks/v1120.cjs
+ridge_stage_only.html tests/checks/v1120b.cjs
+alc_ingr_off.html tests/checks/v1120b.cjs
+alc_menu_off.html tests/checks/v1120b.cjs
+alc_label_off.html tests/checks/v1120b.cjs
+alc_sugar.html tests/checks/v1120b.cjs
+alc_spoon.html tests/checks/v1120b.cjs
+alc_juj.html tests/checks/v1120b.cjs
+alc_cook_off.html tests/checks/v1120b.cjs
+alc_cook_ing_off.html tests/checks/v1120b.cjs
+alc_cookdish_off.html tests/checks/v1120b.cjs
+poly_ingr_off.html tests/checks/v1120b.cjs
+poly_tag_off.html tests/checks/v1120b.cjs
+poly_label_caution.html tests/checks/v1120b.cjs
+poly_label_extra_off.html tests/checks/v1120b.cjs
+poly_menu_off.html tests/checks/v1120b.cjs
+poly_nutri_caution.html tests/checks/v1120b.cjs
+alc_ruleingr_off.html tests/checks/v1120b.cjs
+alc_label_name_cook.html tests/checks/v1120b.cjs
+alc_cookname_off.html tests/checks/v1120b.cjs
+alc_bracket_off.html tests/checks/v1120b.cjs
+alc_pct_off.html tests/checks/v1120b.cjs
+alc_juice_off.html tests/checks/v1120b.cjs
+alc_kw_podoju.html tests/checks/v1120b.cjs
+alc_kw_alkol.html tests/checks/v1120b.cjs
+alc_detail_why.html tests/checks/v1120b.cjs
+poly_f0_off.html tests/checks/v1120b.cjs
 enc_failopen.html tests/checks/v1120.cjs
 copy_await.html tests/checks/v1120.cjs
 share_await.html tests/checks/v1120.cjs
@@ -178,7 +235,11 @@ sync_name_only.html tests/checks/v1120.cjs
 font_gap.html tests/checks/font_cover.cjs
 font_textsym.html tests/checks/font_cover.cjs
 crust_off.html tests/checks/v1120.cjs
-crust_food_off.html tests/checks/v1120.cjs"
+crust_food_off.html tests/checks/v1120.cjs
+sc_gt5.html tests/regression/t7.cjs
+sc_ge6.html tests/regression/t7.cjs
+bloody_gt4.html tests/regression/t7.cjs
+remit_le4.html tests/regression/t7.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script defer src="app.js?v=e94ff3fffa"></script>
+<script defer src="app.js?v=01da0b7c18"></script>
 </head>
 <body>
 <style>
@@ -26,7 +26,7 @@
   --deco:#1F5EDB; --deco-soft:#E8EFFF; --food-tint:#E8EFFF;
   /* v1.12.0 C-22: 판정 색을 적록 색약도 구분하게(좋음은 청록 쪽, 주의는 노란 호박, 피하기는 진홍, 다음 단계는 남회색). 글자 4.5:1 이상 */
   --ok:#0B6E55; --ok-soft:#E2F3EC; --ok-ink:#0B6E55; --warn:#8C6400; --warn-soft:#FFF3D1; --warn-fill:#B88200; --warn-ink:#8C6400; --later:#4A5785; --later-soft:#ECEEF7; --avoid:#9B2335; --avoid-soft:#FCE4E6; --ban-bg:#6E1420; --ban-ink:#FFFFFF;
-  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#A8261B; --danger-fill:#A8261B;
+  --crit:#A8261B; --crit-soft:#FCE6E3; --crit-ink:#9B2335; --danger-fill:#A8261B;   /* 이유 글자(crit-t)는 색약 모의에서 주의 글자와 색 차이 12 이상: 피하기 색과 같은 #9B2335 */
   --shadow:none; --scrim:rgba(14,26,46,.42); --fab-shadow:none; --ridge-band:rgba(31,94,219,.10); --ridge-area:rgba(31,94,219,.16);
   /* v1.11.0 글꼴: Pretendard(OFL-1.1)를 앱 글자 + KS X 1001 한글로 줄여 이름을 바꾼 'UC Table Sans'를 앱 안에 넣어 웹·PWA·오프라인·안드로이드가 같은 모양 */
   --display:"UC Table Sans","Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;

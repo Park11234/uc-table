@@ -116,6 +116,21 @@ class VerdictColorTest(unittest.TestCase):
                             bad.append('%s %s %s-%s ΔE %.1f' % (name, mname, a, b, d))
         self.assertEqual(bad, [])
 
+    def test_reason_text_colors(self):
+        """검토 후속 8번: 상세 화면 이유 글자(.crit-t=crit-ink, .warn-t=warn-ink)도 글자 대비 4.5:1, 색약 모의에서 서로 ΔE 12 이상"""
+        bad = []
+        for name, t in self.modes().items():
+            for k in ('crit', 'warn'):
+                for bg in ('surface', k + '-soft'):
+                    r = _contrast(t[k + '-ink'], t[bg])
+                    if r < 4.5:
+                        bad.append('%s %s-ink/%s %.2f' % (name, k, bg, r))
+            for mname, m in (('제2색각이상', _DEUTAN), ('제1색각이상', _PROTAN)):
+                d = sum((p - q) ** 2 for p, q in zip(_lab_sim(t['crit-ink'], m), _lab_sim(t['warn-ink'], m))) ** 0.5
+                if d < 12:
+                    bad.append('%s %s crit-ink-warn-ink ΔE %.1f' % (name, mname, d))
+        self.assertEqual(bad, [])
+
     def test_dark_blocks_use_same_verdict_colors(self):
         md = self.modes()
         keys = [k for k in md['어두운 화면(앱 설정)'] if k.split('-')[0] in ('ok', 'warn', 'later', 'avoid', 'ban')]
