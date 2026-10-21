@@ -47,7 +47,9 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}   /* v1.11.0 R-01: 기본 여백 8px이 실제 앱에만 남아 화면이 16px 넘치고 좌우가 좁았음 */
 .wrap{max-width:560px;margin:0 auto}
-.plan-note{display:flex;gap:6px;align-items:flex-start;margin:0 6px 14px}
+/* 수정 요청서 v2 항목 2: 홈 맨 아래 두 안내 글(.plan-note·.foot-note)을 모두 가운데 정렬, 좌우 여백 같게(8px). 아이콘은 글 위 가운데 */
+.plan-note{display:block;text-align:center;margin:0 6px 14px}
+.hint.plan-note{margin:0 8px}
 .bc-cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .bc-cam video{width:100%;height:100%;object-fit:cover;display:block}
 .bc-cam i{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ff4d4d;box-shadow:0 0 8px #ff4d4d}
@@ -62,7 +64,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .alt-chip{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 10px;min-height:48px;text-align:left;color:inherit}
 .alt-chip span:nth-child(2){flex:1;min-width:0;font-weight:600;font-size:0.875rem}
 .alt-chip .fic{width:34px;height:34px}
-.plan-note .ic{width:16px;height:16px;margin-top:2px}
+.plan-note .ic{display:block;width:16px;height:16px;margin:0 auto 4px}
 .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:flex;align-items:center;gap:4px;min-height:58px;margin-inline:-16px;padding:6px 10px 6px 16px;background:var(--bg);box-shadow:0 1px 0 var(--line)} /* v1.9.0 D-11: 불투명 + 아래 구분선(본문이 비치지 않게) */
 .appbar h1{font-family:var(--display);font-size:1.3125rem;font-weight:800;letter-spacing:-.02em}
@@ -182,6 +184,7 @@ button.lrow:active,label.lrow:active,.mrow:active,.hrow:active,.fcard:active,.ti
 .rinfo{display:flex;align-items:center;gap:12px;border:0;background:transparent;text-align:left;color:inherit;padding:0;font:inherit}
 .jrow{padding:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .jrow p{margin:0;font-size:0.875rem}
+.why-lines{display:flex;flex-direction:column;gap:4px}   /* 수정 요청서 v2 항목 6: 판정 이유 줄 묶음 */
 .found{font-weight:700}
 .tipline{color:var(--accent)!important}
 .crit-t{color:var(--crit)!important;font-size:0.8125rem} .warn-t{color:var(--warn)!important;font-size:0.8125rem}
@@ -290,6 +293,14 @@ html{scroll-padding-bottom:104px;scroll-padding-top:72px}
 
 /* v14 */
 body{word-break:keep-all;overflow-wrap:anywhere}
+/* 수정 요청서 v2 항목 5·10: 줄 끝에서 갈라지면 안 되는 말(라벨: 값, A·B 짧은 목록)의 덩어리. nowrap이 아니라 inline-block이라,
+   한 줄에 들어가면 통째로 다음 줄로 넘어가고, 그 줄보다 길 때(글자 200%·좁은 화면)만 안에서 나뉘어 가로로 넘치지 않는다 */
+.nb{display:inline-block;max-width:100%;vertical-align:baseline}
+/* 수정 요청서 v2 항목 5: 줄 나눔. 문단은 마지막 줄에 한 단어만 남지 않게(pretty), 짧은 안내·알림·제목은 줄 길이를 고르게(balance).
+   지원하지 않는 브라우저는 이 줄을 무시하고 예전처럼 나뉜다(해 없음). 진료 PDF(#report, #printDoc)와 인용(.qa-ev)은 따로 둔다 */
+p,li,dd,small,.hint,.muted,.banner{text-wrap:pretty}
+.hint,.foot-note,.plan-note,.banner,.toast .t-msg,.lt b,.mrow b,.sec-title h2,.lt small,dd,li,.warn-t,.o-l,.chip-btn{text-wrap:balance}
+#report,#report *,#printDoc,#printDoc *,.qa-ev,.qa-ev *{text-wrap:wrap}
 .rec-link{min-height:44px!important}
 .rcard details summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
 .chips .chip{min-height:44px!important}
@@ -636,9 +647,15 @@ th{color:var(--muted);font-weight:500}
 /* v1.9.0 D-6: 알림(토스트)은 아래 조작 영역을 가리지 않게 위쪽 전용 영역에 5초 동안. 누르거나 초점이 가면 멈춘다. 영역은 늘 있어(aria-live) 화면 읽기가 알림을 읽는다 */
 /* v1.10.0 디자인 10: 알림은 아래쪽(메뉴 바로 위)에 띄워 화면 제목을 가리지 않는다. 메뉴가 없는 화면(설정·기록 마법사)은 화면 아래 버튼 위 */
 .toasts{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);z-index:30;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
-body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
-.toast{pointer-events:auto;display:flex;align-items:center;gap:4px;max-width:528px;background:var(--ink);color:var(--bg);padding:4px 4px 4px 16px;border-radius:16px;font-size:0.875rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:1;transition:opacity .2s}
-.toast .t-msg{flex:1;padding:8px 4px 8px 0}
+body.pushed .toasts:not(.top),body.welcome .toasts:not(.top){bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
+.toast{pointer-events:auto;display:flex;align-items:center;max-width:528px;background:var(--ink);color:var(--bg);padding:4px;border-radius:16px;font-size:0.875rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:1;transition:opacity .2s}
+/* 수정 요청서 v2 항목 4: 글자는 알약 가운데. 왼쪽에 × 버튼과 같은 너비(44px)의 빈칸(::before)을 둬 좌우가 대칭.
+   되돌리기 같은 동작 버튼이 있는 알림은 글자 칸이 좁아지지 않게 빈칸 없이 글자 칸 안에서 가운데 */
+.toast::before{content:"";flex:none;width:44px}
+.toast .t-msg{flex:1;min-width:0;text-align:center;padding:8px 4px}
+.toast .t-btns{display:flex;flex:none}
+.toast.has-act::before{display:none}
+.toast.has-act{padding-left:12px}
 .toast button{flex:none;min-height:44px;min-width:44px;border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 10px;border-radius:12px}
 .toast button.t-act{text-decoration:underline;text-underline-offset:3px}
 .toast button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -667,7 +684,7 @@ details summary{cursor:pointer;font-weight:700}
 #report .blk{padding:16px 34px}
 #report h1{font-family:var(--display);font-size:25px;margin:0 0 4px}
 #report h2{font-size:15.5px;font-family:var(--body);font-weight:700;color:#12305E;margin:0 0 10px;padding:0 0 0 10px;border-left:4px solid #2F6FED;border-bottom:0;line-height:1.3}
-#report .cover{border:1px solid #D7DEE9;border-radius:10px;padding:18px 20px;background:#F7F9FC}
+#report .cover{border:1px solid #111;border-radius:12px;padding:18px 20px;background:#fff}   /* 진료기록 시안 v7 */
 #report .cover .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:#333}
 #report .cover .meta b{color:#12305E}
 #report table{font-size:12px;width:100%;border-collapse:collapse;border:1px solid #D7DEE9;border-radius:8px;overflow:hidden}
@@ -695,9 +712,10 @@ details summary{cursor:pointer;font-weight:700}
   body>*:not(#printDoc){display:none!important}
   #printDoc{display:block!important;color:#111;font-family:var(--body);font-size:10.5pt;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
   #printDoc .blk{padding:0 0 10pt}
+  #printDoc .blk:not(:has(table)){break-inside:avoid}   /* 제목만 쪽 끝에 남지 않게(표가 없는 짧은 블록은 통째로). 표 블록은 행 단위로 이어짐 */
   #printDoc h1{font-size:18pt;margin:0 0 4pt}
   #printDoc h2{font-size:12pt;font-family:var(--body);font-weight:700;color:#12305E;margin:0 0 6pt;padding:0 0 0 8px;border-left:4px solid #2F6FED;break-after:avoid}
-  #printDoc .cover{border:1px solid #D7DEE9;border-radius:8px;padding:12pt 14pt;background:#F7F9FC}
+  #printDoc .cover{border:1px solid #111;border-radius:10pt;padding:12pt 14pt;background:#fff}   /* 진료기록 시안 v7 */
   #printDoc .cover .meta{display:flex;flex-wrap:wrap;gap:4pt 14pt;margin-top:8pt;font-size:9.5pt}
   #printDoc .cover .meta b{color:#12305E}
   #printDoc table{width:100%;border-collapse:collapse;font-size:9pt;border:1px solid #D7DEE9}
@@ -888,7 +906,7 @@ const REFS = {
  36:{short:"서울아산병원, 궤양성대장염식(식사요법)",cite:"서울아산병원 건강정보 > 의료정보 > 식사요법 > 궤양성대장염식. amc.seoul.kr (추천 식단 포함).",key:"소량씩 잦은(하루 6회 이상) 식사로 자극을 줄이고 흡수를 높임. 저잔사식으로 대변량 감소. 설사로 인한 탈수를 막기 위해 체중 kg당 30cc 수분 섭취. 유당불내성이면 우유·유제품 제한. MCT 오일과 영양음료로 부족한 열량 보충. 증상과 개인 순응도에 따라 점차 일반식으로 이행. 약물-영양소 상호작용: 코티코스테로이드는 칼슘·단백질, 설파살라진은 엽산, 콜레스티라민은 지방·비타민 흡수를 저해. 추천 식단 예: 흰죽, 국물, 연두부찜, 병어조림, 애호박나물, 가자미찜, 계란찜, 가지나물, 불고기, 새우살찜, 물김치 국물, 간식으로 영양음료·오렌지주스·두유."},
  37:{short:"대한장연구학회, 염증성 장질환 영양과 식이요법(IBD 브로셔 No.6)",cite:"대한장연구학회. 염증성 장질환 영양과 식이요법, KASID IBD brochure No.6 (도움말·사진: 이대목동병원 영양사 강병진). PDF 작성 2017-03.",key:"활동기: 섭취량을 줄여 소량씩 자주, 부드러운 죽에 살코기·연두부·달걀·굴 등을 더해 영양 밀도를 높임. 기름은 줄이고 등푸른 생선 기름도 소화가 어려울 수 있어 담백한 흰살생선이 나을 수 있음. 자극적인 음식·탄산을 피하고 채소는 푹 익힌 것도 피하는 것이 좋음. 부족한 열량은 처방 영양액으로 보충. 관해기: 엄격한 제한은 필요 없고, 감자·고구마·꿀로 열량을 보충하며 생선·계란·수육·살코기를 기름 줄이는 조리법으로 먹음. 고등어·삼치·꽁치 같은 등푸른 생선을 주 3회 이상, 볶음·무침에는 신선한 들기름. 우유·유제품은 칼슘 공급원이며 질병을 악화시킨다는 근거가 없고, 불편하면 유당 분해 우유. 증상을 일으키기 쉬운 음식: 기름진 음식, 조개·소라, 고기 힘줄 같은 질긴 음식, 탄산음료, 자극성 향신료, 인공 감미료, 질긴 산나물·해초·견과류·팝콘, 당분이 많은 음식, 음주·폭식, 카페인. 육가공품은 되도록 먹지 않고 보이는 지방은 떼어냄. 관해기에도 익혀도 질긴 채소는 피하고 푹 익히거나 잘게·갈아서 조리."},
  39:{short:"가천대 길병원 염증성장질환센터, 식이 안내",cite:"가천대 길병원 염증성장질환센터. 일상생활 > 식이·식단표·저잔사식·프로바이오틱스(ibd.gilhospital.com/life01_01, life01_02, life01_04, life01_05).",key:"일반적으로 적용할 식이 지침은 없고 섬유소가 적고 부드러운 음식, 소량씩 자주 식사, 식이 일지로 먹을 수 있는 음식을 찾기. 급성기(설사·혈변·복통이 심할 때): 부드러운 죽·미음, 저섬유소식·저잔사식, 지방이 적은 단백질 반찬(흰살생선, 계란찜, 연두부, 두부), 간식이나 영양 보충 음료. 관해기: 아침식사 꼭, 생선 주 2~3회, 매 식사 두부·생선·살코기·계란 반찬, 부드러운 채소, 과일, 불편하지 않으면 유제품, 충분한 수분. 피할 음식: 과도한 지방(튀김·빵·라면), 단당류(콜라·사이다·아이스크림·초콜릿), 과도한 카페인·탄산, 섭취 시 불편했던 음식. 증상 악화를 잘 일으키는 음식: 콩, 야채, 절인 채소, 오렌지·레몬, 과일 주스, 시거나 맵고 짠 음식, 기름진 음식, 마가린, 설탕, 카페인 음료, 과도한 술. 저잔사식 허용: 흰밥·찹쌀밥·면류·부드러운 빵·백설기·감자, 껍질 뺀 생선·계란·두부·새우·게살·살코기, 애호박·오이·무·가지·배추·양파·시금치·양송이·양상추·배추김치·깍두기·물김치, 우유·발효유·두유·푸딩·치즈, 식용유·참기름·들기름·올리브유, 저잔사 영양보충음료. 제한: 보리·현미·율무·팥 등 잡곡, 고구마, 옥수수, 통밀빵, 도넛, 찰떡, 팝콘, 떡국떡, 기름지고 질긴 육류, 가공육, 조개류, 익히지 않은 동물성 식품, 미나리·도라지·고사리·콩나물·우엉·숙주·당근·셀러리·질긴 버섯·말린 나물·해조류·열무김치·갓김치·파김치, 감류·설익은 과일·파인애플·말린 과일·키위·토마토·딸기처럼 씨와 껍질째 먹는 과일, 건더기가 든 유제품, 땅콩·잣·아몬드·호두·해바라기씨, 김밥, 민간요법, 탄산·카페인 음료, 지나치게 매운 음식. 퇴원 후 1~2주는 죽에서 진밥으로 진행하며 하루 4~6회 소량씩, 고기·생선은 작게 자르거나 갈아서 부드럽게 익힘. 채소는 껍질·줄기를 없애고 무르게 조리해 한 끼 1가지 1/2분량(35g)을 꼭꼭 씹어 먹음. 과일 하루 양: 사과 중 1/2개, 배 1/4개, 복숭아 1/2개, 포도 19알, 수박 중 1쪽, 멜론 1조각, 귤 소 2개, 맑은 과일주스, 잘 익은 바나나 소 1/2개. 종합비타민을 정기적으로 복용하도록 권장, 설파살라진·메토트렉세이트를 오래 먹으면 엽산 하루 1mg 보충. 프로바이오틱스는 문제가 없으면 먹어도 되지만 약물치료를 대신할 근거는 없음."},
- 40:{short:"대한장연구학회 IBD 연구회, 궤양성 대장염 치료 가이드라인 개정판(2017)",cite:"최창환, 문원, 김유선 외, 대한장연구학회 IBD 연구회. 궤양성 대장염 치료 가이드라인 개정판. 대한소화기학회지. 2017;69(1):1-28.",key:"전신 독성 증상을 동반한 중증 궤양성 대장염은 입원 치료가 필요하며 내과적 응급상황에 가까움. 탈수와 전해질 이상을 교정해야 함. 중등도-중증 궤양성 대장염의 영양 공급은 가능하면 경구 식이 또는 경장 영양을 권장하고, 금식이 중증 궤양성 대장염의 경과를 호전시킨다는 증거는 없음. 완전 비경구 영양은 주 치료법으로 효과가 없음. ※ 2023년 개정 지침(Na SY 외. Intest Res 2023;21(1):61-87, doi:10.5217/ir.2022.00007)은 생물학제제·소분자 약제 권고만 다루고 영양 권고가 없어, 영양 관련 문장은 2017판을 인용(영문판: Choi CH 외. Intest Res 2017;15(1):7-37)."},
+ 40:{short:"대한장연구학회 IBD 연구회, 궤양성 대장염 치료 가이드라인 개정판(2017)",cite:"최창환, 문원, 김유선 외, 대한장연구학회 IBD 연구회. 궤양성 대장염 치료 가이드라인 개정판. 대한소화기학회지. 2017;69(1):1-28.",key:"전신 독성 증상을 동반한 중증 궤양성 대장염은 입원 치료가 필요하며 내과적 응급상황에 가까움. 탈수와 전해질 이상을 교정해야 함. 중등도-중증 궤양성 대장염의 영양 공급은 가능하면 경구 식이 또는 경장 영양을 권장하고, 금식이 중증 궤양성 대장염의 경과를 호전시킨다는 증거는 없음. 완전 비경구 영양은 주 치료법으로 효과가 없음. ※ 2023년 개정 지침(Na SY 외. Intest Res 2023;21(1):61-87, doi:10.5217/ir.2022.00007)은 생물학제제·소분자 약제 권고만 다루고 영양 권고가 없어, 영양 관련 문장은 2017판을 인용(영문판: Choi CH 외. Intest Res 2017;15(1):7-37). 표 3 Truelove-Witts 점수(2026-10-21 원문 확인): 경증은 배변 4회 이하·혈변 (−) 또는 (+)·열 없음·빈맥 없음·빈혈 없음·ESR 정상을 모두 만족할 때, 중증은 배변 6회 이상과 혈변 (+++)에 더해 열(37.5℃ 이상)·빈맥(맥박 90회/분 이상) 중 하나가 있고 6개 기준 중 4개 이상일 때이며 그 사이가 중등도. 열은 저녁 평균 체온 37.5℃ 초과 또는 4일 중 2일 37.8℃ 이상."},
  41:{short:"대한장연구학회, 환자용 염증성 장질환 브로셔(2022–2024)",cite:"대한장연구학회. KASID IBD brochure No.1–10(궤양성 대장염이란, 환자의 일상생활, 영양과 식이요법, 임신과 수유, 그것이 궁금해요 FAQ 등). 각 브로셔 저작권 표기 2022, 묶음 PDF 2024-10.",key:"궤양성 대장염은 심한 경우 식욕부진, 오심, 구토, 발열, 체중 감소가 생길 수 있음. 여행 안내: 고열(37.5℃ 이상), 오한, 다량의 혈성 설사, 지속적인 심한 복통이 있으면 치료를 미루지 않고 현지 의료기관을 방문. 금주·금연은 필수. 스트레스·불안·우울로 2주 이상 일상생활이 방해되면 정신건강의학 전문의 상담. 식이조절: 스테로이드 치료 중에는 저염식이 붓기를 막아 줌, 섬유질 많은 음식(생야채·잡곡·씨앗·견과류)은 설사·배변 횟수를 늘리므로 저섬유식, 유제품으로 설사하면 피함, 체중이 많이 빠지면 고칼로리 식사, 기름지거나 튀긴 음식·당분 많은 음료·카페인은 설사나 가스를 악화, 담백하고 부드러운 음식을 적게 자주, 음식 일지로 악화 음식 찾기. 병원에 갈 때 알릴 것: 약을 제대로 못 먹은 적, 최근 1주 설사 횟수와 양, 혈변, 몸 상태, 피부 반점·염증, 관절 통증, 눈 문제, 항문·서혜부·회음부 문제, 우울감이나 죽고 싶다는 생각, 한약이나 항생제 복용. 예방접종: 진단 때 주치의와 계획을 세우고, 독감은 매년, 면역억제 치료 기간에는 생백신 금기(치료 시작 최소 4주 전에 완료, 치료 종료 후 3개월까지 금지), 사백신은 치료 최소 2주 전에 완료하는 것이 이상적."},
  42:{short:"ACG 임상 가이드라인: IBD 예방 관리(2025)",cite:"Farraye FA, Melmed GY, Lichtenstein GR, et al. ACG Clinical Guideline Update: Preventive Care in Inflammatory Bowel Disease. Am J Gastroenterol. 2025;120(7):1447-1473.",key:"모든 성인 IBD 환자는 매년 독감 백신. 면역조절 치료 중에는 생백신을 맞지 않음. 50세 이상은 폐렴구균·대상포진 백신, 19세 이상도 면역조절 치료 중이면 고려. B형간염 면역이 없으면 접종. 우울·불안은 진단 때와 매년 선별하고 양성이면 상담 연결. 흑색종 검진 매년, 면역조절제 사용 중 비흑색종 피부암 검진 매년. 면역조절 치료 중인 여성은 자궁경부암 검진 강화. 골밀도 저하 위험 요인이 있으면 골밀도 검사. 흡연자는 금연 상담."},
  38:{short:"대한장연구학회 IBD 연구회, 궤양성 대장염 진단 가이드라인(2009)",cite:"최창환, 정성애, 이보인, 이강문, 김주성, 한동수, 대한장연구학회 IBD 연구회. 궤양성 대장염 진단 가이드라인. 대한소화기학회지. 2009;53(3):145-160.",key:"임상 중증도(Truelove·Witts): 관해는 배변 하루 3회 이하, 혈변과 대변절박증이 없는 경우. 경도는 하루 4회 이하, 혈변은 간헐적·소량, 전신 증상 없음. 중등도는 하루 4회 이상 배변과 혈변, 경미한 전신 증상. 중증은 하루 6회 이상 설사와 육안적 혈변을 항상 동반하고, 발열(저녁 평균 체온 37.5℃ 이상 또는 4일 중 2일 이상 37.8℃ 이상)과 빈맥(평균 맥박 90회/분 이상) 중 하나를 포함해 전신 증상(발열·빈맥·빈혈·ESR 상승) 2개 이상. 전격성은 중증 기준에 더해 하루 15회 이상 설사, 지속 출혈, 수혈이 필요한 빈혈, 38.0℃ 이상 고열 등."},
@@ -939,6 +957,10 @@ const REFS = {
  87:{short:"아임닭 상품 상세의 포장 표시(만두)",cite:"아임닭(imdak.com) 상품 상세에 실린 포장 표시·상품정보 고시 이미지: 아임닭 닭가슴살 씨쓰루 만두 매콤김치(180g), 맛있는 한우 물만두·맛있는 한우 손만두 김치(360g, 오아시스마켓 상품, 제조 오뚜기냉동식품). 2026-10-15 확인.",key:"이미지의 총 내용량당 영양정보, 원재료명, 알레르기 ‘함유’ 표시를 그대로 옮김. 아임닭에서 파는 만두 3종 전부. 한 곳에서만 확인."},
  88:{short:"풀무원샵 상품 상세의 포장 표시(만두·볶음밥·국·탕·찌개)",cite:"풀무원 공식 온라인몰 풀무원샵(shop.pulmuone.co.kr) 상품 상세에 실린 포장 표시 이미지: 풀무원식품·올가·풀스키친 만두(얇은피꽉찬속 고기·김치만두, 메밀지짐만두, 납작지짐만두, 김치 손만두, 육즙 듬뿍 만두, 올가 얇은피 새우만두 등), 풀무원 지구식단·올가 볶음밥과 주먹밥, 반듯한식·올가 국·탕·찌개와 1분즉석국 블록, 올가 육포. 2026-10-15 확인.",key:"이미지의 표시 기준량(총 내용량 또는 100 g)당 영양정보, 원재료명, 알레르기 ‘함유’ 표시를 그대로 옮김. 같은 제품의 다른 포장(간편트레이·대용량)은 같은 품목보고번호·같은 원재료라 한 제품으로 넣음. 주먹밥은 한 개, 동결건조 국 블록은 블록 하나(6~8 g)를 1회로 봄. 한 곳에서만 확인."},
  89:{short:"미국 질병통제예방센터(CDC), 면역력이 약한 사람의 더 안전한 음식 고르기(2024)",cite:"Centers for Disease Control and Prevention. Safer Food Choices for People With Weakened Immune Systems. cdc.gov/food-safety/foods/weakened-immune-systems.html, 2024-05-02. 2026-10-17 확인.",key:"면역력이 약하면 식중독 위험이 높아, 날것이나 덜 익힌 생선·조개(회·초밥·세비체), 냉장 훈제 수산물(훈제연어 등, 익힌 요리에 넣은 것 제외), 날것이나 덜 익힌 고기·달걀을 '위험한 선택'으로 두고 익힌 것을 고르도록 안내. 면역력이 약한 예로 자가면역질환, 항암 치료 등을 듦. 앱은 면역을 누르는 약(스테로이드·면역조절제·생물학적 제제·JAK 억제제)을 고르면 날음식을 '피하기'로 판정."},
+ 90:{short:"Turner 등, STRIDE-II 치료 목표 갱신(2021)",cite:"Turner D, Ricciuto A, Lewis A, et al. STRIDE-II: An Update on the Selecting Therapeutic Targets in Inflammatory Bowel Disease (STRIDE) Initiative of the International Organization for the Study of IBD (IOIBD): Determining Therapeutic Goals for Treat-to-Target Strategies in IBD. Gastroenterology. 2021;160(5):1570-1583. doi:10.1053/j.gastro.2020.12.031 https://doi.org/10.1053/j.gastro.2020.12.031 2026-10-21 원문 확인.",key:"권고 4: 궤양성 대장염의 임상적 관해는 PRO2(직장 출혈 0, 배변 횟수 0) 또는 부분 Mayo(3 미만이고 어느 항목도 1 초과 없음). 권고 2: 임상 반응은 PRO2 50% 이상 감소. 성인 궤양성 대장염에서 PRO2가 증상 평가의 현재 표준이 되었지만 내시경 소견과의 상관은 중간~높음이라 객관적 염증 지표와 함께 쓰라고 함. 저자들은 PRO2가 임상시험의 규제 요건을 맞추려고 기존 지표에서 임시로 만든 것이며 엄격한 심리측정 검증을 거치지 않았다고 밝힘. 내시경 치유(Mayo 내시경 점수 0 또는 UCEIS 1 이하)는 장기 목표."},
+ 91:{short:"Rubin 등, ACG 성인 궤양성 대장염 가이드라인 갱신(2025)",cite:"Rubin DT, Ananthakrishnan AN, Siegel CA, Barnes EL, Long MD. ACG Clinical Guideline Update: Ulcerative Colitis in Adults. Am J Gastroenterol. 2025;120(6):1187-1224. doi:10.14309/ajg.0000000000003463 https://doi.org/10.14309/ajg.0000000000003463 2026-10-21 원문 확인(표 4·5·6을 직접 열어 대조, 2026년 정오표 PMID 41384833 있음).",key:"표 4(ACG 궤양성 대장염 활동도 지표): 관해는 formed stool·혈변 없음·급박감 없음, 경도는 하루 4회 미만·간헐적 혈변·가끔 가벼운 급박감, 중등도-중증은 하루 6회 초과·잦은 혈변·잦은 급박감, 극심(fulminant)은 하루 10회 초과·지속적 혈변이며 관해를 빼면 모든 항목을 만족할 필요는 없다고 함. 표 5 Mayo 점수: 배변 횟수 0=평소와 같음, 1=평소보다 1~2회 많음, 2=3~4회 많음, 3=5회 이상 많음 / 직장 출혈 0=없음, 1=변에 피가 줄무늬 정도로 반 미만, 2=뚜렷한 피가 대부분, 3=변 없이 피만. 표 6에 SCCAI도 실려 있고, 소아 UC 활동도 지수·SCCAI·부분 Mayo가 타당도와 반응성이 가장 좋다고 기술. PRO2는 활성 약제와 위약을 구분하며 내시경 소견과 함께 쓰는 중간 결과 지표로 제안됨."},
+ 92:{short:"Jairath 등, 임시 환자보고결과 PRO2 개발(2015)",cite:"Jairath V, et al. Development of interim patient-reported outcome measures for the assessment of ulcerative colitis disease activity in clinical trials. Aliment Pharmacol Ther. 2015;42(10):1200-1210. PMID 26388424 https://pubmed.ncbi.nlm.nih.gov/26388424/ 2026-10-21 초록 확인.",key:"Mayo 점수의 환자 보고 두 항목(배변 횟수·직장 출혈)으로 임상시험용 임시 지표를 만들 수 있는지 검토. 직장 출혈 0과 배변 횟수 1 이하(또는 2 이하)에 내시경 하위점수 1 이하를 합친 조건이 활성 약제와 위약을 유의하게 구분. 환자 보고 항목만 쓰면 위약군 관해율이 높게 나와, 내시경과 함께 쓰는 임시 지표가 적절할 수 있다고 결론."},
+ 93:{short:"Na 등, 대한장연구학회 궤양성 대장염 생물학제제·소분자 약제 진료지침(2023)",cite:"Na SY, Choi CH, Song EM, et al.; IBD Research Group of the Korean Association for the Study of Intestinal Diseases. Korean clinical practice guidelines on biologics and small molecules for moderate-to-severe ulcerative colitis. Intest Res. 2023;21(1):61-87. doi:10.5217/ir.2022.00007 https://doi.org/10.5217/ir.2022.00007 2026-10-21 원문 확인(표 5).",key:"중등도-중증 궤양성 대장염은 수정 Truelove-Witts 기준(표 5) 또는 Mayo 점수(표 6)로 정의. 수정 Truelove-Witts: 하루 혈변 4회 미만은 경증, 4회 이상은 중등도, 6회 이상이면서 맥박 90 초과·체온 37.8℃ 초과·혈색소 10.5g/dL 미만·적혈구침강속도 30mm/h 초과·CRP 30mg/L 초과 가운데 하나 이상이면 중증. 입원 환자가 이 중증 기준을 만족하면 급성 중증 궤양성 대장염(ASUC)으로 봄."},
 };
 /* v1.8.0 식비 예산: 한 달 금액(만원)으로 받고 구간(알뜰·보통·여유)은 앱이 정한다.
    보통 기준 23만원 = 2024년 1인 가구 월평균 소비지출 168만 9천원 × 식료품·비주류음료 13.6%(근거 79). 외식(음식·숙박 18.2%)은 넣지 않음.
@@ -950,7 +972,7 @@ function budgetTier(m){m=+m; return !(m>=0)?"보통":m<BUDGET_LOW?"알뜰":m>=BU
 const REF_TYPE={g:"지침·합의",s:"연구·학술",h:"병원·기관 안내",o:"공식 자료",2:"2차 자료"};
 const REF_RANK={g:0,s:1,h:2,o:3,2:4};
 // [근거 종류, 마지막 확인일] — 확인일이 1년 지나면 tools/stale_check.py가 점검 목록에 올린다
-const REF_INFO={1:["g","2026-10-06"],2:["g","2026-10-05"],3:["g","2026-10-05"],4:["s","2026-10-05"],5:["s","2026-10-05"],6:["s","2026-10-05"],7:["s","2026-10-05"],8:["s","2026-10-05"],9:["s","2026-10-05"],10:["s","2026-10-05"],11:["s","2026-10-05"],12:["g","2026-10-05"],13:["s","2026-10-05"],14:["s","2026-10-05"],15:["s","2026-10-05"],16:["o","2026-10-05"],17:["h","2026-10-05"],18:["s","2026-10-05"],20:["h","2026-10-06"],21:["h","2026-10-05"],22:["h","2026-10-05"],23:["h","2026-10-05"],24:["h","2026-10-05"],25:["s","2026-10-05"],26:["h","2026-10-05"],27:["o","2026-10-05"],28:["o","2026-10-05"],29:["o","2026-10-05"],30:["o","2026-10-05"],31:["o","2026-10-05"],32:["g","2026-10-05"],33:["h","2026-10-05"],34:["h","2026-10-05"],35:["h","2026-10-05"],36:["h","2026-10-05"],37:["h","2026-10-05"],38:["g","2026-10-05"],39:["h","2026-10-05"],40:["g","2026-10-05"],41:["h","2026-10-05"],42:["g","2026-10-05"],43:["s","2026-10-05"],44:["s","2026-10-05"],45:["s","2026-10-05"],46:["h","2026-10-05"],47:["h","2026-10-05"],48:["o","2026-10-05"],49:["o","2026-10-05"],50:["g","2026-10-05"],51:["h","2026-10-05"],52:["h","2026-10-05"],53:["o","2026-10-05"],54:["o","2026-10-05"],55:["h","2026-10-05"],56:["s","2026-10-05"],57:["s","2026-10-05"],58:["2","2026-10-06"],59:["s","2026-10-05"],60:["s","2026-10-05"],61:["s","2026-10-05"],62:["o","2026-10-05"],63:["o","2026-10-05"],64:["o","2026-10-05"],65:["o","2026-10-05"],66:["o","2026-10-05"],67:["o","2026-10-05"],68:["o","2026-10-05"],69:["o","2026-10-05"],70:["o","2026-10-05"],71:["h","2026-10-05"],72:["g","2026-10-06"],73:["h","2026-10-06"],74:["o","2026-10-06"],75:["o","2026-10-06"],76:["s","2026-10-06"],77:["o","2026-10-06"],78:["o","2026-10-06"],79:["2","2026-10-08"],80:["g","2026-10-12"],81:["o","2026-10-14"],82:["o","2026-10-14"],83:["o","2026-10-14"],84:["o","2026-10-14"],85:["o","2026-10-15"],86:["o","2026-10-15"],87:["o","2026-10-15"],88:["o","2026-10-15"],89:["o","2026-10-17"]};
+const REF_INFO={1:["g","2026-10-06"],2:["g","2026-10-05"],3:["g","2026-10-05"],4:["s","2026-10-05"],5:["s","2026-10-05"],6:["s","2026-10-05"],7:["s","2026-10-05"],8:["s","2026-10-05"],9:["s","2026-10-05"],10:["s","2026-10-05"],11:["s","2026-10-05"],12:["g","2026-10-05"],13:["s","2026-10-05"],14:["s","2026-10-05"],15:["s","2026-10-05"],16:["o","2026-10-05"],17:["h","2026-10-05"],18:["s","2026-10-05"],20:["h","2026-10-06"],21:["h","2026-10-05"],22:["h","2026-10-05"],23:["h","2026-10-05"],24:["h","2026-10-05"],25:["s","2026-10-05"],26:["h","2026-10-05"],27:["o","2026-10-05"],28:["o","2026-10-05"],29:["o","2026-10-05"],30:["o","2026-10-05"],31:["o","2026-10-05"],32:["g","2026-10-05"],33:["h","2026-10-05"],34:["h","2026-10-05"],35:["h","2026-10-05"],36:["h","2026-10-05"],37:["h","2026-10-05"],38:["g","2026-10-05"],39:["h","2026-10-05"],40:["g","2026-10-05"],41:["h","2026-10-05"],42:["g","2026-10-05"],43:["s","2026-10-05"],44:["s","2026-10-05"],45:["s","2026-10-05"],46:["h","2026-10-05"],47:["h","2026-10-05"],48:["o","2026-10-05"],49:["o","2026-10-05"],50:["g","2026-10-05"],51:["h","2026-10-05"],52:["h","2026-10-05"],53:["o","2026-10-05"],54:["o","2026-10-05"],55:["h","2026-10-05"],56:["s","2026-10-05"],57:["s","2026-10-05"],58:["2","2026-10-06"],59:["s","2026-10-05"],60:["s","2026-10-05"],61:["s","2026-10-05"],62:["o","2026-10-05"],63:["o","2026-10-05"],64:["o","2026-10-05"],65:["o","2026-10-05"],66:["o","2026-10-05"],67:["o","2026-10-05"],68:["o","2026-10-05"],69:["o","2026-10-05"],70:["o","2026-10-05"],71:["h","2026-10-05"],72:["g","2026-10-06"],73:["h","2026-10-06"],74:["o","2026-10-06"],75:["o","2026-10-06"],76:["s","2026-10-06"],77:["o","2026-10-06"],78:["o","2026-10-06"],79:["2","2026-10-08"],80:["g","2026-10-12"],81:["o","2026-10-14"],82:["o","2026-10-14"],83:["o","2026-10-14"],84:["o","2026-10-14"],85:["o","2026-10-15"],86:["o","2026-10-15"],87:["o","2026-10-15"],88:["o","2026-10-15"],89:["o","2026-10-17"],90:["g","2026-10-21"],91:["g","2026-10-21"],92:["s","2026-10-21"],93:["g","2026-10-21"]};
 const REF_META=Object.fromEntries(Object.entries(REF_INFO).map(([n,[t,chk]])=>[n,{t,chk}]));
 const refChk=refs=>(refs||[]).map(n=>REF_META[n]?.chk).filter(Boolean).sort()[0]||"";
 
@@ -3068,7 +3090,7 @@ const APP_VER="1.12.0";   // package.json version과 같아야 한다(단위 점
 // 알림(캘린더 파일·앱 안 안내): [키, 제목, 설명]
 const REM_ITEMS=[["B","아침 식사 기록","앱에서 아침 '먹음'을 눌러 주십시오."],["L","점심 식사 기록","앱에서 점심 '먹음'을 눌러 주십시오."],["D","저녁 식사 기록","앱에서 저녁 '먹음'을 눌러 주십시오."],["log","증상 기록","오늘 증상(변 횟수·피·복통)을 기록해 주십시오."],["water","물 마시기","물이나 보리차를 한 컵 마십니다. 설사가 잦으면 더 자주 마십니다."]];
 const DEF=()=>({
-  profile:{height:"",weight:"",age:"",sex:"",allergies:[],allergyOther:"",lactose:false,meds:[],medOther:"",dislikes:"",budget:"보통",budgetMonth:""},
+  profile:{height:"",weight:"",age:"",sex:"",allergies:[],allergyOther:"",lactose:false,meds:[],medOther:"",dislikes:"",budget:"보통",budgetMonth:"",usualBM:""},
   orders:{checked:[],fluidMl:"",other:[]},
   triggers:[], logs:{}, weights:[], water:{}, ratings:[],
   reintro:{active:null,history:[]}, extras:{}, skips:{}, swaps:{}, ate:{}, ateMeals:{}, plan:null, stageMode:"auto", theme:"system", fontSize:"md", okMenus:[], lastBackup:"", nudgeHide:"", cupMl:200, consent:null, care:{}, tab:"plan", selDay:0, foodQ:"", reportDays:14,
@@ -3111,6 +3133,7 @@ function normalizeState(o){
   s.profile.lactose=!!s.profile.lactose; if(!["알뜰","보통","여유"].includes(s.profile.budget)) s.profile.budget="보통";
   { const m=s.profile.budgetMonth; s.profile.budgetMonth=(m!==""&&m!=null&&Number.isFinite(+m)&&+m>=0&&+m<=1000)?Math.round(+m):"";   // 한 달 식비(만원)
     if(s.profile.budgetMonth!=="") s.profile.budget=budgetTier(s.profile.budgetMonth); }
+  { const u=s.profile.usualBM; s.profile.usualBM=(u!==""&&u!=null&&Number.isFinite(+u)&&+u>=0&&+u<=20)?Math.round(+u):""; }   // 평소 하루 배변 횟수(Mayo 배변 횟수 점수의 기준). 옛 저장본에는 없어도 열린다
   s.orders={...d.orders,...(obj(o.orders)||{})}; s.orders.checked=arr(s.orders.checked).filter(x=>typeof x==="string"); s.orders.other=arr(s.orders.other).map(tx).filter(Boolean); s.orders.fluidMl=tx(s.orders.fluidMl);
   s.triggers=arr(o.triggers).filter(t=>obj(t)&&typeof t.name==="string"&&t.name.trim()).map(t=>({...t,sym:arr(t.sym).map(tx).filter(Boolean),never:!!t.never,date:isDate(t.date)?t.date:"",source:typeof t.source==="string"?t.source:"직접"}));
   s.nudgeHide=typeof o.nudgeHide==="string"?o.nudgeHide:"";
@@ -3228,11 +3251,13 @@ function toast(msg,opt={}){
   clearTimeout(TOAST_T);
   const t=document.createElement("div"); t.className="toast";
   const m=document.createElement("span"); m.className="t-msg"; m.textContent=msg; t.appendChild(m);
-  if(opt.act){const b=document.createElement("button"); b.type="button"; b.className="t-act"; b.textContent=opt.act.label;
-    b.addEventListener("click",ev=>{ev.stopPropagation(); hide(); try{opt.act.fn()}catch(e){console.error(e)}}); t.appendChild(b)}
+  const g=document.createElement("span"); g.className="t-btns";
+  if(opt.act){t.classList.add("has-act"); const b=document.createElement("button"); b.type="button"; b.className="t-act"; b.textContent=opt.act.label;
+    b.addEventListener("click",ev=>{ev.stopPropagation(); hide(); try{opt.act.fn()}catch(e){console.error(e)}}); g.appendChild(b)}
   const x=document.createElement("button"); x.type="button"; x.setAttribute("aria-label","알림 닫기"); x.textContent="×";
-  x.addEventListener("click",ev=>{ev.stopPropagation(); hide()}); t.appendChild(x);
+  x.addEventListener("click",ev=>{ev.stopPropagation(); hide()}); g.appendChild(x); t.appendChild(g);
   box.classList.toggle("top",!!opt.top); box.replaceChildren(t);
+
   function hide(){clearTimeout(TOAST_T); t.classList.add("out"); setTimeout(()=>t.remove(),200)}
   const run=ms=>{clearTimeout(TOAST_T); TOAST_LEFT=ms; TOAST_AT=Date.now(); TOAST_T=setTimeout(hide,ms)};
   const pause=()=>{clearTimeout(TOAST_T); TOAST_LEFT=Math.max(1500,TOAST_LEFT-(Date.now()-TOAST_AT))};
@@ -3254,7 +3279,27 @@ const REF_SHORT={g:"지침",s:"연구",h:"기관",o:"공식",2:"2차"};
 const INLINE_TAGS=new Set(["B","STRONG","SPAN","EM","I","A","OUTPUT","CODE"]);
 // v1.9.0 D-3: 문단마다가 아니라 카드(묶음)마다 '근거' 칩 하나. D-7: 칩 바로 뒤 문장부호는 칩 앞으로 옮겨 마침표만 다음 줄로 떨어지지 않게
 const REF_BOX=".card,.why-card,.rcard,.rnotes,.banner,.lrow,.jrow,.qa-body,.refitem,.info-body,.tipbox,.wq,.sheet";
-function groupRefs(root){
+// 수정 요청서 v2 항목 5·10: 띄어쓰기 없이 '·'로 이은 짧은 말(주치의·영양사와, 곡물·콩류·생선)과 '라벨: 값'의 첫 낱말(지금: 골고루)이 줄 끝에서 갈라지지 않게 한 덩어리(.nb, nowrap)로 묶는다.
+// 글자는 그대로이고 보이지 않는 글자도 넣지 않는다(textContent 불변). 14자를 넘는 긴 묶음은 좁은 화면에서 넘치지 않게 그대로 둔다. 제목(b·h1~h4)·근거 칩은 건드리지 않는다
+const DOT_RUN=/([^\s]+:\s[^\s]+)|([^\s·]+(?:·[^\s·]+)+)/g, DOT_MAX=14, COLON_MAX=24, DOT_OK="p,li,dd,small,.hint,.muted,.banner,.warn-t,.foot-note", DOT_NO=".nb,b,strong,h1,h2,h3,h4,.ref,textarea,pre,script,style";
+function bindDots(root){
+  if(!root||!root.querySelectorAll) return;
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{
+    if(n.nodeValue.indexOf("·")<0&&n.nodeValue.indexOf(":")<0) return NodeFilter.FILTER_REJECT;
+    const p=n.parentElement; if(!p||p.closest(DOT_NO)) return NodeFilter.FILTER_REJECT;
+    return p.closest(DOT_OK)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+  const nodes=[]; while(tw.nextNode()) nodes.push(tw.currentNode);
+  for(const n of nodes){
+    const t=n.nodeValue; DOT_RUN.lastIndex=0; let m,last=0,frag=null;
+    while((m=DOT_RUN.exec(t))){
+      if(m[0].length>(m[1]?COLON_MAX:DOT_MAX)) continue;
+      if(!frag) frag=document.createDocumentFragment();
+      if(m.index>last) frag.append(t.slice(last,m.index));
+      const sp=document.createElement("span"); sp.className="nb"; sp.textContent=m[0]; frag.append(sp); last=m.index+m[0].length}
+    if(frag){ if(last<t.length) frag.append(t.slice(last)); n.replaceWith(frag) }}
+}
+function groupRefs(root){ groupRefs0(root); bindDots(root) }
+function groupRefs0(root){
   if(!root||S.refMode==="num") return;
   const sups=[...root.querySelectorAll("sup.ref:not(.grp)")]; if(!sups.length) return;
   const by=new Map();
@@ -3272,8 +3317,34 @@ function groupRefs(root){
 const orderOn=id=>S.orders.checked.includes(id);
 const orderLabel=id=>(ORDER_OPTS.find(o=>o[0]===id)||[])[1];
 
-/* ===== 증상 점수(SCCAI) / 단계 ===== */
-function sccai(l){
+/* ===== 증상 점수(Mayo 환자 보고 2항목, PRO2) · Truelove-Witts / 단계 ===== */
+// 수정 요청서 v2 항목 11(2026-10-21 원문 확인). 화면·진료 문서·CSV에 보이는 점수는 Mayo 점수 중 환자가 답할 수 있는 두 항목(배변 횟수·직장 출혈 각 0~3, 합계 0~6)이다.
+//  - 정의: ACG 2025 표 5 Mayo 점수[91]. 배변 횟수 0=평소와 같음, 1=평소보다 1~2회 많음, 2=3~4회 많음, 3=5회 이상 많음.
+//    직장 출혈 0=없음, 1=변에 피가 줄무늬 정도로 반 미만, 2=뚜렷한 피가 대부분, 3=변 없이 피만(이 앱에는 묻는 칸이 없다).
+//  - 기준: STRIDE-II 권고 4(UC 임상적 관해 = PRO2의 직장 출혈 0·배변 횟수 0)[90]. 원문이 정한 활동기 점수는 없어 앱도 그 밖의 구간에 기준을 만들지 않는다.
+//  - 내시경·의사 평가는 환자가 알 수 없어 계산하지 않으므로 '점수 N/6'이라고만 쓰고 'Mayo 점수 N점'이라고 쓰지 않는다(4항목 0~12점으로 오해되지 않게).
+const USUAL_BM_ASSUMED=3;   // 평소 횟수를 안 적었을 때: 앱의 관해 기준(하루 3회 이하)과 같은 값[38]이라 이전 판정이 느슨해지지 않는다
+function usualBM(){const v=S.profile.usualBM; return v!==""&&v!=null&&Number.isFinite(+v)&&+v>=0&&+v<=20?Math.round(+v):null}
+function pro2(l){
+  const total=(+l.day||0)+(+l.night||0), usual=usualBM(), base=usual??USUAL_BM_ASSUMED, more=total-base;
+  const sf=more<=0?0:more<=2?1:more<=4?2:3;
+  const blood=+l.blood||0, bl=+l.bloody||0;
+  const br=(blood===0&&bl===0)?0:(blood>=3||(blood===2&&bl*2>total))?2:1;   // 대부분 = 전체 배변의 절반 넘게
+  return {sf,br,sum:sf+br,base,assumed:usual===null};
+}
+// Truelove-Witts 중증도(대한장연구학회 2017 표 3[40]): 경증 = 배변 4회 이하·혈변 (−)~(+)·열 없음·빈맥 없음(·빈혈 없음·ESR 정상),
+// 중증 = 배변 6회 이상·혈변 (+++)와 열(37.5℃↑)·빈맥(90↑) 중 하나를 포함해 6개 중 4개 이상. 앱에는 혈색소·ESR이 없어 그 둘은 진료 때 확인한다
+function twGrade(l){
+  const total=(+l.day||0)+(+l.night||0), blood=+l.blood||0;
+  const t=l.temp!==""&&l.temp!=null&&!isNaN(+l.temp)?+l.temp:null, hr=l.pulse!==""&&l.pulse!=null&&!isNaN(+l.pulse)?+l.pulse:null;
+  const sys=(t!==null&&t>=37.5)||(hr!==null&&hr>=90), vit=t!==null&&hr!==null;
+  if((total>=6&&blood>=3&&sys)||dangerSignals(l).severe.length) return {g:3,t:"중증 기준에 해당할 수 있음",vit};
+  if(total<=4&&blood<=1&&!sys) return {g:1,t:"경증 범위",vit};
+  return {g:2,t:"중등도 범위(경증과 중증 사이)",vit};
+}
+// 단계 판정의 보조 기준: 낮·밤 배변, 급박감, 혈변, 몸 상태, 장 밖 증상을 더한 옛 합산 점수(Walmsley 1998[11]·Jowett 2003[15]의 재발 기준 5점).
+// 화면에는 보이지 않는다. 이 규칙을 빼면 '몸 상태 매우 나쁨 + 밤 배변'처럼 PRO2에 안 잡히는 날이 활동기에서 빠져 민감도가 떨어지므로(2026-10-21 전수 계산) 판정에만 남겼다
+function symSum(l){
   const d=+l.day||0, n=+l.night||0;
   const df=d<=3?0:d<=6?1:d<=9?2:3;
   const nf=n===0?0:n<=3?1:2;
@@ -3285,20 +3356,23 @@ function latestLog(maxAgeDays=3){
   return k?{date:k,...S.logs[k]}:null;
 }
 function activity(l){
-  // 활동도 판정: SCCAI 재발 기준(≥5)[15], ECCO 혈변 횟수[12], 국내 진단 가이드라인(Truelove·Witts)[38]
-  const sc=sccai(l), bloody=+l.bloody||0, total=(+l.day||0)+(+l.night||0), blood=+l.blood||0, urg=+l.urg||0;
+  // 활동도 판정(식단 단계): 화면에 보이는 점수(sc)는 PRO2[90·91]이고, 단계는 아래 규칙을 위에서부터 본다.
+  // 보조 합산 5점[11·15], 혈변 하루 4회[12·40], 하루 5회 이상 배변+혈변(국내 중등도)[38·40], 하루 7회 이상 배변(ACG 2025 표 4 중등도 이상 >6회)[91], 관해[90·38]
+  const comp=symSum(l), bloody=+l.bloody||0, total=(+l.day||0)+(+l.night||0), urg=+l.urg||0;
+  const p=pro2(l), sc=p.sum;
   const dsg=dangerSignals(l);
   if(dsg.severe.length||dsg.urgent.length) return {stage:1,label:"진료가 필요한 위험 신호가 있는 기록",sc};
-  if(sc>=5) return {stage:1,label:"SCCAI 5점 이상(활동기)",sc};
+  if(comp>=5) return {stage:1,label:"낮·밤 배변, 급박감, 혈변, 몸 상태를 합친 보조 점수가 5점 이상(활동기)",sc};
   if(bloody>=4) return {stage:1,label:"혈변 하루 4회 이상(중등도 이상)",sc};
-  if(total>=5&&(bloody>0||blood>0)) return {stage:1,label:"하루 5회 이상 배변과 혈변(국내 기준 중등도)",sc};
-  if(total<=3&&blood===0&&bloody===0&&urg===0&&!dsg.watch.length&&(+l.pain||0)<4) return {stage:3,label:"하루 배변 3회 이하, 혈변·급박감 없음(국내 관해 기준)",sc};
+  if(total>=5&&p.br>0) return {stage:1,label:"하루 5회 이상 배변과 혈변(국내 기준 중등도)",sc};
+  if(total>=7) return {stage:1,label:"하루 7회 이상 배변(ACG 2025 중등도 이상 구간)",sc};
+  if(p.sf===0&&total<=3&&p.br===0&&urg===0&&!dsg.watch.length&&(+l.pain||0)<4) return {stage:3,label:"배변 횟수·혈변 점수 0점, 급박감 없음(STRIDE-II 관해 기준, 하루 3회 이하)",sc};
   return {stage:2,label:"증상이 남아 있으나 활동기 기준 미만",sc};
 }
 function currentStage(){
   if(S.stageMode!=="auto"){const m=+S.stageMode; const l=latestLog(3); if(l&&m>1){const ds=dangerSignals(l); if(ds.severe.length||ds.urgent.length) return {stage:1,src:`직접 고른 단계가 있지만 ${md(l.date)} 기록에 위험 신호가 있어 가장 부드러운 단계로 바꿈`,score:activity(l).sc}} return {stage:m,src:"직접 선택"}}
   const l=latestLog(3);
-  if(l){const a=activity(l); return {stage:a.stage,src:`${md(l.date)} 기록 · 증상 점수 ${a.sc}점 · ${a.label}`,score:a.sc}}
+  if(l){const a=activity(l); return {stage:a.stage,src:`${md(l.date)} 기록 · 배변·혈변 점수 ${a.sc}/6점 · ${a.label}`,score:a.sc}}
   /* v1.9.0 F-4: 3일 넘게 기록이 없어도 조용히 단계를 내리지 않는다. 마지막 기록의 단계를 그대로 쓰고 홈에서 요즘 상태를 묻는다.
      2주가 넘으면 저잔사식까지 내리지 않고 이행식까지만 부드럽게 보며, 그 이유를 홈에 보여 준다(불필요한 식사 제한을 피함) */
   const o=latestLog(3650);
@@ -3506,6 +3580,8 @@ function guessFoodId(name){
 // 근거별 피하기·주의 태그(길병원[39]·대한장연구학회[37]·IOIBD[3]·AGA[2])
 // v1.9.0 절대 금지: 피하기보다 강한 앱 기준. 원재료명에 아질산나트륨·아질산칼륨·질산나트륨·질산칼륨(발색제)이 있는 제품
 const BAN_TAG=[["nitrite","아질산나트륨(발색제)을 넣은 가공육: 앱 기준 절대 금지(가공육은 되도록 먹지 않도록 안내, 대한장연구학회·IOIBD·ECCO)"],["alcohol","앱 기준 절대 금지(대한장연구학회는 금주를 권하고, 길병원은 과도한 술을 증상 악화 음식으로 안내)"]];
+// 수정 요청서 v2 항목 6: 같은 이유 문장을 음식 판정(foodStatus)과 외식 판정 이유 줄(mjLines)이 함께 쓰게 한 곳에 둠
+const WHY_REDMEAT="붉은 고기는 줄이도록 권고(IOIBD·ECCO)", WHY_FATTY="기름진 음식이라 소량만(길병원: 기름진 음식은 증상 악화 음식)", WHY_FODMAP="가스 유발 성분(FODMAP)이 많아 가스·복부팽만을 늘릴 수 있음";
 const LV_RANK={ok:0,caution:1,later:2,avoid:3,ban:4};
 const badLv=l=>l==="avoid"||l==="later"||l==="ban";   // 식단에서 빼는 판정
 // v1.11.0 M3: 햄·소시지가 흔히 들어가는 일반 음식(김밥·오므라이스·볶음밥, 'hamopt')은 판정은 두고 이 안내를 붙인다
@@ -3547,13 +3623,13 @@ function foodStatus(f,c=ctx()){
   if(c.fiberStage===1&&(f.cat==="채소"||f.tags.includes("veg"))) set("caution","채소는 푹 익혀 한 끼 1가지, 35g 정도만(길병원 저잔사식)");
   if(c.fiberStage===1&&FRUIT_CAP[f.id]) set("caution",`과일은 하루 ${FRUIT_CAP[f.id]}g 정도까지(길병원 저잔사식)`);
   if(c.stage===1&&f.tags.includes("oily")) set("caution","활동기에는 등푸른 생선 기름도 소화가 어려울 수 있어 흰살생선이 나을 수 있음");
-  if(f.tags.includes("redmeat")) set("caution","붉은 고기는 줄이도록 권고(IOIBD·ECCO)");
-  if(f.fod==="high") set("caution","가스 유발 성분(FODMAP)이 많아 가스·복부팽만을 늘릴 수 있음");
+  if(f.tags.includes("redmeat")) set("caution",WHY_REDMEAT);
+  if(f.fod==="high") set("caution",WHY_FODMAP);
   if(f.fod==="amount") set("caution",`가스 유발 성분(FODMAP)은 양에 따라 다름(${f.fodNote})`);
   if(f.tags.includes("salty")) set("caution","짠 음식이라 소량만(길병원: 짠 음식은 증상 악화 음식)");
   { const sg=(SERV[f.id]||[100])[0], na=f.na*sg/100, lim=naLimit();
     if(hasNut(f,"na")&&na>=lim/3) set("caution",`1회 분량(${sg}${SERV[f.id]&&/잔|컵|캔|병|팩/.test(SERV[f.id][1])?"ml":"g"})의 나트륨 ${Math.round(na).toLocaleString()}mg: 하루 권고 상한(${lim.toLocaleString()}mg)의 1/3 이상`) }
-  if(f.tags.includes("fatty")) set("caution","기름진 음식이라 소량만(길병원: 기름진 음식은 증상 악화 음식)");
+  if(f.tags.includes("fatty")) set("caution",WHY_FATTY);
   for(const [t,r] of CAUTION_TAG) if(f.tags.includes(t)&&!(t==="sour"&&f.tags.includes("citrus"))) set("caution",r);
   if(c.immunoMeds&&f.tags.includes("raw")){set("avoid",`면역을 누르는 약(${c.immunoMeds})을 쓰는 동안 날것·덜 익힌 생선·고기는 식중독 위험이 커 피하기(미국 질병통제예방센터 CDC)`); X.push(89)}
   if(c.gasHeavy&&f.tags.includes("allium")&&f.fod!=="high") set("caution","양파·마늘·파 양념은 가스를 늘릴 수 있음(FODMAP)");
@@ -3933,11 +4009,46 @@ function mjSync(){
 }
 function mjFromText(){
   mjSync(); const lines=MJ.text.split(/\n|,/).map(x=>x.trim()).filter(Boolean).slice(0,8);
-  if(!lines.length){MJ.err="메뉴 이름을 한 줄에 하나씩 적어 주십시오.";render();return}
+  if(!lines.length){MJ.err="메뉴 이름을 적어 주십시오. 여러 개는 쉼표로 구분합니다.";render();return}
   MJ={...MJ,step:"confirm",err:"",kind:"text",items:lines.map(n=>({name:n,ingr:[],cook:"",conf:"user"}))}; render();
 }
+/* 수정 요청서 v2 항목 6: 외식 판정 이유 줄('걸린 말: 이유'). 새 의학 문장은 만들지 않는다.
+   이유 문장은 앱에 이미 있는 것(AVOID_TAG·GLOSS·WHY_*·ruleCheck가 만든 문장·음식 목록의 설명)만 쓴다.
+   ruleCheck가 이름만 짧게 적은 이유(붉은 고기·기름진 조리 등)에는 걸린 낱말과 같은 이유 문장·근거 번호를 붙인다. 판정 단계는 건드리지 않는다 */
+function kwWords(it,tag){
+  const x=(it.name+" "+(it.ingr||[]).join(" ")+" "+(it.cook||"")).normalize("NFC").replace(/\s/g,"");
+  const y=KW_EXCL[tag]?x.replace(KW_EXCL[tag],""):x;
+  const w=(KW[tag]||[]).filter(k=>y.includes(k));
+  const toks=(it.ingr||[]).map(i=>String(i).normalize("NFC").replace(/\s/g,""));
+  for(const k of KW_EXACT[tag]||[]) if(toks.includes(k)) w.push(k);
+  return [...new Set(w)].slice(0,3);
+}
+function mjShortWhy(r){   // ruleCheck의 짧은 이유 → [걸린 말이 없을 때 이름, 앱에 이미 있는 이유 문장, 근거 번호, 태그]
+  const tg=t=>(AVOID_TAG.find(x=>x[0]===t)||[])[1];
+  switch(r){
+    case "붉은 고기": return ["붉은 고기",WHY_REDMEAT,[3,50],"redmeat"];
+    case "기름진 조리": return ["기름진 조리",WHY_FATTY,[39],"fatty"];
+    case "가스를 늘릴 수 있는 재료": return ["가스를 늘릴 수 있는 재료",WHY_FODMAP,[20],"fodmap"];
+    case "가공육(햄·베이컨 등) 포함 가능성": return ["가공육",tg("processed"),GLOSS.processed[2],"processed"];
+    case "초가공식품 포함 가능성": return ["초가공식품",tg("upf"),GLOSS.upf[2],"upf"];
+    case "유당 가능성": return ["유당",GLOSS.lactose[1],GLOSS.lactose[2],"lactose"];
+  }
+  return null;
+}
+function mjLines(it,rc,f,base){   // base: 종류가 많은 메뉴(broad)에서 가장 엄격한 후보의 이유 줄
+  const out=[...(base||[])], refs=[];
+  for(const r of rc.reasons){
+    const m=mjShortWhy(r);
+    if(m&&m[1]){const w=kwWords(it,m[3]); out.push(`${w.length?w.join("·"):m[0]}: ${m[1]}`); refs.push(...m[2])}
+    else out.push(r);
+  }
+  // 목록 음식: 이유가 없거나 '단계부터 권장'뿐이면(어떤 성분이 왜 문제인지 안 보임) 음식 목록에 이미 있는 설명을 붙인다
+  if(f&&f.why&&out.every(l=>l.includes("단계부터 권장"))){out.push(`${f.name}: ${f.why}`); refs.push(...(f.refs||[]).slice(0,3))}
+  if(!f&&!out.length) out.push("걸린 말 없음: 이름과 재료에서 앱 규칙에 걸리는 낱말을 찾지 못했습니다");
+  return {lines:out, refs:[...new Set(refs)]};   // 이유는 줄이지 않고 모두 보인다(알레르기·지시 같은 중요한 이유가 가려지지 않게)
+}
 function mjRecheck(){ if(!MJ.results) return; const rank=LV_RANK;
-  MJ.results=MJ.results.map(r=>{const it=MJ.items.find(i=>i.name===r.name)||{name:r.name,ingr:[],cook:""}; const rc=ruleCheck(it); return rank[rc.level]>rank[r.level]?{...r,level:rc.level,rules:rc.reasons,override:true}:{...r,rules:rc.reasons}}) }
+  MJ.results=MJ.results.map(r=>{const it=MJ.items.find(i=>i.name===r.name)||{name:r.name,ingr:[],cook:""}; const rc=ruleCheck(it); const L=mjLines(it,rc,r.food?FOOD[r.food]:null,r.lines0); const x={...r,rules:rc.reasons,lines:L.lines}; return rank[rc.level]>rank[r.level]?{...x,level:rc.level,override:true}:x}) }
 function mjJudge(){
   mjSync(); MJ.items=MJ.items.filter(x=>x.name.trim());
   if(!MJ.items.length) return;
@@ -3945,12 +4056,14 @@ function mjJudge(){
     const br=broadOf(it.name);
     if(br&&!it.ingr.length){const c=ctx(); const sts=br.map(i=>({i,s:foodStatus(FOOD[i],c)})); const worst=sts.reduce((a,b)=>LV_RANK[b.s.level]>LV_RANK[a.s.level]?b:a);
       const rc=ruleCheck({...it,name:"__"}); const lv=LV_RANK[rc.level]>LV_RANK[worst.s.level]?rc.level:worst.s.level;
-      return {name:it.name,conf:it.conf,level:lv,broad:sts.map(x=>[x.i,x.s.level]),why:`'${it.name}'${eunNeun(it.name)} 종류가 많아 하나로 정하지 않고, 아래 메뉴 가운데 가장 엄격한 판정(${FOOD[worst.i].name}: ${LV[worst.s.level]})을 보였습니다. 실제 메뉴를 고르면 그 메뉴로 다시 판정합니다.`,refs:[],rules:[],override:false,food:null}}
+      const wf=FOOD[worst.i], bl=worst.s.level==="ok"?[]:worst.s.reasons.map(r=>`${wf.name}: ${r}`), BL=mjLines({name:it.name,ingr:[],cook:""},{reasons:[]},wf,bl);
+      return {name:it.name,conf:it.conf,level:lv,broad:sts.map(x=>[x.i,x.s.level]),lines:BL.lines,lines0:BL.lines,why:`'${it.name}'${eunNeun(it.name)} 종류가 많아 하나로 정하지 않고, 아래 메뉴 가운데 가장 엄격한 판정(${FOOD[worst.i].name}: ${LV[worst.s.level]})을 보였습니다. 실제 메뉴를 고르면 그 메뉴로 다시 판정합니다.`,refs:BL.refs,rules:[],override:false,food:null}}
     const rc=ruleCheck(it); const f=exactFood(it.name);
     // 앱 음식 목록에 같은 이름이 있으면 그 음식 판정을, 없으면 이름·재료의 단어로만 검사하고 '주의'보다 낮게 두지 않는다
     const lv=f?rc.level:(rc.level==="ok"?"caution":rc.level);
     const why=f?`앱 음식 목록의 '${f.name}' 판정입니다.`:(it.ingr.length?"앱 음식 목록에 없는 메뉴라 적어 주신 이름과 재료로 앱 규칙만 검사했습니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.":"앱 음식 목록에 없는 메뉴라 이름의 단어로만 검사했습니다. 재료를 적으면 더 정확해집니다. 조리법·양념은 확인하지 못해 '주의'보다 낮게 두지 않습니다.");
-    return {name:it.name,conf:it.conf,level:lv,why,refs:[...new Set([...(f?f.refs.slice(0,3):[]),...(rc.refs||[])])],rules:rc.reasons,override:false,food:f?f.id:null,ham:!!(f&&f.tags.includes("hamopt")&&lv!=="ban")};
+    const L=mjLines(it,rc,f);
+    return {name:it.name,conf:it.conf,level:lv,why,refs:[...new Set([...(f?f.refs.slice(0,3):[]),...(rc.refs||[]),...L.refs])],rules:rc.reasons,lines:L.lines,override:false,food:f?f.id:null,ham:!!(f&&f.tags.includes("hamopt")&&lv!=="ban")};
   });
   MJ.step="done"; render();
 }
@@ -3974,14 +4087,14 @@ function foodSuspects(days=30){
   if(rows.length<7) return out;
   const nb=rows.filter(r=>r.bad).length; out.base=Math.round(nb/rows.length*100);
   const stat={};
-  for(const r of rows) r.sc=sccai(S.logs[r.d]);
+  for(const r of rows) r.sc=pro2(S.logs[r.d]).sum;
   const scAll=rows.reduce((t,r)=>t+r.sc,0);
   for(const r of rows) for(const nm of r.foods){const o=stat[nm]||(stat[nm]={n:0,bad:0,sc:0}); o.n++; o.sc+=r.sc; if(r.bad) o.bad++}
   for(const [name,o] of Object.entries(stat)){
     if(o.n<3||o.bad<2||o.n>=rows.length*0.8) continue;
     const restN=rows.length-o.n, restBad=nb-o.bad; if(restN<3) continue;
     const pct=Math.round(o.bad/o.n*100), rest=Math.round(restBad/restN*100);
-    // v1.9.0 F-11: 증상 점수(SCCAI) 평균도 함께 보여 준다(먹은 날 vs 먹지 않은 날)
+    // v1.9.0 F-11: 배변·혈변 점수(PRO2) 평균도 함께 보여 준다(먹은 날 vs 먹지 않은 날)
     if(pct>=rest+20) out.push({name,n:o.n,bad:o.bad,pct,rest,restN,avgE:r1(o.sc/o.n),avgR:r1((scAll-o.sc)/restN)});
   }
   out.sort((a,b)=>(b.pct-b.rest)-(a.pct-a.rest)||b.n-a.n); out.splice(5);
@@ -4261,7 +4374,7 @@ const foodIc=id=>FICON[id]||EMO_IC[EMO[id]]||CAT_IC[FOOD[id]?.cat]||"f_plate";
 const fIcon=(id,size="")=>{const f=FOOD[id];return `<span class="fic ${size} ${TINT[f?.cat]||"t-plain"}" aria-hidden="true">${ic(foodIc(id))}</span>`};
 /* 어려운 말 풀이 */
 const GLOSS={
- sccai:["증상 점수(SCCAI)","낮·밤 배변 횟수, 급박감, 혈변, 몸 상태, 장 밖 증상으로 계산하는 궤양성 대장염 활동도 점수입니다. 환자가 직접 매겨도 정확하다고 검증됐고, 5점 이상이면 증상이 활발한 상태(활동기)로 봅니다.",[11,15]],
+ pro2:["배변·혈변 점수","Mayo 점수 중 환자가 답하는 두 항목입니다. 배변 횟수 점수(평소보다 늘어난 횟수: 없음 0·1~2회 1·3~4회 2·5회 이상 3)와 혈변 점수(없음 0·줄무늬 정도 1·뚜렷한 피 2·피만 3)를 더해 0~6점이고, 0점이 STRIDE-II의 임상적 관해 기준입니다. 내시경·의사 평가는 빠져 있어 'Mayo 점수' 전체와는 다릅니다.",[90,91]],
  fodmap:["가스 유발 성분(FODMAP)","장에서 잘 흡수되지 않고 발효돼 가스·복부팽만·설사를 일으킬 수 있는 당 성분입니다. 올리고당·이당류(유당)·단당류(과당)·당알코올을 묶어 부르는 말입니다.",[20]],
  lowres:["저잔사식","섬유와 찌꺼기가 적은 음식 위주로 먹어 변의 양을 줄이는 식사입니다. 한 번에 먹는 음식의 섬유를 2g 미만으로 맞춥니다.",[26,36]],
  transition:["이행식","증상이 나아질 때 부드러운 음식부터 조금씩 늘려 일반식으로 옮겨 가는 식사입니다.",[36]],
@@ -4349,9 +4462,9 @@ function storageHTML(){
 }
 /* v1.11.0 8번(M4): 활동기 알림의 행동 문장은 하루 알림·3일 연속 알림 모두 이 한 문장으로 고정(3일째에 더 약한 말이 되지 않게) */
 const ALERT_TELL="주치의(IBD 진료팀)에 알리십시오.";
-/* v1.10.0 사용자 5: 마지막 기록(어제·오늘)까지 3일 연속 증상 점수 5점 이상인지 */
+/* v1.10.0 사용자 5: 마지막 기록(어제·오늘)까지 3일 연속 활동기 기준(보조 합산 점수 5점 이상)인지. 합산 점수는 화면에 보이지 않으므로 알림에도 숫자를 쓰지 않는다 */
 function trend3(){const l=latestLog(1); if(!l) return null; const ds=[2,1,0].map(i=>addDays(l.date,-i)); const ls=ds.map(d=>S.logs[d]);
-  if(ls.some(x=>!x)) return null; const sc=ls.map(sccai); return sc.every(v=>v>=5)?{from:ds[0],to:ds[2],sc}:null}
+  if(ls.some(x=>!x)) return null; const sc=ls.map(symSum); return sc.every(v=>v>=5)?{from:ds[0],to:ds[2],sc}:null}
 function alertsHTML(){
   const l=S.logs[today()]?{date:today(),...S.logs[today()]}:latestLog(1);
   const ds=dangerSignals(l);
@@ -4359,8 +4472,8 @@ function alertsHTML(){
   if(ds.severe.length) h+=`<div class="banner crit" role="alert"><strong>병원 진료가 먼저 필요합니다</strong><br>${esc(md(l.date))} 기록: ${esc(ds.severe.join(", "))}. 국내·유럽 중증 기준에 해당할 수 있습니다${sup([38,12])}. 중증은 입원 치료가 필요한 응급에 가깝습니다${sup([40])}. 오늘 주치의에게 연락하거나 응급실로 가십시오. 피를 많이 흘리거나 어지러워 쓰러질 것 같으면 119에 연락하십시오.</div>`;
   if(ds.urgent.length) h+=`<div class="banner urgent" role="alert"><strong>진료를 미루지 마십시오</strong><br>${esc(md(l.date))} 기록: ${esc(ds.urgent.join(", "))}. 이런 증상이 있으면 치료를 미루지 않도록 안내됩니다${sup([41])}. 오늘 주치의(IBD 진료팀)에게 연락하고, 심해지면 응급실로 가십시오.</div>`;
   const tr=trend3();
-  // v1.10.0 사용자 5: 3일 연속 증상 점수 5점 이상(활동기 기준)이면 알린다. 예측이 아니라 기록을 기준과 비교한 것
-  if(!ds.severe.length&&!ds.urgent.length&&tr) h+=`<div class="banner warn" role="alert"><strong>3일 연속 활동기 기준입니다</strong><br>${esc(md(tr.from))}~${esc(md(tr.to))} 증상 점수가 ${tr.sc.join("·")}점으로 활동기 기준(5점 이상)이 이어지고 있습니다${sup([11,15])}. ${ALERT_TELL} 기록을 기준과 비교한 안내이며, 앞으로의 경과를 예측하지 않습니다.</div>`;
+  // v1.10.0 사용자 5: 3일 연속 활동기 기준이면 알린다. 예측이 아니라 기록을 기준과 비교한 것
+  if(!ds.severe.length&&!ds.urgent.length&&tr) h+=`<div class="banner warn" role="alert"><strong>3일 연속 활동기 기준입니다</strong><br>${esc(md(tr.from))}~${esc(md(tr.to))} 기록이 3일 연속 활동기 기준(낮·밤 배변, 급박감, 혈변, 몸 상태를 합친 보조 점수 5점 이상)에 해당합니다${sup([11,15])}. ${ALERT_TELL} 기록을 기준과 비교한 안내이며, 앞으로의 경과를 예측하지 않습니다.</div>`;
   else if(!ds.severe.length&&!ds.urgent.length&&l&&activity(l).stage===1) h+=`<div class="banner warn" role="alert"><strong>증상이 활동기 기준입니다</strong><br>${esc(md(l.date))} 기록이 악화 기준에 해당합니다${sup([15,38])}. ${ALERT_TELL} 스스로 굶지 말고 부드러운 음식을 조금씩 자주 드십시오${sup([40,39])}.</div>`;
   if(ds.watch.length) h+=`<div class="banner warn" role="alert"><strong>주치의와 상의가 필요한 증상</strong><br>${esc(md(l.date))} 기록: ${esc(ds.watch.join(", "))}. 증상이 심해지면 바로 진료를 받으십시오.</div>`;
   h+=glimHTML();
@@ -4388,33 +4501,33 @@ function tip(id,html,cls="hint"){TIPS[id]=html; return S.tips.includes(id)?`<but
 function ridgeText(){
   const t=today(); const tl=S.logs[t]; const pd=lastLogBefore(t,60); const pl=pd?S.logs[pd]:null;
   // v1.12.0 검토 C-06: 상태 문장은 식단 단계와 같은 기준(activity: 대한장연구학회[38]·ECCO[12]의 관해 = 하루 배변 3회 이하, 혈변·급박감 없음).
-  // SCCAI 2점 이하는 연구에서 쓰는 관해 점수(Higgins 2005)지만 하루 4~6회 배변도 1점이라, 점수만으로 관해·편안한 하루라고 하지 않는다
+  // 화면의 점수는 PRO2(배변·혈변 0~6점)다. 점수만으로 관해·편안한 하루라고 하지 않고 식단 단계와 같은 판정(activity)을 따른다
   const band=l=>{const st=activity(l).stage; return st===3?"관해 기준에 맞습니다":st===2?"증상이 남아 있습니다":"활동기 기준입니다"};   // 기준 자세히는 식단 단계 화면
   const yd=pd===addDays(t,-1); const ref=yd?"어제":"지난 기록", refWa=yd?"어제와":"지난 기록과";
-  if(tl){const v=sccai(tl), pv=pl?sccai(pl):null, st=activity(tl).stage;
-    const head=st===1?"증상이 활발합니다":pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
-    return {head,sub:`증상 점수 ${v}점, ${band(tl)}${tl.quick?" (빠른 기록)":""}`}}
+  if(tl){const v=pro2(tl).sum, pv=pl?pro2(pl).sum:null, st=activity(tl).stage;
+    const head=st===1?"증상이 활발합니다":pv==null?(st===3&&(+tl.well||0)<2?"편안한 하루입니다":"증상이 조금 있습니다"):v<pv?`${ref}보다 편안합니다`:v>pv?`${ref}보다 불편합니다`:`${refWa} 비슷합니다`;
+    return {head,sub:`배변·혈변 점수 ${v}/6점, ${band(tl)}${tl.quick?" (빠른 기록)":""}`}}
   if(S.stageMode==="auto"&&currentStage().stale){const l0=lastLogBefore(t,3650); return {head:"요즘 증상이 어떻습니까?",sub:`${l0?`마지막 기록 ${md(l0)}. `:""}기록하면 식단 단계를 다시 맞춥니다`}}
-  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 증상 점수 ${sccai(pl)}점, ${band(pl)}`};
+  if(pl) return {head:"오늘 증상을 기록해 주십시오",sub:`${yd?"어제":md(pd)} 배변·혈변 점수 ${pro2(pl).sum}/6점, ${band(pl)}`};
   return {head:"증상을 기록하면 흐름이 보입니다",sub:"하루 한 번 배변·피·급박감을 적으면 2주 흐름이 여기에 그려집니다"};
 }
 function ridgeSVG(){
   const t=today(), N=15, from=addDays(t,-(N-1));
-  const pts=sccaiPts(from,N).map((p,i)=>({i,d:p.d,v:p.v,q:p.quick}));
+  const pts=symPts(from,N).map((p,i)=>({i,d:p.d,v:p.v,q:p.quick}));
   const have=pts.filter(p=>p.v!=null);
   // 그래프 폭 = 화면에 그려지는 폭(글자가 화면 크기와 상관없이 같은 크기로 보이게). 휴대폰은 화면 폭 - 68, PC는 640px 띠 안
   // v1.11.0 R-19: 0점 선(YZ)을 관해 범위 띠 아래 끝(BB)보다 위에 두어 0점 선이 띠 밖으로 나가 0점 아래처럼 보이지 않게
   const W=Math.round(Math.max(240,Math.min(600,Math.min(innerWidth||390,640)-68))), X0=6, X1=W-6, YT=10, YZ=89, BB=96, f=n=>n.toFixed(1);
-  // 세로 눈금은 6점 이상(5점 활동기 기준이 그래프 위쪽에 오게)
-  const mx=Math.max(6,...have.map(p=>p.v)); const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YZ-(Math.min(v,mx)/mx)*(YZ-YT);
-  const band=`<rect x="0" y="${f(y(2))}" width="${W}" height="${f(BB-y(2))}" rx="6" class="band"/><line x1="0" x2="${W}" y1="${f(y(2))}" y2="${f(y(2))}" class="thr"/>`;
+  // 세로 눈금은 0~6점 고정(PRO2의 가능한 범위)
+  const mx=6; const x=i=>X0+i*(X1-X0)/(N-1), y=v=>YZ-(Math.min(v,mx)/mx)*(YZ-YT);
+  const band=`<rect x="0" y="${f(y(0.5))}" width="${W}" height="${f(BB-y(0.5))}" rx="6" class="band"/><line x1="0" x2="${W}" y1="${f(y(0.5))}" y2="${f(y(0.5))}" class="thr"/>`;
   const md2=d=>`${+d.slice(5,7)}/${+d.slice(8)}`;
   // 날짜는 매일이 아니라 일주일 간격(2주 전·1주 전·오늘)
   const labels=`<text x="2" y="110" text-anchor="start">${md2(pts[0].d)}</text><text x="${f(x(7))}" y="110" text-anchor="middle">${md2(pts[7].d)}</text><text x="${W-2}" y="110" text-anchor="end">오늘</text>`;
-  const bl=`<text x="8" y="${f(BB-5)}" class="bl">점수 2점 이하</text>`;   // v1.12.0 C-06: 관해는 식단 단계 기준으로만 말한다
-  if(!have.length) return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록이 쌓이면 보입니다">${band}${bl}<text x="${f(W/2)}" y="44" text-anchor="middle" class="r-empty">기록이 쌓이면 2주 흐름이 보입니다</text>${labels}</svg>`;
+  const bl=`<text x="8" y="${f(BB-5)}" class="bl">점수 0점</text>`;   // v1.12.0 C-06: 관해는 식단 단계 기준으로만 말한다. 0점은 STRIDE-II가 정한 증상 관해 점수
+  if(!have.length) return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 배변·혈변 점수 그래프: 기록이 쌓이면 보입니다">${band}${bl}<text x="${f(W/2)}" y="44" text-anchor="middle" class="r-empty">기록이 쌓이면 2주 흐름이 보입니다</text>${labels}</svg>`;
   // v1.11.0 R-06: 기록이 1일뿐이어도 그날 점은 그린다(선은 2일부터)
-  if(have.length===1){const p=have[0]; return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 증상 점수 그래프: 기록 1일, ${md(p.d)} ${p.v}점. 기록이 2일 이상이면 선으로 이어집니다">${band}${bl}<text x="${f(W/2)}" y="30" text-anchor="middle" class="r-empty">기록이 2일 이상이면 선으로 이어집니다</text><circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="5.5" class="${p.q?"qdot":"dot"}"/>${labels}</svg>`}
+  if(have.length===1){const p=have[0]; return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="최근 2주 배변·혈변 점수 그래프: 기록 1일, ${md(p.d)} ${p.v}점. 기록이 2일 이상이면 선으로 이어집니다">${band}${bl}<text x="${f(W/2)}" y="30" text-anchor="middle" class="r-empty">기록이 2일 이상이면 선으로 이어집니다</text><circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="5.5" class="${p.q?"qdot":"dot"}"/>${labels}</svg>`}
   const segs=[]; let cur=[];   // 3일 넘게 비면 선을 끊는다(없는 날을 이어 그리지 않게)
   for(const p of have){ if(cur.length&&p.i-cur[cur.length-1].i>3){segs.push(cur); cur=[]} cur.push(p) } if(cur.length) segs.push(cur);
   const path=sg=>{let d=`M${f(x(sg[0].i))},${f(y(sg[0].v))}`; for(let k=1;k<sg.length;k++){const a=sg[k-1], b=sg[k], m=f((x(a.i)+x(b.i))/2); d+=` C${m},${f(y(a.v))} ${m},${f(y(b.v))} ${f(x(b.i))},${f(y(b.v))}`} return d};
@@ -4422,7 +4535,7 @@ function ridgeSVG(){
   const last=have[have.length-1];
   const dots=have.filter(p=>p.q||p===last||segs.some(sg=>sg.length===1&&sg[0]===p)).map(p=>`<circle cx="${f(x(p.i))}" cy="${f(y(p.v))}" r="${p===last?5.5:3.6}" class="${p.q?"qdot":"dot"}"/>`).join("");
   const vs=have.map(p=>p.v);
-  const aria=`최근 2주 증상 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 증상 점수 2점 이하${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
+  const aria=`최근 2주 배변·혈변 점수 그래프: 기록 ${have.length}일, 가장 높은 날 ${Math.max(...vs)}점, 가장 낮은 날 ${Math.min(...vs)}점, 마지막 기록 ${md(last.d)} ${last.v}점. 아래 띠는 점수 0점${have.some(p=>p.q)?", 빈 동그라미는 빠른 기록":""}`;
   return `<svg class="r-chart" viewBox="0 0 ${W} 114" role="img" aria-label="${aria}">${band}${lines}${bl}${dots}${labels}</svg>`;
 }
 function ridgeHTML(cs){
@@ -4443,7 +4556,7 @@ function tasksHTML(){
   const ring=(ok,p)=>`<span class="tk-n${!ok&&p>0?" part":""}" aria-hidden="true"${!ok&&p>0?` style="--p:${Math.round(p*100)}%"`:""}>${ok?ic("check"):""}</span>`;
   const row=(ok,p,title,sub,acts)=>`<div class="task${ok?" is-done":""}"><span class="tk-main">${ring(ok,p)}<span class="lt"><b>${title}${ok?'<span class="sr-only"> 완료</span>':""}</b><small>${sub}</small></span></span>${acts?`<span class="tk-act">${acts}</span>`:""}</div>`;
   return `<section class="card tasks" aria-labelledby="tasksT"><div class="row between"><h2 id="tasksT">오늘 할 일</h2><span class="hint">${done.filter(Boolean).length}/3 완료</span></div>
-    ${row(done[0],0,"증상 기록",tl?`증상 점수 ${sccai(tl)}점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:"아직 기록하지 않았습니다. 위 '오늘 증상 기록'을 누르십시오","")}
+    ${row(done[0],0,"증상 기록",tl?`배변·혈변 점수 ${pro2(tl).sum}/6점${tl.quick?"(빠른 기록: 세 가지만)":""}으로 저장했습니다`:"아직 기록하지 않았습니다. 위 '오늘 증상 기록'을 누르십시오","")}
     ${row(done[1],mealN/SLOTS.length,"끼니 표시",`'먹음'·'안 먹음'을 표시한 끼니 ${mealN}/${SLOTS.length}`,`<button class="btn sm" data-act="goMeals">끼니 보기</button>`)}
     ${row(done[2],cups/goalCups,"물 마시기",`${cups}잔(${cups*S.cupMl}ml) · 목표 약 ${goalCups}잔`,`<button class="btn sm primary" data-act="cupAdd" aria-label="물 한 잔(${S.cupMl}ml) 마셨습니다">+1잔</button>`)}
   </section>`;
@@ -4460,6 +4573,9 @@ function viewPlan(){
   const e=eatenTotals(d.date); const fut=d.date>today();
   return `
   ${isToday?ridgeHTML(cs):`<div class="hero"><div class="cal-head"><b>${d0.getMonth()+1}월 ${d0.getDate()}일 <small class="muted">${WD[d0.getDay()]}요일</small></b><button class="glass chip-btn" data-act="openScr" data-v="set-stage" aria-label="식단 단계 ${stg(cs.stage)}. 눌러서 자세히 보기">${STAGES[cs.stage].plain} 단계${ic("chev","chev")}</button></div></div>`}
+  <div class="hero hero-days">
+    <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
+  </div>
   <div class="sec-title" id="meals"><h2 id="mealsT" tabindex="-1">${isToday?"오늘":md(d.date)} 끼니</h2>${d.checked?`<button class="hint linkish" data-act="checkInfo" data-v="${esc(d.checked)}">${d.checked==="통과"?"앱 규칙 검사 통과":"검사: "+esc(d.checked)} ${ic("info")}</button>`:`<span class="hint"></span>`}</div>
   <div class="list meals">
   ${d.meals.map((m,k)=>{const mt=totals(m.items);const bad=P.sample?[]:mealIssues(m,c);const skip=isSkipped(d.date,m.slot);const ate=isAte(d.date,m.slot);const future=d.date>today();const r=ateRatio(d.date,m.slot);return `
@@ -4475,9 +4591,6 @@ function viewPlan(){
       ${(P.sample||!future)?`<button class="mswap" data-act="mealMore" data-k="${k}" aria-label="${esc(m.slot)} ${future?"바꾸기":"안 먹음·바꾸기"}: ${future?"":"안 먹음 표시, "}${P.sample?"메뉴 고르기, 다른 메뉴":""}">${ic("refresh")} ${future?"바꾸기":"안 먹음·바꾸기"}</button>`:""}
     </div>`}
     </div>`}).join("")}
-  </div>
-  <div class="hero hero-days">
-    <div class="days" role="group" aria-label="날짜 선택">${[3,2,1].map(n=>{const dt0=addDays(today(),-n);const dt=new Date(dt0+"T00:00:00");return `<button class="day past" data-act="pastDay" data-v="${dt0}" aria-label="${md(dt0)} 지난 기록"><span>${WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}${P.days.map((x,k)=>{const dt=new Date(x.date+"T00:00:00");return `<button class="day" data-act="day" data-i="${k}" aria-pressed="${k===i}" aria-label="${md(x.date)}"><span>${x.date===today()?"오늘":WD[dt.getDay()]}</span><b class="num">${dt.getDate()}</b></button>`}).join("")}</div>
   </div>
   ${note?`<div class="banner info">${esc(note)}</div>`:""}
   ${UPD?`<div class="banner info upd-banner"><strong>새 버전이 준비됐습니다</strong><br>다시 열면 새 버전으로 바뀝니다. 기록은 그대로 남습니다. <button class="btn sm" data-act="updReload">지금 다시 열기</button></div>`:""}${alertsHTML()}${(()=>{const r=isToday?remindDue():null; return r?`<div class="banner info"><strong>${esc(r.sum)} 시간입니다</strong><br>${r.k==="log"?"위 '오늘 증상 기록'을 눌러 주십시오.":"아래 끼니에서 '먹음'을 누르거나, 먹지 않았으면 '안 먹음·바꾸기'를 눌러 주십시오."}</div>`:""})()}${isToday?"":nudgesHTML(true)}${msgHTML()}
@@ -4778,7 +4891,7 @@ const WSTEPS=[
   {k:"well",t:"오늘 전반적인 몸 상태는 어떻습니까?",type:"one",opts:["아주 좋음","조금 안 좋음","나쁨","매우 나쁨","최악"]}]},
  {k:"body",t:"복통·가스·피로·변 모양",q:[
   {k:"pain",t:"복통은 어느 정도였습니까?",type:"range"},
-  // v1.10.0 사용자 6: 가스·피로는 증상 점수(SCCAI)에 들지 않아 선택으로(가스 '많음'이면 식단에서 FODMAP 음식을 뺀다)
+  // v1.10.0 사용자 6: 가스·피로는 증상 점수에 들지 않아 선택으로(가스 '많음'이면 식단에서 FODMAP 음식을 뺀다)
   {k:"gas",t:"배에 가스가 찼습니까?(선택)",type:"oneS",opt:true,opts:["없음","약간","많음"]},
   {k:"fatigue",t:"피로감은 어땠습니까?(선택)",type:"oneS",opt:true,opts:["없음","약간","심함"]},
   {k:"stool",t:"변 모양(선택)",type:"one",opt:true,hint:"브리스톨 대변 형태 척도입니다. 진료에서 쓰는 기준이라 기억나는 대로 골라 주십시오",opts:["기록 안 함","1 딱딱한 덩어리","2 울퉁불퉁한 소시지","3 갈라진 소시지","4 매끈한 소시지","5 부드러운 덩어리","6 흐물흐물한 조각","7 물 같은 변"]}]},
@@ -4840,13 +4953,13 @@ function viewLog(){
     ${listRow({icon:"steth",tint:"t-sage",title:"건강 관리 점검",sub:"주치의와 확인할 예방접종·검진",right:`${careList().filter(c=>careDone(c[0])).length}/${careList().length}`,attr:'data-act="openScr" data-v="care"'})}
     ${listRow({icon:"doc",tint:"t-warm",title:"진료 때 물어볼 것",sub:"적어 두면 진료용 PDF에 함께 들어갑니다",right:`${(S.qs||[]).filter(q=>!q.done).length}개`,attr:'data-act="openScr" data-v="asks"'})}
   </div>
-  ${Object.keys(S.logs).length>=2?`<div class="card stack"><div class="row between"><h2>증상 점수 추이</h2><span class="hint">최근 14일</span></div>
-    <canvas id="logChart" width="640" height="220" style="width:100%;height:auto" role="img" aria-label="최근 14일 증상 점수 변화. 같은 내용은 아래 '최근 기록'에 글자로 있습니다"></canvas>
-    <p class="hint" style="margin:0">${term("sccai","SCCAI")} 점수입니다. 5점 이상이면 활동기 기준입니다${sup([11,15])}.${Object.entries(S.logs).some(([k,l])=>l.quick&&k>=addDays(today(),-13))?" 빈 동그라미는 빠른 기록(밤 배변·몸 상태 빠짐)입니다.":""}</p></div>`:""}
+  ${Object.keys(S.logs).length>=2?`<div class="card stack"><div class="row between"><h2>배변·혈변 점수 추이</h2><span class="hint">최근 14일</span></div>
+    <canvas id="logChart" width="640" height="220" style="width:100%;height:auto" role="img" aria-label="최근 14일 배변·혈변 점수 변화. 같은 내용은 아래 '최근 기록'에 글자로 있습니다"></canvas>
+    <p class="hint" style="margin:0">${term("pro2","배변·혈변 점수")}입니다(0~6점). 0점이 임상적 관해 기준이고 그 밖의 점수에는 원문이 정한 활동기 기준이 없습니다${sup([90,91])}.${Object.entries(S.logs).some(([k,l])=>l.quick&&k>=addDays(today(),-13))?" 빈 동그라미는 빠른 기록입니다.":""}</p></div>`:""}
   ${suspectsHTML()}
-  <div class="sec-title"><h2>최근 기록</h2><span class="hint">숫자는 증상 점수</span></div>
+  <div class="sec-title"><h2>최근 기록</h2><span class="hint">숫자는 배변·혈변 점수(0~6)</span></div>
   <div class="list">
-  ${hist.length?hist.map(k=>{const l=S.logs[k];const ac=activity(l);return `<div class="hwrap"><button class="hrow" data-act="pastDay" data-v="${k}" aria-label="${md(k)} 기록${l.quick?"(빠른 기록)":""}, 증상 점수 ${ac.sc}점">
+  ${hist.length?hist.map(k=>{const l=S.logs[k];const ac=activity(l);return `<div class="hwrap"><button class="hrow" data-act="pastDay" data-v="${k}" aria-label="${md(k)} 기록${l.quick?"(빠른 기록)":""}, 배변·혈변 점수 ${ac.sc}/6점">
       <span class="hdate"><b class="num">${new Date(k+"T00:00:00").getDate()}</b><small>${WD[new Date(k+"T00:00:00").getDay()]}</small></span>
       <span class="lt"><b>${actText(l,ac)}</b><small>${l.quick?`빠른 기록 · 하루 ${l.day}회${l.bloody?` · 혈변 ${l.bloody}회`:""}`:`배변 낮 ${l.day}·밤 ${l.night}회${l.bloody?` · 혈변 ${l.bloody}회`:""} · 복통 ${l.pain||0}${+l.stool?` · 변 ${l.stool}형`:""}${+l.medtaken>=2&&+l.medtaken<=3?" · 약 거름":""}`}</small></span>
       <span class="chip-sc s${ac.stage}">${ac.sc}</span>${ic("chev","chev")}</button>
@@ -4860,7 +4973,7 @@ function suspectsHTML(){
   if(need) return `<div class="card stack">${head}<p class="hint" style="margin:0">증상 기록이 ${sp.n}일입니다. ${need}일 더 기록하면, 먹은 날(그날·전날)과 먹지 않은 날의 증상을 비교해 의심 후보를 찾아 드립니다. '먹음' 표시나 직접 기록한 음식으로 비교합니다.</p></div>`;
   if(!sp.length) return `<div class="card stack">${head}<p class="hint" style="margin:0">증상 기록 ${sp.n}일을 비교했지만, 먹은 날에 증상이 뚜렷하게 더 나빴던 음식은 없습니다.</p></div>`;
   return `<div class="card stack">${head}
-    <div class="list">${sp.map(x=>`<div class="lrow static"><span class="lic t-warm">${ic("info")}</span><span class="lt"><b>${esc(x.name)}</b><small>먹은 날(전날 포함) ${x.n}일 중 ${x.bad}일(${x.pct}%) 나쁨 · 먹지 않은 날은 ${x.rest}%</small><small>증상 점수 평균 ${x.avgE} · 먹지 않은 날 ${x.avgR}</small></span><span class="pill ${x.pct-x.rest>=40?"caution":"neutral"}">+${x.pct-x.rest}%p</span></div>`).join("")}</div>
+    <div class="list">${sp.map(x=>`<div class="lrow static"><span class="lic t-warm">${ic("info")}</span><span class="lt"><b>${esc(x.name)}</b><small>먹은 날(전날 포함) ${x.n}일 중 ${x.bad}일(${x.pct}%) 나쁨 · 먹지 않은 날은 ${x.rest}%</small><small>배변·혈변 점수 평균 ${x.avgE} · 먹지 않은 날 ${x.avgR}</small></span><span class="pill ${x.pct-x.rest>=40?"caution":"neutral"}">+${x.pct-x.rest}%p</span></div>`).join("")}</div>
     <p class="hint" style="margin:0">증상 기록 ${sp.n}일(나쁜 날 ${sp.base}%)에서, 그날이나 전날 먹은 음식과 먹지 않은 날을 비교했습니다. 3일 이상 먹고 비율이 20%p 이상 높은 음식만 보이며, 거의 매일 먹는 음식은 비교할 날이 없어 뺐습니다. 함께 나타났다는 뜻일 뿐 원인이라는 뜻은 아닙니다. 식단에서 빼기 전에 의료진과 상의하고, 확인하려면 '음식 다시 먹어 보기'로 한 가지씩 시험해 주십시오${sup([17])}.</p></div>`;
 }
 function wzAnswered(k){return !WZ.answered||WZ.answered.has(k)}
@@ -4891,19 +5004,23 @@ function scrWizard(){
   if(st.k==="date") body=`<input type="date" id="logDate" class="big-input" value="${esc(L.date)}" max="${today()}" aria-labelledby="wzQ">${S.logs[L.date]?`<p class="hint">이 날짜에 기록이 있습니다. 이어서 고칠 수 있습니다.</p>`:""}`;
   else if(st.q) body=st.q.filter(q=>!q.showIf||q.showIf(L)).map(q=>wzQuestion(q,L)).join("")+(mm&&wzAnswered("blood")&&st.q.some(q=>q.k==="blood")?`<p class="warn-t" role="status">${esc(mm)}. 둘 중 하나를 고쳐 주십시오.</p>`:"");
   else if(st.type==="result"){
-    const a=activity(L); const ds=dangerSignals({...L});
+    const a=activity(L), p2=pro2(L), tw=twGrade(L); const ds=dangerSignals({...L});
     body=`${ds.severe.length?`<div class="banner crit" role="alert"><strong>병원 진료가 먼저 필요합니다</strong><br>${esc(ds.severe.join(", "))}${sup([38,12])}. 오늘 주치의에게 연락하거나 응급실로 가십시오.</div>`:""}
     ${ds.urgent.length?`<div class="banner urgent" role="alert"><strong>진료를 미루지 마십시오</strong><br>${esc(ds.urgent.join(", "))}${sup([41])}. 오늘 주치의에게 연락하십시오.</div>`:""}
     ${!ds.severe.length&&!ds.urgent.length&&a.stage===1?`<div class="banner warn"><strong>주치의에게 알리십시오</strong><br>증상이 활동기 기준입니다${sup([15,38])}.</div>`:""}
     ${ds.watch.length?`<div class="banner warn"><strong>주치의와 상의하십시오</strong><br>${esc(ds.watch.join(", "))}</div>`:""}
     ${mm?`<div class="banner warn" role="alert"><strong>답이 서로 맞지 않습니다</strong><br>${esc(mm)}. 고친 뒤 저장해 주십시오.<div class="b-act"><button class="btn sm" data-act="wzJump" data-v="bloody">피 섞인 변 횟수 고치기</button><button class="btn sm" data-act="wzJump" data-v="blood">피가 보인 정도 고치기</button></div></div>`:""}
-    ${WZ.quick?`<div class="banner info"><strong>빠른 기록입니다</strong><br>밤중 배변·몸 상태·장 밖 증상을 빼고 계산한 점수라 실제보다 낮을 수 있습니다. 위험 신호가 걱정되면 전체 기록으로 적어 주십시오.</div>`:""}
+    ${WZ.quick?`<div class="banner info"><strong>빠른 기록입니다</strong><br>밤중 배변·몸 상태·장 밖 증상은 묻지 않아 식단 단계를 정하는 보조 판정에서 빠집니다. 점수(배변 횟수·혈변)는 그대로 계산됩니다. 위험 신호가 걱정되면 전체 기록으로 적어 주십시오.</div>`:""}
     <div class="card result">
       <div class="score big"><b class="num">${a.sc}</b><small>증상 점수</small></div>
-      <p class="hint" style="margin:0">${term("sccai","SCCAI")} 기준${sup([11,15])} · 5점 이상이면 활동기</p>
+      <p class="hint" style="margin:0">${term("pro2","배변·혈변 점수")} 0~6점${sup([90,91])} · 0점이 임상적 관해 기준</p>
+      <div class="kv"><span>배변 횟수 점수</span><b class="num">${p2.sf} / 3</b></div>
+      <div class="kv"><span>혈변 점수</span><b class="num">${p2.br} / 3</b></div>
+      <div class="kv"><span>Truelove-Witts 중증도</span><b>${esc(tw.t)}</b></div>
       <div class="kv"><span>기준과 비교(참고)</span><b>${actText(L,a)}</b></div>
       <div class="kv"><span>참고 식단 단계</span><b>${stg(a.stage)}</b></div>
       <p class="hint" style="text-align:left;margin:4px 0 6px">${esc(a.label)}. 진단이 아니라 기록을 기준과 비교한 참고 정보입니다.</p>
+      <p class="hint" style="text-align:left;margin:0 0 6px">Truelove-Witts는 국내 지침의 경증·중등도·중증 구분입니다${sup([40])}. 혈색소·적혈구침강속도는 앱에 없어 진료 때 확인하고${tw.vit?"":", 체온·맥박을 적지 않았으면 열·빈맥 여부는 알 수 없습니다"}.${p2.assumed&&p2.sf>0?` 평소 하루 배변 횟수를 적지 않아 ${p2.base}회를 평소로 계산했습니다(내 정보에서 바꿀 수 있습니다).`:""}</p>
       ${WZ.quick?`<div class="kv"><span>배변 횟수</span><b class="num">${L.day}회</b></div>`:`<div class="kv"><span>배변 낮/밤</span><b class="num">${L.day} / ${L.night}회</b></div>`}
       <div class="kv"><span>피 섞인 변</span><b class="num">${L.bloody||0}회</b></div>
       ${WZ.quick?"":`<div class="kv"><span>복통</span><b class="num">${L.pain||0} / 10</b></div>`}
@@ -4973,7 +5090,7 @@ function scrPast(){
   return `
   <div class="card stack">
     <span class="hint">${md(date)}</span>
-    ${l?`<h2>${actText(l,act)}</h2><small class="muted">증상 점수 ${act.sc} · 배변 낮 ${l.day}·밤 ${l.night}회${l.bloody?` · 혈변 ${l.bloody}회`:""}${+l.stool?` · 변 ${STOOL_L[l.stool]}`:""}</small>
+    ${l?`<h2>${actText(l,act)}</h2><small class="muted">배변·혈변 점수 ${act.sc}/6 · 배변 낮 ${l.day}·밤 ${l.night}회${l.bloody?` · 혈변 ${l.bloody}회`:""}${+l.stool?` · 변 ${STOOL_L[l.stool]}`:""}</small>
       <button class="btn full" data-act="wizardDate" data-v="${date}">이날 증상 기록 고치기</button>`
      :`<h2>이날 증상 기록이 없습니다</h2><button class="btn primary full" data-act="wizardDate" data-v="${date}">이날 증상 기록하기</button>`}
   </div>
@@ -5034,7 +5151,7 @@ function scrReport(){
     <div class="kv"><span>수분 ${tg.water}ml 이상</span><b class="num">${wOK} / ${wd.length}일 <small class="muted">평균 ${Math.round(wAvg)}ml</small></b></div></div>`:""}
   <div class="card stack"><h2>같은 기간 몸 상태</h2>
     <div class="kv"><span>증상 기록</span><b class="num">${lg.length} / ${n}일</b></div>
-    ${sc.length?`<div class="kv"><span>평균 증상 점수(SCCAI)</span><b class="num">${r1(sc.reduce((a,b)=>a+b,0)/sc.length)}점 <small class="muted">활동기 기준 ${bad}일</small></b></div>`:""}
+    ${sc.length?`<div class="kv"><span>평균 배변·혈변 점수(0~6)</span><b class="num">${r1(sc.reduce((a,b)=>a+b,0)/sc.length)}점 <small class="muted">활동기 기준 ${bad}일</small></b></div>`:""}
     ${ws.length>=2?`<div class="kv"><span>몸무게</span><b class="num">${ws[0].kg} → ${ws[ws.length-1].kg}kg</b></div>`:""}
   </div>
   <p class="hint pad">목표는 지금 내 정보로 계산한 값입니다${sup([1,16,73])}. 보고서는 기록을 모아 보여 줄 뿐 진단이 아닙니다.</p>`;
@@ -5165,7 +5282,7 @@ function viewMenuJudge(){
   return `
   ${MJ.step==="idle"?`
     <div class="card stack">
-      <label class="f" for="mjText">메뉴 이름으로 판정 (한 줄에 하나)<textarea id="mjText" placeholder="예: 연어 포케&#10;크림 파스타">${esc(MJ.text)}</textarea></label>
+      <label class="f" for="mjText">메뉴 이름으로 판정 (여러 개는 쉼표로 구분)<textarea id="mjText" placeholder="예시: 연어 포케, 크림 파스타">${esc(MJ.text)}</textarea></label>
       <button class="btn primary" data-act="mjText">입력한 메뉴 확인</button>
       <p class="hint" style="margin:0">앱 음식 목록에 있는 이름이면 그 음식 판정을 쓰고, 없으면 이름과 재료의 단어로 알레르기·의료진 지시·주의 음식을 앱 규칙으로 검사합니다.</p>
     </div>`:""}
@@ -5183,7 +5300,7 @@ function viewMenuJudge(){
     <div class="list">${MJ.results.map((r,i)=>`<div class="jrow">
       <div class="row between"><b>${esc(r.name)}</b><span class="pill ${r.level}">${LV[r.level]}</span></div>
       <p>${esc(r.why)}${sup(r.refs)}</p>
-      ${r.rules.length?`<p class="${r.override?"crit-t":"warn-t"}">앱 판정 근거: ${esc(r.rules.join(" · "))}</p>`:""}
+      ${(r.lines||[]).length?`<div class="why-lines" role="group" aria-label="판정 이유">${r.lines.map(l=>`<p class="${r.rules.length||(r.broad&&r.level!=="ok")?(r.override?"crit-t":"warn-t"):"hint"}">${esc(l)}</p>`).join("")}</div>`:""}
       ${r.ham?`<p class="crit-t"><span aria-hidden="true">✕ </span>${esc(HAM_NOTE)}</p>`:""}
       ${r.broad?`<div class="mj-broad" role="group" aria-label="${esc(r.name)} 어떤 메뉴인지 고르기"><p class="hint" style="margin:0 0 6px">어떤 ${esc(r.name)}입니까?</p><div class="chips">${r.broad.map(([id,l])=>`<button class="chip" data-act="mjPick" data-i="${i}" data-v="${id}">${esc(FOOD[id].name)} <span class="pill ${l}">${LV[l]}</span></button>`).join("")}</div></div>`:""}
       <div class="row">${r.food?`<button class="btn sm" data-act="foodInfo" data-id="${r.food}">음식 정보</button>`:""}<button class="btn sm" data-act="mjEat" data-i="${i}">먹은 메뉴로 기록</button><button class="btn sm ghost" data-act="mjOk" data-i="${i}">판정이 이상합니다</button></div>
@@ -5481,7 +5598,7 @@ function viewMe(){
   ${nudgesHTML()}
   <button class="card profile" data-act="openScr" data-v="set-profile">
     <span class="avatar">${ic("user")}</span>
-    <span class="lt"><b>${prof||"기본 정보를 입력해 주십시오"}</b><small>${stg(cs.stage)} 단계 · ${S.stageMode==="auto"?(cs.score!=null&&!cs.stale?`증상 점수 ${cs.score}점 기준`:"증상 기록으로 자동"):"직접 선택"}</small></span>${ic("chev","chev")}
+    <span class="lt"><b>${prof||"기본 정보를 입력해 주십시오"}</b><small>${stg(cs.stage)} 단계 · ${S.stageMode==="auto"?(cs.score!=null&&!cs.stale?`배변·혈변 점수 ${cs.score}/6점 기준`:"증상 기록으로 자동"):"직접 선택"}</small></span>${ic("chev","chev")}
   </button>
   <div class="sec-label">기본</div>
   <div class="list">
@@ -5522,6 +5639,8 @@ function scrSettingsBody(){
     <label class="f" for="p_age">나이<input type="number" id="p_age" value="${esc(p.age)}" inputmode="numeric"></label></div>
     <div class="f">성별<div class="seg3">${[["M","남성"],["F","여성"]].map(([v,l])=>`<button data-act="sex" data-v="${v}" aria-pressed="${p.sex===v}">${l}</button>`).join("")}</div></div>
     <p class="hint" style="margin:0">성별·나이는 칼슘·식이섬유 목표(2025 한국인 영양소 섭취기준)${sup([16])}에 쓰입니다.</p>
+    <label class="f" for="p_usualBM">평소 하루 배변 횟수(병이 없던 때)<input type="number" id="p_usualBM" value="${esc(p.usualBM)}" inputmode="numeric" min="0" max="20" placeholder="예: 1"></label>
+    <p class="hint" style="margin:0">Mayo 점수의 배변 횟수 점수는 평소보다 몇 번 늘었는지로 매깁니다${sup([91])}. 비워 두면 하루 3회를 평소로 계산합니다(앱의 관해 기준과 같은 값${sup([38])}). 평소 횟수를 모르면 주치의에게 물어보십시오.</p>
     ${+p.age&&+p.age<19?`<p class="warn-t" style="margin:0">이 앱의 목표값은 19세 이상 성인 기준입니다. 19세 미만은 주치의·영양사와 목표를 정하십시오.</p>`:""}</div>`;
   if(n==="set-weight"){const ws=[...S.weights].sort((a,b)=>a.date<b.date?1:-1); const wc=weightChange();
     return `<div class="card stack"><div class="row" style="align-items:flex-end"><label class="f" for="w_today" style="flex:1">오늘 몸무게(kg)<input type="number" id="w_today" step="0.1" value="${esc(W_TXT??(S.weights.find(w=>w.date===today())?.kg||""))}" inputmode="decimal"></label><button class="btn primary" data-act="saveW">기록</button></div>
@@ -5549,7 +5668,7 @@ function scrSettingsBody(){
   if(n==="set-diet") return `<div class="card stack"><label class="f" for="p_dislikes">싫어하는 음식(쉼표로 구분)<input type="text" id="p_dislikes" placeholder="예: 고등어, 가지" value="${esc(p.dislikes)}"></label>
     <label class="f" for="p_budgetMonth">한 달 식비 예산(만원)<input type="number" inputmode="numeric" min="0" max="1000" step="1" id="p_budgetMonth" placeholder="예: ${BUDGET_BASE}" value="${p.budgetMonth===""?"":p.budgetMonth}"></label>
     <p class="hint" style="margin:0">보통의 기준은 <b>한 달 ${BUDGET_BASE}만원</b>입니다. 2024년 1인 가구의 한 달 소비지출 168만 9천원 가운데 식료품·비주류음료가 13.6%(약 ${BUDGET_BASE}만원)입니다${sup([79])}. 외식비(음식·숙박 18.2%)는 넣지 않은 식재료비 기준입니다.</p>
-    <p class="hint" style="margin:0">${BUDGET_LOW}만원 미만은 '알뜰'로 보고 가격 부담이 큰 재료를 줄이며, ${BUDGET_HIGH}만원 이상은 '여유'로 봅니다(앱이 정한 구간). 지금: <b id="p_budgetTier">${p.budgetMonth===""?`입력 안 함(${p.budget})`:p.budget}</b></p></div>`;
+    <p class="hint" style="margin:0">${BUDGET_LOW}만원 미만은 '알뜰'로 보고 가격 부담이 큰 재료를 줄이며, ${BUDGET_HIGH}만원 이상은 '여유'로 봅니다(앱이 정한 구간). <span class="nb">지금: <b id="p_budgetTier">${p.budgetMonth===""?`입력 안 함(${p.budget})`:p.budget}</b></span></p></div>`;
   if(n==="set-trig") return `<p class="hint pad">식단·제품 평가에서 '나쁨'을 고를 때 불편했던 점과 처리 방법을 골라 추가됩니다. 주의 음식은 식단에서 빠집니다.</p>
     <div class="list">${S.triggers.length?S.triggers.map((t,k)=>`<div class="lrow static trow">${t.foodId&&FOOD[t.foodId]?fIcon(t.foodId):`<span class="lic t-plain">${ic("ban")}</span>`}<span class="lt"><b>${esc(t.name)}</b><small>${esc(t.source||"직접")}${t.date?` · ${md(t.date)}`:""}${(t.sym||[]).length?` · ${esc(t.sym.map(x=>SYM_L[x]||x).join(", "))}`:""}</small>
       <label class="mini-sw"><input type="checkbox" class="sw" data-act="trigNever" data-k="${k}" ${t.never?"checked":""} ${(t.sym||[]).includes("allergy")?"disabled":""}> 다시 시험하지 않기</label></span>
@@ -5557,9 +5676,9 @@ function scrSettingsBody(){
     <button class="btn ghost full" data-act="trigPick">${ic("plus")} 목록에서 음식 골라 추가</button>`;
   if(n==="set-stage") return `<div class="list">${[["auto","증상 기록으로 자동",S.stageMode==="auto"?`최근 기록으로 판정 · 지금: ${STAGES[currentStage().stage].plain}`:"최근 기록으로 판정"],["1",stg(1),STAGES[1].desc],["2",stg(2),STAGES[2].desc],["3",stg(3),STAGES[3].desc]].map(([v,l,s])=>`<button class="lrow" data-act="stageMode" data-v="${v}"><span class="lt"><b>${l}</b><small>${s}</small></span>${String(S.stageMode)===v?`<span class="done">${ic("check")}</span>`:""}</button>`).join("")}</div>
     <div class="card stack small">
-      <div><b>${STAGES[1].plain}</b> · SCCAI 5점 이상${sup([15])}, 혈변 하루 4회 이상${sup([12])}, 또는 하루 5회 이상 배변과 혈변${sup([38])}</div>
+      <div><b>${STAGES[1].plain}</b> · 혈변 하루 4회 이상${sup([12,93])}, 하루 5회 이상 배변과 혈변${sup([38,40])}, 하루 7회 이상 배변${sup([91])}, 또는 <span class="nb">낮·밤 배변·급박감·혈변·몸 상태</span>를 합친 보조 점수 5점 이상${sup([11,15])}</div>
       <div><b>${STAGES[2].plain}</b> · 위아래 두 경우 사이</div>
-      <div><b>${STAGES[3].plain}</b> · 하루 배변 3회 이하, 혈변·급박감 없음(국내 관해 기준)${sup([38])}</div>
+      <div><b>${STAGES[3].plain}</b> · 배변 횟수 점수·혈변 점수가 모두 0점이고 하루 3회 이하, 급박감 없음(증상 관해 기준${sup([90,38])})</div>
       <div class="muted">활동도 판정은 위 기준을, 식단 단계로 잇는 방식은 악화기 질감 조절 권고${sup([13])}와 증상에 따라 점차 일반식으로 옮겨 가라는 안내${sup([36])}를 따른 앱 설계입니다. 실제 활동도는 주치의 판단을 따르십시오.</div></div>`;
   if(n==="set-data") return `<p class="hint pad">브라우저는 저장 공간이 부족하면 저장된 기록을 지울 수 있고, 아이폰 사파리는 앱을 한동안 열지 않아도 지울 수 있습니다.${isIOS()&&!isStandalone()?" 아이폰은 사파리에서 '홈 화면에 추가'한 앱으로 쓰면, 그 앱을 쓴 날을 따로 세어 이렇게 지워지지 않을 것이라고 WebKit(사파리 개발팀)이 안내했습니다(2020).":""} 2주에 한 번은 백업 파일을 저장하거나 백업 내용을 복사해 두십시오. 모든 기록은 이 기기의 브라우저에만 저장됩니다. 사이트 데이터를 지우거나 휴대폰을 바꾸면 사라집니다. 백업 암호화를 켜지 않으면 백업에 건강 기록이 그대로 들어 있으니 다른 사람과 공유하지 마십시오.</p>
     <div class="card stack">
@@ -5644,7 +5763,7 @@ function scrSettingsBody(){
 function infoBody(tab){
   const c={
    plan:`<h2>식단은 이렇게 만들어집니다</h2><p>의료진 지시 → 알레르기·유당·개인 주의 음식 → 식단 단계 순서로 식품을 거른 뒤, 앱 규칙이 끼니 메뉴 ${MENU_COUNT.toLocaleString()}개 가운데 조건에 맞는 것만 고릅니다. 하루 세 끼 기준입니다.</p><p>요리는 만개의레시피·모두의레시피에서 고른 것만 쓰고, 끼니 화면의 '레시피 보기'로 원문을 열 수 있습니다. 레시피 재료 중 앱 기준에 안 맞는 것은 바꿔 만들도록 알려 줍니다.</p><p>작은 숫자는 근거 자료 번호입니다. 눌러서 원문 정보를 볼 수 있습니다.</p><p>식단 단계: ${term("lowres","저잔사식")} → ${term("transition","이행식")} → ${term("med","지중해식")}</p><p>${NUTRI_NOTE}${sup([27,64])}</p><p class="muted">이 식단은 참고용이며 진단이나 처방을 대신하지 않습니다.</p>`,
-   log:`<h2>증상 점수와 경고 기준</h2><p>${term("sccai","SCCAI")} 활동도 지수${sup([11])}를 쓰며, 환자가 직접 작성해도 정확하다고 검증됐습니다${sup([15])}. 5점 이상은 활동기(재발) 기준입니다.</p><p>하루 6회 이상 혈변과 함께 체온 37.5℃ 이상이나 맥박 90회 이상이 있으면 국내 진단 가이드라인의 중증 기준${sup([38])}으로 병원 진료를 안내합니다. 국내 기준의 발열은 저녁 체온으로 판단하므로 저녁에 재 주십시오.</p><p>식단 단계는 하루 배변 3회 이하이면서 혈변·급박감이 없으면 지중해식 단계, SCCAI 5점 이상이거나 혈변이 잦으면 저잔사식 단계로 정합니다${sup([38,15])}.</p>`,
+   log:`<h2>증상 점수와 경고 기준</h2><p>화면의 점수는 Mayo 점수 중 환자가 답하는 두 항목(배변 횟수·직장 출혈, 각 0~3점, 합계 0~6점)입니다${sup([91])}. STRIDE-II는 궤양성 대장염의 증상 관해를 두 항목 모두 0점으로 정의합니다${sup([90])}. 내시경·의사 평가가 빠져 있어 Mayo 점수 전체(0~12점)와는 다르고, 0점 밖의 구간에는 원문이 정한 활동기 점수가 없어 앱도 정하지 않습니다.</p><p>배변 횟수 점수는 평소보다 늘어난 횟수로 매깁니다(내 정보의 '평소 하루 배변 횟수', 비우면 3회). 혈변 점수는 '약간 묻어남'이 1점, '대부분 뚜렷함'이나 가끔 뚜렷한데 배변의 절반 넘게 피가 섞였으면 2점이며, 변 없이 피만 나오는 3점은 묻는 칸이 없어 계산하지 않습니다.</p><p>하루 6회 이상 혈변과 함께 체온 37.5℃ 이상이나 맥박 90회 이상이 있으면 국내 진단 가이드라인의 중증 기준${sup([38])}으로 병원 진료를 안내합니다. 국내 기준의 발열은 저녁 체온으로 판단하므로 저녁에 재 주십시오. 기록 결과 화면의 Truelove-Witts 구분(경증·중등도·중증)은 국내 지침 표 3${sup([40])}을 따르며 혈색소·적혈구침강속도는 진료 때 확인합니다.</p><p>식단 단계는 배변 횟수·혈변 점수가 0점이고 하루 3회 이하이며 급박감이 없으면 지중해식 단계, 혈변이 잦거나 하루 7회 이상 배변이거나 여러 증상이 겹친 보조 점수가 5점 이상이면 저잔사식 단계로 정합니다${sup([38,40,91,11,15])}. 보조 점수는 몸 상태 매우 나쁨과 밤 배변처럼 두 항목에 잡히지 않는 날을 놓치지 않으려고 판정에만 남겨 두었고 화면에는 보이지 않습니다.</p>`,
    food:`<h2>판정 기준</h2><p>음식 판정은 현재 식단 단계와 내 정보(지시·알레르기·주의 음식)를 함께 봅니다. 외식 메뉴는 이름과 재료의 낱말로 앱 규칙이 검사하고, 앱 음식 목록에 없는 메뉴는 조리법·양념을 알 수 없어 '주의'보다 낮게 두지 않습니다.</p><p>궁금한 점(Q&amp;A)의 답은 학회·병원·국제 지침의 안내를 옮긴 것이고, 답마다 근거 원문 문장과 위치를 함께 보여 줍니다. 음식 이름으로 찾으면 관련 질문이 함께 나옵니다.</p><p>편의점 제품은 영양성분 표시 기준${sup([29])}, 식약처 첨가물 이름표${sup([27])}, 알레르기 표시 대상${sup([28])}으로 앱 규칙이 판정합니다. 알레르기 재료는 꼭 포장과 가게에 확인하십시오.</p>`,
    nutri:`<h2>목표값의 근거</h2><p>열량 체중 1kg당 30–35kcal, 단백질 활동기 1.2–1.5g/kg${sup([1])}. 칼슘·수분·식이섬유는 2025 한국인 영양소 섭취기준${sup([16])}, 저섬유식 기준은 MedlinePlus${sup([26])}를 따릅니다.</p><p>${NUTRI_NOTE}</p>`,
    me:`<h2>UC TABLE</h2><p>궤양성 대장염 환자를 위한 지중해식 식단·증상 기록 도구입니다. 개인 정보는 내 정보에서만 입력하고, 모든 기록은 이 기기에만 저장됩니다.</p><p class="muted">이 앱은 참고용이며 의학적 진단·치료를 대신하지 않습니다. 식이 변경은 주치의·영양사와 상의하십시오.</p>`
@@ -5835,7 +5954,7 @@ function renderInner(){
   else if(!sheetOpen&&navChanged&&inMain){const h=main.querySelector(".wz-q")||$("#appbar h1"); h?.focus({preventScroll:true})}
   else if(!sheetOpen&&fsig&&document.activeElement!==ae&&!(fid&&document.activeElement?.id===fid)){const el=document.querySelector(fsig); if(el&&!el.disabled) el.focus({preventScroll:true})}
   if(navChanged) coolAfterNav();
-  const lc=document.getElementById("logChart"); if(lc){try{drawSccaiChart(lc,addDays(today(),-13),14)}catch(e){}}
+  const lc=document.getElementById("logChart"); if(lc){try{drawSymChart(lc,addDays(today(),-13),14)}catch(e){}}
   save();
 }
 </script>
@@ -6037,24 +6156,24 @@ function showRefs(nums){
 
 /* ===== PDF ===== */
 /* ===== PDF ===== */
-// v1.11.0 H2: 그래프 점. 빠른 기록(밤 배변·몸 상태를 묻지 않음)은 빈 동그라미로 구분한다
-function sccaiPts(from,n){return [...Array(n)].map((_,i)=>{const d=addDays(from,i);const l=S.logs[d];return {d,v:l?sccai(l):null,quick:!!(l&&l.quick)}})}
-// PDF용 SCCAI 선 그래프: 한 계열, 5점 기준선, 기록 없는 날은 끊김
-function drawSccaiChart(cv,from,n,theme){
+// v1.11.0 H2: 그래프 점. 빠른 기록은 빈 동그라미로 구분한다. 점수는 PRO2(배변·혈변 0~6점)
+function symPts(from,n){return [...Array(n)].map((_,i)=>{const d=addDays(from,i);const l=S.logs[d];return {d,v:l?pro2(l).sum:null,quick:!!(l&&l.quick)}})}
+// 기록 탭 선 그래프: 한 계열, 0~6점, 기록 없는 날은 끊김
+function drawSymChart(cv,from,n,theme){
   const g=cv.getContext("2d"), Z=2, W=cv.width/Z, H=cv.height/Z;
   const cs=getComputedStyle(document.documentElement);
   const cv1=(k,d)=>{const v=cs.getPropertyValue(k).trim(); return v||d};
   const C=theme==="print"?{bg:"#fff",grid:"#E7E9ED",mute:"#6A717D",line:"#2F6FED",ink:"#171A1F"}
     :{bg:cv1("--surface","#fff"),grid:cv1("--line","#E7E9ED"),mute:cv1("--muted","#6A717D"),line:cv1("--accent","#2F6FED"),ink:cv1("--ink","#171A1F")};
-  const pad={l:34,r:40,t:14,b:30};
-  const pts=sccaiPts(from,n);
-  const vmax=Math.max(12,...pts.map(p=>p.v||0));
+  const pad={l:34,r:48,t:14,b:30};
+  const pts=symPts(from,n);
+  const vmax=6;
   const x=i=>pad.l+(n<=1?0:i*(W-pad.l-pad.r)/(n-1)), y=v=>pad.t+(1-v/vmax)*(H-pad.t-pad.b);
   g.setTransform(Z,0,0,Z,0,0); g.fillStyle=C.bg; g.fillRect(0,0,W,H);
   g.font="500 11px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.textBaseline="middle";
-  for(let v=0;v<=vmax;v+=vmax>15?5:3){g.strokeStyle=C.grid;g.lineWidth=1;g.beginPath();g.moveTo(pad.l,y(v));g.lineTo(W-pad.r,y(v));g.stroke();g.fillStyle=C.mute;g.textAlign="right";g.fillText(String(v),pad.l-6,y(v))}
-  g.setLineDash([5,4]); g.strokeStyle=C.mute; g.lineWidth=1.2; g.beginPath(); g.moveTo(pad.l,y(5)); g.lineTo(W-pad.r,y(5)); g.stroke(); g.setLineDash([]);
-  g.fillStyle=C.mute; g.textAlign="left"; g.fillText("5점",W-pad.r+4,y(5));
+  for(let v=0;v<=vmax;v+=1){g.strokeStyle=C.grid;g.lineWidth=1;g.beginPath();g.moveTo(pad.l,y(v));g.lineTo(W-pad.r,y(v));g.stroke();g.fillStyle=C.mute;g.textAlign="right";g.fillText(String(v),pad.l-6,y(v))}
+  g.setLineDash([5,4]); g.strokeStyle=C.mute; g.lineWidth=1.2; g.beginPath(); g.moveTo(pad.l,y(0)); g.lineTo(W-pad.r,y(0)); g.stroke(); g.setLineDash([]);
+  g.fillStyle=C.mute; g.textAlign="right"; g.fillText("0점",W-3,y(0));
   g.strokeStyle=C.line; g.lineWidth=2; g.lineJoin="round"; g.beginPath(); let on=false;
   pts.forEach((p,i)=>{if(p.v==null){on=false;return} if(!on){g.moveTo(x(i),y(p.v));on=true}else g.lineTo(x(i),y(p.v))}); g.stroke();
   pts.forEach((p,i)=>{if(p.v==null)return; g.fillStyle=C.bg; g.beginPath(); g.arc(x(i),y(p.v),5,0,7); g.fill();
@@ -6063,6 +6182,32 @@ function drawSccaiChart(cv,from,n,theme){
   const last=[...pts].reverse().find(p=>p.v!=null); if(last){const i=pts.indexOf(last); g.fillStyle=C.ink; g.textAlign="left"; g.font="700 12px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.fillText(String(last.v),Math.min(x(i)+8,W-pad.r+4),y(last.v)-10)}
   g.fillStyle=C.mute; g.font="500 11px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.textBaseline="top";
   [0,Math.floor((n-1)/2),n-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{g.textAlign=i===0?"left":i===n-1?"right":"center"; g.fillText(pts[i].d.slice(5).replace("-","/"),x(i),H-pad.b+8)});
+}
+// 진료기록 시안 v7: 진료 문서 그래프. 막대 = 하루 배변 횟수(낮+밤), 빨간 점 = 혈변이 있었던 날, 기록이 없는 날은 비움. 빠른 기록은 속이 빈 막대
+const PRO2_NOTE="배변 횟수·혈변은 Mayo 점수의 환자 보고 항목(PRO2)입니다. STRIDE-II(Turner 등, Gastroenterology 2021)는 성인 궤양성 대장염의 임상적 관해를 직장 출혈 0점·배변 횟수 0점으로 정의하고, ACG 2025(Rubin 등, Am J Gastroenterol 2025)는 PRO2를 내시경 소견과 함께 쓰는 중간 결과 지표로 소개합니다.";   // 진료기록 시안 v7 문구
+function stoolPts(from,n){return [...Array(n)].map((_,i)=>{const d=addDays(from,i), l=S.logs[d]; return {d,v:l?(+l.day||0)+(+l.night||0):null,blood:!!(l&&((+l.bloody||0)>0||(+l.blood||0)>0)),quick:!!(l&&l.quick)}})}
+function drawStoolChart(cv,from,n){
+  const g=cv.getContext("2d"), Z=2, W=cv.width/Z, H=cv.height/Z;
+  const C={bg:"#fff",frame:"#E2E7EF",grid:"#DCE3EE",mute:"#444",bar:"#2F6FED",red:"#C62828",ink:"#111"};
+  const FONT="'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+  const pad={l:46,r:30,t:50,b:34}, pts=stoolPts(from,n);
+  const mx=Math.max(0,...pts.map(p=>p.v||0)), vmax=Math.max(6,Math.ceil(mx/2)*2), step=vmax<=12?2:vmax<=24?4:8;
+  const cw=(W-pad.l-pad.r)/n, x=i=>pad.l+(i+.5)*cw, y=v=>pad.t+(1-v/vmax)*(H-pad.t-pad.b);
+  g.setTransform(Z,0,0,Z,0,0); g.fillStyle=C.bg; g.fillRect(0,0,W,H);
+  g.strokeStyle=C.frame; g.lineWidth=1; g.beginPath(); g.roundRect(.5,.5,W-1,H-1,12); g.stroke();   // 그래프 틀(그림 PDF에서도 같게 그림 안에 그림)
+  g.textBaseline="middle"; g.font=`500 11px ${FONT}`;
+  for(let v=0;v<=vmax;v+=step){g.strokeStyle=C.grid; g.lineWidth=1; g.beginPath(); g.moveTo(pad.l,y(v)); g.lineTo(W-pad.r,y(v)); g.stroke(); g.fillStyle=C.ink; g.textAlign="right"; g.fillText(String(v),pad.l-10,y(v))}
+  g.fillStyle=C.ink; g.textAlign="left"; g.font=`700 11px ${FONT}`; g.fillText("혈변",14,16);
+  const bw=Math.min(18,cw*.6);
+  pts.forEach((p,i)=>{
+    if(p.blood){g.fillStyle=C.red; g.beginPath(); g.arc(x(i),24,5.5,0,7); g.fill()}
+    if(p.v==null) return;
+    const top=Math.min(y(p.v),y(0)-2), h=y(0)-top;
+    if(p.quick){g.fillStyle=C.bg; g.fillRect(x(i)-bw/2,top,bw,h); g.strokeStyle=C.bar; g.lineWidth=1.5; g.strokeRect(x(i)-bw/2+.75,top+.75,bw-1.5,Math.max(h-1.5,.5))}
+    else{g.fillStyle=C.bar; g.fillRect(x(i)-bw/2,top,bw,h)}
+    g.fillStyle=C.ink; g.textAlign="center"; g.font=`700 12px ${FONT}`; g.fillText(String(p.v),x(i),top-9)});
+  g.fillStyle=C.ink; g.font=`500 11px ${FONT}`; g.textBaseline="top";
+  [0,Math.floor((n-1)/2),n-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{g.textAlign=i===0?"left":i===n-1?"right":"center"; g.fillText(pts[i].d.slice(5).replace("-","/"),i===0?pad.l-6:i===n-1?W-pad.r+6:x(i),H-pad.b+10)});
 }
 // 표 행을 실제 높이로 재서 한 쪽(A4 본문 높이)에 들어가게 나눈다. 제목·설명은 첫 조각에만 붙인다.
 function packTable(title,head,rows,note,attrs=""){
@@ -6106,64 +6251,54 @@ function reportBlocks(){
     const blocks=[];
     const sexL2={M:"남성",F:"여성"};
     blocks.push(`<div class="cover"><h1>궤양성 대장염 식이·증상 기록</h1>
-      <div style="font-size:13px;color:#333">환자가 앱(UC TABLE)에 직접 남긴 기록을 정리한 문서입니다.</div>
       <div class="meta"><span><b>기간</b> ${from} ~ ${today()} (${n}일)</span><span><b>작성일</b> ${today()}</span>
-      <span><b>기본 정보</b> ${esc([sexL2[p.sex],p.height&&p.height+"cm",p.age&&p.age+"세",bodyWeight()&&bodyWeight()+"kg"].filter(Boolean).join(" · ")||"입력 안 함")}</span>
-      <span><b>현재 식단 단계</b> ${STAGES[currentStage().stage].name}</span></div></div>`);
-    {const qs=(S.qs||[]).filter(q=>!q.done); if(qs.length) blocks.push(`<h2>이번 진료 때 묻고 싶은 것</h2><ol class="qs">${qs.map(q=>`<li>${esc(q.t)}${q.date?` <span style="color:#666">(${q.date.slice(5)})</span>`:""}</li>`).join("")}</ol>`)}
+      <span><b>기본 정보</b> ${esc([sexL2[p.sex],p.height&&p.height+"cm",p.age&&p.age+"세",bodyWeight()&&bodyWeight()+"kg"].filter(Boolean).join(" · ")||"입력 안 함")}</span></div></div>`);
     {const wl=weightLoss(); const bi=bmiInfo(); if((wl&&wl.level)||(bi&&bi.low)) blocks.push(`<h2>체중·영양 위험 신호 (GLIM 표현형 기준, 참고용)</h2><table><tbody>${wl&&wl.level?`<tr><th>의도하지 않은 체중 감소</th><td>${(wl.p6??0)>5?`6개월 안 ${wl.p6}%`:`6개월 넘게 ${wl.pL}%`} 감소 (${wl.level===2?"2단계 기준":"1단계 기준"})</td></tr>`:""}${bi&&bi.low?`<tr><th>체질량지수</th><td>${bi.bmi} (아시아 기준 저체중)</td></tr>`:""}</tbody></table><div class="note">GLIM 영양불량 진단에는 표현형 기준과 원인 기준이 함께 필요합니다. 환자가 입력한 체중으로 계산한 값입니다.</div>`)}
     blocks.push(`<h2>기본 정보</h2><table><tbody>
       <tr><th>성별 / 키 / 나이</th><td>${sexL2[p.sex]||"-"} / ${p.height?esc(p.height)+" cm":"-"} / ${p.age?esc(p.age)+"세":"-"}</td></tr>
       <tr><th>체중</th><td>${S.weights.length?[...S.weights].sort((a,b)=>a.date<b.date?-1:1).filter(w=>w.date>=from).map(w=>`${w.date.slice(5)} ${w.kg}kg`).join(", ")||"기간 내 기록 없음":"기록 없음"}${wc?` (변화 ${wc.pct}%)`:""}</td></tr>
       <tr><th>복용 약</th><td>${esc([...p.meds.map(m=>MED_OPTS.find(o=>o[0]===m)[1]),p.medOther].filter(Boolean).join(", ")||"-")}</td></tr>
       <tr><th>알레르기 / 유당불내증</th><td>${esc([...p.allergies.map(a=>allergyLabel(a)),p.allergyOther].filter(Boolean).join(", ")||"-")} / ${p.lactose?"있음":"없음"}</td></tr>
-      <tr><th>의료진 지시</th><td>${esc([...S.orders.checked.map(o=>o==="fluid"&&S.orders.fluidMl?`하루 수분 ${S.orders.fluidMl}ml`:orderLabel(o)),...S.orders.other].join(", ")||"-")}</td></tr>
-      <tr><th>현재 식단 단계</th><td>${STAGES[currentStage().stage].name} (${esc(currentStage().src)})</td></tr></tbody></table>`);
+      <tr><th>의료진 지시</th><td>${esc([...S.orders.checked.map(o=>o==="fluid"&&S.orders.fluidMl?`하루 수분 ${S.orders.fluidMl}ml`:orderLabel(o)),...S.orders.other].join(", ")||"-")}</td></tr></tbody></table>`);
     // 요약
-    const scs=logs.map(k=>sccai(S.logs[k]));
-    const avg=scs.length?r1(scs.reduce((a,b)=>a+b,0)/scs.length):"-";
     const bloodDays=logs.filter(k=>(+S.logs[k].bloody||0)>0||(+S.logs[k].blood||0)>0).length;
-    const dangerDays=logs.filter(k=>dangerSignals(S.logs[k]).severe.length).length;
-    const urgentDays=logs.filter(k=>{const d=dangerSignals(S.logs[k]);return !d.severe.length&&d.urgent.length}).length;
-    const actDays=logs.filter(k=>activity(S.logs[k]).stage===1).length;
-    const ratedBad=rats.filter(r=>r.rating==="bad").length;
     const qDays=logs.filter(k=>S.logs[k].quick).length;   // v1.11.0 H2: 빠른 기록은 표·그래프에서 따로 표시
+    // 진료기록 시안 v7: 기간 요약은 환자가 적은 값만(점수·단계·위험 신호 판정은 넣지 않음)
+    const stoolTot=logs.map(k=>(+S.logs[k].day||0)+(+S.logs[k].night||0));
+    const stoolTxt=stoolTot.length?`${r1(stoolTot.reduce((a,b)=>a+b,0)/stoolTot.length)}회 · ${Math.max(...stoolTot)}회`:"-";
+    const mealDays=[...new Set([...Object.keys(S.ate||{}),...Object.keys(S.skips||{}),...Object.keys(S.ateMeals||{})])].filter(k=>k>=from&&k<=today()).sort();
+    const mealTxt=mealDays.length?`${r1(mealDays.reduce((a,d)=>a+SLOTS.filter(sl=>isAte(d,sl)).length,0)/mealDays.length)}끼 (식사를 기록한 날 기준)`:"-";
+    const wts=[...S.weights].filter(w=>w.date>=from&&w.date<=today()).sort((a,b)=>a.date<b.date?-1:1);   // 체중이 한 번뿐이면 변화를 알 수 없어 '-'
+    const wdTxt=wts.length>=2?(()=>{const d=r1(wts[wts.length-1].kg-wts[0].kg); return d===0?"0kg":`${d>0?"+":""}${d}kg`})():"-";
     blocks.splice(1,0,`<h2>기간 요약</h2><table><tbody>
-      <tr><th>증상 기록</th><td>${logs.length}일 / ${n}일</td><th>평균·최고 SCCAI</th><td>${avg} · ${scs.length?Math.max(...scs):"-"}</td></tr>
-      <tr><th>혈변이 있었던 날</th><td>${bloodDays}일</td><th>활동기 기준 해당</th><td>${actDays}일</td></tr>
-      <tr><th>중증 위험 신호 / 진료 필요 신호</th><td>${dangerDays}일 / ${urgentDays}일</td><th>'나쁨' 음식 평가</th><td>${ratedBad}건</td></tr>
-      <tr><th>약을 거른 날</th><td>${logs.filter(k=>[2,3].includes(+S.logs[k].medtaken)).length}일</td><th>안 먹은 끼니</th><td>${Object.entries(S.skips||{}).filter(([k])=>k>=from&&k<=today()).reduce((a,[,v])=>a+v.length,0)}회</td></tr>
-      <tr><th>무른 변(브리스톨 6–7형)</th><td>${logs.filter(k=>[6,7].includes(+S.logs[k].stool)).length}일</td><th>단단한 변(1–2형)</th><td>${logs.filter(k=>[1,2].includes(+S.logs[k].stool)).length}일</td></tr></tbody></table>${qDays?`<div class="note">* 빠른 기록 ${qDays}일은 배변 횟수(낮·밤 합계)·급박감·피만 적어, 밤 배변·몸 상태·장 밖 증상이 빠진 SCCAI입니다. 실제보다 낮게 나올 수 있습니다.</div>`:""}`);
-    if(logs.length) blocks.splice(2,0,`<h2>SCCAI 추이</h2><canvas data-chart="sccai" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas><div style="font-size:11px;color:#555;margin-top:4px">점선은 5점(재발·활동기 기준). 기록이 없는 날은 선을 끊었습니다.${qDays?" 빈 동그라미는 빠른 기록(밤 배변·몸 상태 빠짐)입니다.":""}</div>`);
-    const head=`<tr><th>날짜</th><th>SCCAI</th><th>낮/밤 배변</th><th>혈변 횟수</th><th>급박감</th><th>혈변 정도</th><th>복통</th><th>변 모양</th><th>약</th><th>가스</th><th>피로</th><th>체온/맥박</th></tr>`;
+      <tr><th>증상 기록</th><td>${logs.length}일 / ${n}일</td><th>하루 배변 횟수(평균·최대)</th><td>${stoolTxt}</td></tr>
+      <tr><th>혈변이 있었던 날</th><td>${bloodDays}일</td><th>약을 거른 날</th><td>${logs.filter(k=>[2,3].includes(+S.logs[k].medtaken)).length}일</td></tr>
+      <tr><th>하루 평균 끼니</th><td>${mealTxt}</td><th>체중 변화</th><td>${wdTxt}</td></tr>
+      <tr><th>단단한 변(1–2형)</th><td>${logs.filter(k=>[1,2].includes(+S.logs[k].stool)).length}일</td><th>무른 변(브리스톨 6–7형)</th><td>${logs.filter(k=>[6,7].includes(+S.logs[k].stool)).length}일</td></tr></tbody></table>${qDays?`<div class="note">* 빠른 기록 ${qDays}일은 배변 횟수(낮·밤 합계)·급박감·피만 적어, 밤 배변·몸 상태·장 밖 증상이 빠져 있습니다.</div>`:""}`);
+    if(logs.length) blocks.splice(2,0,`<h2>배변 횟수·혈변 추이</h2><canvas data-chart="stool" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas><div style="font-size:11px;color:#555;margin-top:4px">막대는 하루 배변 횟수(낮+밤), 빨간 점은 혈변이 있었던 날입니다. 기록이 없는 날은 비워 두었습니다.${qDays?" 속이 빈 막대는 빠른 기록으로, 밤 배변이 빠져 있을 수 있습니다.":""}</div><div style="font-size:11px;color:#555;margin-top:6px">${PRO2_NOTE}</div>`);
+    const head=`<tr><th>날짜</th><th>낮/밤 배변</th><th>혈변 횟수</th><th>급박감</th><th>혈변 정도</th><th>복통</th><th>변 모양</th><th>약</th><th>가스</th><th>피로</th><th>체온/맥박</th></tr>`;
     if(!logs.length) blocks.push(`<h2>증상 기록</h2><div>기간 내 기록이 없습니다.</div>`);
-    else blocks.push(...packTable(`<h2>증상 기록 (SCCAI: Walmsley 1998, 자가 작성)</h2>`,`<thead>${head}</thead>`,logs.map((k,i)=>{const l=S.logs[k]; const ex=[...(l.extra||[]),...(l.other||[])]; const sub=[ex.length?`<b>기타 증상</b> ${esc(ex.join(", "))}`:"",l.memo?`<b>메모</b> ${esc(l.memo)}`:""].filter(Boolean).join(" &nbsp;·&nbsp; "); const cls=[sub?"hm":"",i%2?"alt":""].filter(Boolean).join(" "); return `<tr class="${cls}"><td class="nw">${k.slice(5)}</td><td>${sccai(l)}${l.quick?"*":""}</td><td>${l.quick?`빠른 기록: 하루 ${l.day}`:`${l.day}/${l.night}`}</td><td>${l.bloody??"-"}</td><td>${["없음","서두름","즉시","실금"][l.urg||0]}</td><td>${["없음","약간","가끔 뚜렷","대부분 뚜렷"][l.blood||0]}</td><td>${l.quick?"-":`${l.pain||0}/10`}</td><td>${+l.stool?`${l.stool}형`:"-"}</td><td>${["-","복약","일부 거름","못 먹음","복용 안 함"][+l.medtaken||0]}</td><td>${esc(l.gas||"-")}</td><td>${esc(l.fatigue||"-")}</td><td>${esc(l.temp||"-")}/${esc(l.pulse||"-")}</td></tr>${sub?`<tr class="sub${i%2?" alt":""}"><td colspan="12">${sub}</td></tr>`:""}`}),"",' class="pair"'));
+    else blocks.push(...packTable(`<h2>증상 기록 (환자 자가 기록)</h2>`,`<thead>${head}</thead>`,logs.map((k,i)=>{const l=S.logs[k]; const ex=[...(l.extra||[]),...(l.other||[])]; const sub=[ex.length?`<b>기타 증상</b> ${esc(ex.join(", "))}`:"",l.memo?`<b>메모</b> ${esc(l.memo)}`:""].filter(Boolean).join(" &nbsp;·&nbsp; "); const cls=[sub?"hm":"",i%2?"alt":""].filter(Boolean).join(" "); return `<tr class="${cls}"><td class="nw">${k.slice(5)}</td><td>${l.quick?`빠른 기록: 하루 ${l.day}`:`${l.day}/${l.night}`}</td><td>${l.bloody??"-"}</td><td>${["없음","서두름","즉시","실금"][l.urg||0]}</td><td>${["없음","약간","가끔 뚜렷","대부분 뚜렷"][l.blood||0]}</td><td>${l.quick?"-":`${l.pain||0}/10`}</td><td>${+l.stool?`${l.stool}형`:"-"}</td><td>${["-","복약","일부 거름","못 먹음","복용 안 함"][+l.medtaken||0]}</td><td>${esc(l.gas||"-")}</td><td>${esc(l.fatigue||"-")}</td><td>${esc(l.temp||"-")}/${esc(l.pulse||"-")}</td></tr>${sub?`<tr class="sub${i%2?" alt":""}"><td colspan="11">${sub}</td></tr>`:""}`}),"",' class="pair"'));
     const fhead=`<tr><th>음식</th><th>좋음</th><th>보통</th><th>나쁨</th><th>마지막 섭취</th></tr>`;
     if(!foods.length) blocks.push(`<h2>음식별 평가</h2><div>기간 내 평가가 없습니다.</div>`);
     else blocks.push(...packTable(`<h2>음식별 평가 (나쁨 많은 순)</h2>`,`<thead>${fhead}</thead>`,foods.map(([id,o])=>`<tr><td>${esc(o.name||id)}</td><td>${o.good}</td><td>${o.ok}</td><td>${o.bad?`<b>${o.bad}</b>`:0}</td><td class="nw">${o.last.slice(5)}</td></tr>`),""));
     // v1.11.0 F-13: 기간 안의 검사 수치·약 메모
     { const lb=(S.labs||[]).filter(x=>x.date>=from&&x.date<=today()).sort((a,b)=>a.date<b.date?-1:1);
       if(lb.length) blocks.push(...packTable(`<h2>검사 수치·약 메모 (환자가 적은 것)</h2>`,`<thead><tr><th>날짜</th><th>종류</th><th class="n">수치</th><th>메모</th></tr></thead>`,lb.map(x=>{const [,l,u]=labOf(x.k); return `<tr><td class="nw">${x.date.slice(5)}</td><td>${esc(l)}</td><td class="n">${x.v!==""?`${esc(x.v)}${u?" "+u:""}`:"-"}</td><td>${esc(x.note||"")}</td></tr>`}),"")) }
-    const mealDays=[...new Set([...Object.keys(S.ate||{}),...Object.keys(S.skips||{}),...Object.keys(S.ateMeals||{})])].filter(k=>k>=from&&k<=today()).sort();
     if(mealDays.length){const cell=(d,sl)=>isSkipped(d,sl)?"안 먹음":isAte(d,sl)?esc(ateMenu(d,sl)?.t||S.ratings.find(r=>r.date===d&&r.slot===sl)?.title||"먹음"):"-";
-      blocks.push(...packTable(`<h2>식사 기록</h2>`,`<colgroup><col style="width:13%">${SLOTS.map(()=>"<col>").join("")}</colgroup><thead><tr><th>날짜</th>${SLOTS.map(sl=>`<th>${sl}</th>`).join("")}</tr></thead>`,mealDays.map(d=>`<tr><td>${d.slice(5)}</td>${SLOTS.map(sl=>`<td>${cell(d,sl)}</td>`).join("")}</tr>`),`<div class="note">메뉴 이름(또는 '먹음')은 환자가 먹었다고 표시한 끼니이며, 메뉴 이름은 표시 당시 앱 식단 기준입니다. '안 먹음'은 건너뛴 끼니, '-'는 표시가 없는 끼니입니다.</div>`,' class="fx"'))}
+      blocks.push(...packTable(`<h2>식사 기록</h2>`,`<colgroup><col style="width:13%">${SLOTS.map(()=>"<col>").join("")}</colgroup><thead><tr><th>날짜</th>${SLOTS.map(sl=>`<th>${sl}</th>`).join("")}</tr></thead>`,mealDays.map(d=>`<tr><td>${d.slice(5)}</td>${SLOTS.map(sl=>`<td>${cell(d,sl)}</td>`).join("")}</tr>`),"",' class="fx"'))}
     const sus=foodSuspects(n);
     if(sus.length) blocks.push(`<h2>먹은 뒤 증상이 나빴던 날이 더 많은 음식 (참고용)</h2><table><thead><tr><th>음식</th><th class="n">먹은 날(전날 포함)</th><th class="n">그중 증상이 나쁜 날</th><th class="n">비율</th><th class="n">먹지 않은 날의 비율</th></tr></thead><tbody>${sus.map(x=>`<tr><td>${esc(x.name)}</td><td class="n">${x.n}일</td><td class="n">${x.bad}일</td><td class="n">${x.pct}%</td><td class="n">${x.rest}%</td></tr>`).join("")}</tbody></table><div class="note">증상 기록 ${sus.n}일(증상이 나쁜 날 ${sus.base}%) 가운데, 그날이나 전날 먹은 날과 먹지 않은 날의 '증상이 나쁜 날' 비율을 비교해 20%p 이상 높은 음식만 적었습니다. 거의 매일 먹은 음식(기록한 날의 80% 이상)은 제외했습니다. 함께 나타났다는 뜻이며 인과관계를 보여 주지 않습니다. 환자가 앱에서 한 가지씩 재도입 시험을 진행할 수 있습니다.</div>`);
     const rh=S.reintro.history.filter(h=>h.start>=from);
-    if(!rh.length) blocks.push(`<h2>음식 재도입 시험</h2><div>기간 내 시험이 없습니다.</div>`);
-    else blocks.push(...packTable(`<h2>음식 재도입 시험</h2>`,`<thead><tr><th>시작일</th><th>음식</th><th>1·2·3일차 증상</th><th>결과</th></tr></thead>`,rh.map(h=>`<tr><td>${esc(String(h.start||"").slice(5))}</td><td>${esc(h.name)}</td><td>${esc(h.days.map(d=>d?.r||"-").join(" / "))}</td><td>${h.result==="pass"?"좋음(주의 목록에서 뺌)":h.result==="fail"?"피하기(주의 음식으로 유지)":"중단"}</td></tr>`),""));
-    const wk=Object.keys(S.logs).filter(k=>k>addDays(today(),-7)&&k<=today()).sort();
-    const wl=wk.map(k=>S.logs[k]);
-    blocks.push(`<h2>진료 때 알릴 사항 (대한장연구학회 환자 안내 기준)</h2><table><tbody>
-      <tr><th>최근 1주 배변 횟수</th><td>${wl.length?`기록 ${wl.length}일, 하루 평균 ${r1(wl.reduce((a,l)=>a+(+l.day||0)+(+l.night||0),0)/wl.length)}회, 최대 ${Math.max(...wl.map(l=>(+l.day||0)+(+l.night||0)))}회`:"기록 없음"}</td></tr>
-      <tr><th>최근 1주 혈변</th><td>${wl.length?`${wl.filter(l=>(+l.bloody||0)>0||(+l.blood||0)>0).length}일`:"기록 없음"}</td></tr>
-      <tr><th>최근 1주 몸 상태</th><td>${wl.length?`나쁨 이상 ${wl.filter(l=>(+l.well||0)>=2).length}일`:"기록 없음"}</td></tr>
-      <tr><th>최근 1주 기록된 증상</th><td>${esc([...new Set(wl.flatMap(l=>[...(l.extra||[]),...(l.other||[])]))].join(", ")||"없음")}</td></tr>
-      <tr><th>직접 확인해 알릴 것</th><td>□ 약을 제대로 못 먹은 적 □ 피부 반점·염증 □ 관절 통증 □ 눈 문제 □ 항문·서혜부·회음부 문제 □ 우울감이나 죽고 싶다는 생각 □ 한약·항생제 복용</td></tr></tbody></table>`);
-    blocks.push(`<h2>건강 관리 점검 (ACG 2025·대한장연구학회)</h2><table><tbody>${careList().map(([k,t])=>`<tr><th>${t}</th><td>${careDone(k)?`주치의와 확인함(${esc(S.care[k])})`:S.care?.[k]?`1년 지남(마지막 ${esc(S.care[k])})`:"확인 필요"}</td></tr>`).join("")}</tbody></table>`);
+    if(rh.length) blocks.push(...packTable(`<h2>음식 재도입 시험</h2>`,`<thead><tr><th>시작일</th><th>음식</th><th>1·2·3일차 증상</th><th>결과</th></tr></thead>`,rh.map(h=>`<tr><td>${esc(String(h.start||"").slice(5))}</td><td>${esc(h.name)}</td><td>${esc(h.days.map(d=>d?.r||"-").join(" / "))}</td><td>${h.result==="pass"?"좋음(주의 목록에서 뺌)":h.result==="fail"?"피하기(주의 음식으로 유지)":"중단"}</td></tr>`),""));
+    {// 진료기록 시안 v7: 건강 관리 점검은 예방접종 한 줄(독감 + 그 밖의 접종). 나머지 점검 항목은 앱의 '건강 관리' 화면에서 계속 관리한다
+      const fl=S.care?.flu, vc=S.care?.vaccine, ok=careDone("flu")&&careDone("vaccine");
+      const st=ok?`주치의와 확인함(${esc(fl>vc?fl:vc)})`:(fl||vc)?`확인 필요 (독감: ${careDone("flu")?`확인함 ${esc(fl)}`:fl?`1년 지남 ${esc(fl)}`:"확인 필요"}, 폐렴구균·대상포진·B형간염 등: ${careDone("vaccine")?`확인함 ${esc(vc)}`:"확인 필요"})`:"확인 필요";
+      blocks.push(`<h2>건강 관리 점검 (ACG 2025·대한장연구학회)</h2><table><tbody><tr><th>예방접종</th><td>독감·폐렴구균·대상포진·B형간염 등: ${st}</td></tr></tbody></table>`)}
     if(!S.triggers.length) blocks.push(`<h2>개인 주의 음식</h2><div>없음</div>`);
     else blocks.push(...packTable(`<h2>개인 주의 음식</h2>`,`<thead><tr><th>음식</th><th>기록일</th><th>기록 경로</th><th>나타난 증상</th><th>비고</th></tr></thead>`,S.triggers.map(t=>`<tr><td>${esc(t.name)}</td><td class="nw">${esc(t.date?.slice(5)||"-")}</td><td>${esc(t.source||"직접")}</td><td>${esc((t.sym||[]).map(x=>SYM_L[x]||x).join(", ")||"-")}</td><td>${t.never?"다시 시험 안 함":"-"}</td></tr>`),""));
-    blocks.push(`<div style="font-size:11px;color:#555">본 문서는 환자가 앱(UC TABLE)에 직접 기록한 내용이며, SCCAI는 환자 자가 작성 점수이고 식단 단계는 앱의 참고용 분류입니다. 음식 평가는 환자의 주관적 판단입니다. UC TABLE은 의료기기가 아니며 진단·치료를 하지 않습니다.</div>`);
+    {const qs=(S.qs||[]).filter(q=>!q.done); if(qs.length) blocks.push(`<h2>이번 진료 때 묻고 싶은 것</h2><ol class="qs">${qs.map(q=>`<li>${esc(q.t)}${q.date?` <span style="color:#666">(${q.date.slice(5)})</span>`:""}</li>`).join("")}</ol>`)}   // 진료기록 시안 v7: 맨 끝
+    blocks.push(`<div style="font-size:11px;color:#555">본 문서는 환자가 앱(UC TABLE)에 직접 기록한 내용입니다. 음식 평가는 환자의 주관적 판단입니다. UC TABLE은 의료기기가 아니며 진단·치료를 하지 않습니다.</div>`);
     return {blocks,from,n};
 }
 /* v1.9.0 F-2: 글자 PDF — 문서를 인쇄용 영역(#printDoc)에 글자 그대로 넣고 인쇄 화면을 연다('PDF로 저장'을 고르면 검색·복사·낭독 가능한 PDF).
@@ -6174,7 +6309,7 @@ function printReport(){
   try{
     const {blocks,from,n}=reportBlocks();
     box.innerHTML=blocks.map(b=>`<div class="blk">${b}</div>`).join("")+`<p class="foot">${today()} 작성 · UC TABLE(환자 자가 기록)</p>`;
-    box.querySelectorAll("canvas[data-chart]").forEach(cv=>{try{drawSccaiChart(cv,from,n,"print")}catch(e){}});
+    box.querySelectorAll("canvas[data-chart]").forEach(cv=>{try{drawStoolChart(cv,from,n)}catch(e){}});
     const title=`진료기록_${today()}`;
     if(window.UCTableAndroid&&typeof window.UCTableAndroid.print==="function") window.UCTableAndroid.print(title);
     else if(typeof window.print==="function"){const t0=document.title; document.title=title; window.print(); setTimeout(()=>{document.title=t0},1000)}
@@ -6193,7 +6328,7 @@ async function exportPDF(mode="save"){
     const PW=pdf.internal.pageSize.getWidth(), PH=pdf.internal.pageSize.getHeight(), M=28; let y=M; let first=true;
     for(const b of blocks){
       rep.innerHTML=`<div class="blk">${b}</div>`;
-      const cvs=rep.querySelector("canvas[data-chart]"); if(cvs) drawSccaiChart(cvs,from,n,"print");
+      const cvs=rep.querySelector("canvas[data-chart]"); if(cvs) drawStoolChart(cvs,from,n);
       const blk=rep.firstChild;
       const cv=await html2canvas(blk,{scale:2,backgroundColor:"#ffffff"});
       const k=(PW-2*M)/cv.width, h=cv.height*k;
@@ -6220,9 +6355,12 @@ async function exportPDF(mode="save"){
     }
     rep.innerHTML="";
     const tot=pdf.internal.getNumberOfPages();
+    // 바닥글: jsPDF 기본 글꼴은 한글을 못 그려서 '날짜 작성'은 그림으로 만들어 붙이고, 쪽 번호는 숫자라 글자로 쓴다
+    const fc=document.createElement("canvas"); fc.width=300; fc.height=36; { const g=fc.getContext("2d"); g.scale(2,2); g.fillStyle="#fff"; g.fillRect(0,0,150,18); g.fillStyle="#787878"; g.font="400 8px 'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif"; g.textBaseline="middle"; g.fillText(`${today()} 작성`,0,9) }
+    const fimg=fc.toDataURL("image/png");
     for(let i=1;i<=tot;i++){pdf.setPage(i);pdf.setFontSize(8);pdf.setTextColor(120);
-      pdf.text(today(),M,PH-14);
-      pdf.text(`${i} / ${tot}`,PW-M,PH-14,{align:"right"});}
+      pdf.addImage(fimg,"PNG",M,PH-23,150,18);
+      pdf.text(`${i}/${tot}`,PW-M,PH-14,{align:"right"});}
     const blob=pdf.output("blob");
     if(mode==="share"){ READY={filename:`uc-table-report-${today()}.pdf`,blob,type:"application/pdf",title:"진료기록 PDF"};
       // 공유 창은 사용자가 막 누른 직후에만 열 수 있어(PDF를 만드는 동안 시간이 지남), 준비된 뒤 한 번 더 누르게 한다
@@ -6240,6 +6378,7 @@ function syncProfileInputs(){
   const P=PP(), O=PO();
   if(g("p_height")) P.height=g("p_height").value;
   if(g("p_age")) P.age=g("p_age").value;
+  if(g("p_usualBM")) P.usualBM=g("p_usualBM").value;
   if(g("p_allergyOther")) P.allergyOther=g("p_allergyOther").value;
   if(g("p_medOther")) P.medOther=g("p_medOther").value;
   if(g("p_dislikes")) P.dislikes=g("p_dislikes").value;
@@ -6600,7 +6739,7 @@ document.addEventListener("input",e=>{
   if(t.id==="orderAdd") ORD_TXT=t.value;
   if(t.id==="otherAdd") OTH_TXT=t.value;
   if(t.id==="w_today") W_TXT=t.value;
-  if(["p_height","p_age","p_allergyOther","p_medOther","p_dislikes","p_budgetMonth","fluidMl"].includes(t.id)) syncProfileInputs();
+  if(["p_height","p_age","p_usualBM","p_allergyOther","p_medOther","p_dislikes","p_budgetMonth","fluidMl"].includes(t.id)) syncProfileInputs();
   if(t.id==="mjText") MJ.text=t.value;
   if(t.id==="lbText") LB.text=t.value;
   if(t.id==="lbName") LB.name=t.value;
@@ -6692,9 +6831,9 @@ const csvCell=v=>{let t=v==null?"":String(v); if(/^[=+\-@\t\r]/.test(t)) t="'"+t
 const csvText=rows=>"\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
 function csvRows(kind){
   if(kind==="logs"){const U=["급하지 않음","서둘러야 함","바로 가야 함","참지 못함"],B=["없음","약간","가끔 뚜렷","대부분 뚜렷"],W=["아주 좋음","조금 안 좋음","나쁨","매우 나쁨","최악"];
-    const rows=[["날짜","증상 점수(SCCAI)","빠른 기록","낮 배변","밤 배변","하루 배변 합계","피 섞인 변","급박감","피","몸 상태","복통(0-10)","변 모양","가스","피로","체온","맥박","장 밖 증상","그 밖의 증상","메모"]];
+    const rows=[["날짜","배변·혈변 점수(0-6)","배변 횟수 점수(0-3)","혈변 점수(0-3)","빠른 기록","낮 배변","밤 배변","하루 배변 합계","피 섞인 변","급박감","피","몸 상태","복통(0-10)","변 모양","가스","피로","체온","맥박","장 밖 증상","그 밖의 증상","메모"]];
     // v1.11.0 H2: 빠른 기록은 낮·밤을 나눠 묻지 않으므로 낮·밤 칸을 비우고 하루 합계만 적는다
-    for(const d of Object.keys(S.logs).sort()){const l=S.logs[d]; rows.push([d,sccai(l),l.quick?"예":"",l.quick?"":l.day,l.quick?"":l.night,l.quick?(+l.day||0):(+l.day||0)+(+l.night||0),l.bloody,U[+l.urg]||"",B[+l.blood]||"",l.quick?"":W[+l.well]||"",l.quick?"":l.pain,l.stool||"",l.gas,l.fatigue,l.temp,l.pulse,(l.extra||[]).join(" / "),(l.other||[]).join(" / "),l.memo])}
+    for(const d of Object.keys(S.logs).sort()){const l=S.logs[d]; rows.push([d,pro2(l).sum,pro2(l).sf,pro2(l).br,l.quick?"예":"",l.quick?"":l.day,l.quick?"":l.night,l.quick?(+l.day||0):(+l.day||0)+(+l.night||0),l.bloody,U[+l.urg]||"",B[+l.blood]||"",l.quick?"":W[+l.well]||"",l.quick?"":l.pain,l.stool||"",l.gas,l.fatigue,l.temp,l.pulse,(l.extra||[]).join(" / "),(l.other||[]).join(" / "),l.memo])}
     return rows}
   const rows=[["날짜","끼니","구분","음식","양(g)","열량(kcal)","단백질(g)","식이섬유(g)","판정(지금 기준)"]]; const r1=v=>Math.round(v*10)/10;
   const days=[...new Set([...Object.keys(S.ateMeals||{}),...Object.keys(S.ate||{}),...Object.keys(S.extras||{})])].sort();

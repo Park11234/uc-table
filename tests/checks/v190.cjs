@@ -178,7 +178,7 @@ const SEED=()=>{
       const bk=JSON.parse(JSON.stringify(S)); bk.extras[d]=[{name:"흰쌀밥",foodId:"white_rice",amt:210,unit:"g",kcal:300,p:5,fi:0,ca:6}]; bk.logs[d]={...BLANK_LOG(),day:5,gas:"없음",fatigue:"없음"};
       const st=mergeCore(S,bk).st; const r=mergeStates(S,bk); return {ex:r.extras[d].length,day:r.logs[d].day,keep:st.logKeep}});
     need(m.ex===2&&m.day===2&&m.keep===1,'F-7 같은 날 기록도 항목 단위로 합치고, 서로 다른 증상 기록 수를 알려 줌');
-    const pdf=await p.evaluate(()=>{const before=!!window.jspdf; let printed=0; window.print=()=>{printed++}; printReport(); const t=document.getElementById('printDoc').textContent; return {before,printed,txt:/기간 요약/.test(t)&&/진료 때 알릴 사항/.test(t)}});
+    const pdf=await p.evaluate(()=>{const before=!!window.jspdf; let printed=0; window.print=()=>{printed++}; printReport(); const t=document.getElementById('printDoc').textContent; return {before,printed,txt:/기간 요약/.test(t)&&!/진료 때 알릴 사항/.test(t)}});
     need(!pdf.before,'P-1 그림 PDF 라이브러리는 처음에 실행하지 않음');
     need(pdf.printed===1&&pdf.txt,'F-2 글자 PDF: 인쇄용 문서를 글자로 만들고 인쇄 화면을 엶');
     const lib=await p.evaluate(async()=>{await loadPdfLibs(); return !!(window.jspdf&&window.html2canvas)});

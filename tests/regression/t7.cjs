@@ -42,9 +42,9 @@ const r=await p.evaluate(()=>{
   out.act2=activity({day:3,night:0,bloody:0,urg:0,blood:0,well:0,extra:[]});
   out.act3=activity({day:4,night:1,bloody:1,urg:1,blood:1,well:0,extra:[]});
   // 단계 판정의 세 기준을 하나씩만 건드리는 기록과 바로 아래 경계값(검토 보고서 5번)
-  out.act4=activity({day:2,night:0,bloody:0,urg:2,blood:0,well:3,extra:[]});   // SCCAI 5점(다른 기준은 모두 비켜감)
-  out.act5=activity({day:2,night:0,bloody:0,urg:2,blood:0,well:2,extra:[]});   // SCCAI 4점
-  out.act6=activity({day:4,night:0,bloody:4,urg:0,blood:0,well:0,extra:[]});   // 혈변 4회(SCCAI 1점, 배변 4회)
+  out.act4=activity({day:2,night:0,bloody:0,urg:2,blood:0,well:3,extra:[]});   // 보조 합산 5점(다른 기준은 모두 비켜감)
+  out.act5=activity({day:2,night:0,bloody:0,urg:2,blood:0,well:2,extra:[]});   // 보조 합산 4점
+  out.act6=activity({day:4,night:0,bloody:4,urg:0,blood:0,well:0,extra:[]});   // 혈변 4회(보조 합산 1점, 배변 4회)
   out.act7=activity({day:4,night:0,bloody:3,urg:0,blood:0,well:0,extra:[]});   // 혈변 3회
   out.act8=activity({day:4,night:0,bloody:0,urg:0,blood:0,well:0,extra:[]});   // 배변 4회·피 없음 = 관해 기준(3회 이하) 밖
   out.d1=dangerSignals({day:3,night:0,bloody:2,temp:"39.2",pulse:"118",pain:3});
@@ -94,7 +94,7 @@ console.log('errors',errs); {const j=lineJSON('{"label"'); expect(j,'출력 없�
  expect(()=>j.label[0]==='ban','알레르기 원재료(v1.11.0 R-15: 절대 금지)');
  expect(()=>{const m=Object.fromEntries(j.menu.map(([n,r])=>[n,r.level])); return m['전복죽']==='later'&&m['닭갈비']==='avoid'&&m['유당분해우유']==='ok'&&m['김치전']==='avoid'&&m['백김치']==='caution'},'외식 판정');
  expect(()=>j.act1.stage===1&&j.act2.stage===3&&j.act3.stage===1,'활동도 단계');
- expect(()=>j.act4.stage===1&&/SCCAI/.test(j.act4.label)&&j.act5.stage===2,'활동도: SCCAI 5점부터 활동기, 4점은 아님');
+ expect(()=>j.act4.stage===1&&/보조 점수/.test(j.act4.label)&&j.act5.stage===2,'활동도: 보조 합산 5점부터 활동기, 4점은 아님');
  expect(()=>j.act6.stage===1&&/혈변/.test(j.act6.label)&&j.act7.stage===2,'활동도: 혈변 하루 4회부터 활동기, 3회는 아님');
  expect(()=>j.act8.stage===2,'활동도: 하루 배변 4회는 관해 기준(3회 이하) 밖');
  expect(()=>j.d1.severe.length&&j.d2.severe.length&&j.d3.severe.length,'위험 신호');

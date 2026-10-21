@@ -38,7 +38,7 @@ await p.click('.mrow[data-k="1"]'); await p.waitForTimeout(350); await p.screens
 await p.click('[data-act=back]'); await p.click('.tab[data-tab=log]'); await p.waitForTimeout(350); await p.screenshot({path:T('t12_log.png'),fullPage:true});
 await p.evaluate(()=>openScr('nutri')); await p.waitForTimeout(350); await p.screenshot({path:T('t12_nutri.png'),fullPage:true});
 // chart preview
-await p.evaluate(()=>{const d=document.createElement('div');d.id='chartTest';d.style.cssText='position:fixed;left:0;top:0;background:#fff;z-index:99;width:760px';d.innerHTML='<div class="blk" style="padding:14px 32px"><h2>SCCAI 추이</h2><canvas data-chart="sccai" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas></div>';document.body.appendChild(d);drawSccaiChart(d.querySelector('canvas'),addDays(today(),-13),14)});
+await p.evaluate(()=>{const d=document.createElement('div');d.id='chartTest';d.style.cssText='position:fixed;left:0;top:0;background:#fff;z-index:99;width:760px';d.innerHTML='<div class="blk" style="padding:14px 32px"><h2>배변·혈변 점수 추이</h2><canvas data-chart="sym" width="1392" height="460" style="width:696px;height:230px;display:block"></canvas></div>';document.body.appendChild(d);drawSymChart(d.querySelector('canvas'),addDays(today(),-13),14)});
 await p.setViewportSize({width:760,height:320}); await p.screenshot({path:T('t12_chart.png')});
 console.log(errs); {const l=jsonOf('liquid'); expect(()=>l.length===2&&l.every(d=>d.length===3&&d.every(t=>!/\(e\)$/.test(t))),'유동식 지시 예시 식단');}
 __done(); await b.close()})();

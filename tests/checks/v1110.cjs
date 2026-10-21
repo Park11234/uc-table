@@ -33,7 +33,7 @@ const SEED=()=>{
       const bl=reportBlocks(); const div=document.createElement('div'); div.innerHTML=bl.blocks.join("");
       const tr=[...div.querySelectorAll('tr')].find(t=>t.innerText.includes(d.slice(5))); const all=div.innerText;
       const csv=csvRows("logs"); const hdr=csv[0]; const rowC=csv.find(x=>x[0]===d);
-      const pts=typeof sccaiPts==="function"?sccaiPts(addDays(today(),-13),14):[]; const qp=pts.find(x=>x.d===d);
+      const pts=typeof symPts==="function"?symPts(addDays(today(),-13),14):[]; const qp=pts.find(x=>x.d===d);
       return {d,rowTxt,trTxt:tr?tr.innerText.replace(/\s+/g,' '):"",note:/빠른 기록 1일/.test(all),hdr,rowC,qp}},QUICK.toString());
     need(/빠른 기록/.test(r.rowTxt)&&/하루 6회/.test(r.rowTxt)&&!/밤 0회/.test(r.rowTxt)&&!/복통 0/.test(r.rowTxt),`H2 기록 목록: '빠른 기록·하루 6회', 밤·복통 없음 (${r.rowTxt})`);
     need(/빠른/.test(r.trTxt)&&!/6\/0/.test(r.trTxt)&&!/0\/10/.test(r.trTxt),`H2 PDF 표: 빠른 표시, 밤 배변·복통 칸 비움 (${r.trTxt})`);

@@ -4,9 +4,9 @@
 npm ci && npx playwright install --with-deps chromium   # package-lock.json 그대로 설치
 npm run lint          # ESLint — 오류·경고 0 유지(--max-warnings 0)
 npm run test:py       # tests/python — 데이터 생성 코드 단위 점검 <!--n:pytests-->94<!--/n-->개(표준 라이브러리만)
-npm test              # tests/run-all.sh — Playwright <!--n:pw-->58<!--/n-->개 파일 전부 실행
+npm test              # tests/run-all.sh — Playwright <!--n:pw-->62<!--/n-->개 파일 전부 실행
 node tests/visual/visual.cjs            # 화면 비교(v1.8.0). 의도한 디자인 변경 뒤에는 --update로 기준 화면을 다시 만듦
-npm run test:mutation # tests/mutation-check.sh — 일부러 망가뜨린 앱 <!--n:mutants-->103<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, mutation.yml)
+npm run test:mutation # tests/mutation-check.sh — 일부러 망가뜨린 앱 <!--n:mutants-->137<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, mutation.yml)
 BROWSER=webkit node tests/webkit/webkit.cjs   # 아이폰 사파리 엔진(WebKit) 흐름(v1.11.0, CI의 webkit 작업. 이 개발 환경은 BROWSER=chromium으로 점검 코드만 확인)
 node tools/doc_numbers.cjs     # 문서의 숫자 표시(<!--n:…-->)가 지금 빌드와 같은지(--fix, v1.11.0)
 python3 tools/stale_check.py   # 확인한 지 1년 넘은 근거(참고문헌·FODMAP 1회량·궁금한 점). 기한 90일 전부터는 경고(--soon, v1.11.0)
@@ -24,8 +24,8 @@ python3 tools/tone_check.py    # 앱 문구에 해요체(~요)가 남았는지(�
 2. **빌드 재현** — 생성 스크립트를 다시 돌린 결과가 커밋된 앱·PWA와 바이트 단위로 같아야 통과.
 3. **파이썬 단위 점검 <!--n:pytests-->94<!--/n-->개** — 아래 표(v1.10.0 데이터 규칙은 `test_v110.py`, v1.11.0은 `test_v111.py`, v1.12.0은 `test_v112.py`).
 4. **근거 확인일·링크 형식·문구 말투** — `tools/stale_check.py`(1년 넘은 근거가 있으면 실패), `tools/link_check.py`(https가 아니거나 주소 모양이 이상하면 실패), `tools/tone_check.py`(앱 문구에 해요체가 남으면 실패).
-5. **Playwright <!--n:pw-->58<!--/n-->개 + 화면 비교** — 아래 표. WebKit 흐름 점검은 따로 `webkit` 작업에서(아이폰 사파리와 같은 엔진).
-6. **점검의 점검** — 앱을 일부러 <!--n:mutants-->103<!--/n-->가지 방식으로 망가뜨려(`tests/mutation-check.sh`) 해당 점검이 실제로 실패하는지 <!--n:pairs-->105<!--/n-->쌍을 확인.
+5. **Playwright <!--n:pw-->62<!--/n-->개 + 화면 비교** — 아래 표. WebKit 흐름 점검은 따로 `webkit` 작업에서(아이폰 사파리와 같은 엔진).
+6. **점검의 점검** — 앱을 일부러 <!--n:mutants-->137<!--/n-->가지 방식으로 망가뜨려(`tests/mutation-check.sh`) 해당 점검이 실제로 실패하는지 <!--n:pairs-->139<!--/n-->쌍을 확인.
    점검이 아무것도 확인하지 않고 늘 통과하는 상태로 변하면 여기서 걸립니다.
    오래 걸려 v1.10.0부터는 매 커밋이 아니라 매주 한 번과 손으로 실행할 때만 돕니다(`.github/workflows/mutation.yml`, 개발자 12).
    **실패 알림(v1.11.0 L10)**: 매주 작업이 실패하면 GitHub가 저장소 주인에게 Actions 실패 메일을 보냅니다(GitHub 설정 → Notifications → Actions에서 '실패만' 켜 두기). **출시 전에는 손으로 한 번** `npm run test:mutation`을 돌리거나 Actions의 mutation 작업을 'Run workflow'로 실행하고, 결과를 출시 기록에 남깁니다.
@@ -53,7 +53,7 @@ v1.5.0에서 이 34개에 기대값 확인을 넣었습니다. 출력한 줄을 
 | 폴더 | 파일 수 | 내용 |
 |---|---|---|
 | `tests/regression` | <!--n:reg-->27<!--/n--> | 화면 흐름 전체 회귀 — 첫 실행·동의, 내 정보 저장(t28), v1.8.0 기능(t29), 증상 기록 마법사, 식단 제안·교체, 먹은 음식 추가, 백업·복원, PDF, 글자 크기·다크 모드 |
-| `tests/checks` | <!--n:chk-->31<!--/n--> | 주제별 점검 — 아래 표 |
+| `tests/checks` | <!--n:chk-->35<!--/n--> | 주제별 점검 — 아래 표 |
 | `tests/visual` | 1 | 화면 비교 — 아래 표 |
 | `tests/webkit` | 1 | WebKit(아이폰 사파리 엔진) 흐름: 첫 실행 → 홈 → 빠른 기록 → 새로고침 뒤 유지 → 음식 검색·정보 → 백업 만들기·불러오기 → 입력칸 16px(CI 전용, v1.11.0) |
 | `tests/python` | 3(<!--n:pytests-->94<!--/n-->개) | 데이터 생성 코드·궁금한 점 인용 대조·FODMAP 1회량·요리 값 규칙·근거 확인일·점검 도구 — 아래 표 |
@@ -89,6 +89,10 @@ v1.5.0에서 이 34개에 기대값 확인을 넣었습니다. 출력한 줄을 
 | `checks/retain.cjs`, `checks/flow_in.cjs` | 확정 전 입력이 다시 그릴 때 사라지지 않는지(11개 화면의 입력칸 전부) |
 | `checks/ovf.cjs` | 긴 글자·큰 숫자에서 레이아웃이 깨지지 않는지 |
 | `checks/pdflong.cjs` | 긴 메모·빈 프로필로 PDF를 만들 때 표가 잘리지 않는지 |
+| `checks/pdf7.cjs` | 진료기록 PDF가 시안 v7 구성인지(SCCAI 없음, 막대·빨간 점 그래프, 기간 요약 8칸, 묻고 싶은 것 맨 끝)와 면책 한 줄('진료 때 알릴 사항'은 없음), jsPDF에 한글 글자를 직접 쓰지 않는지 |
+| `checks/pro2.cjs` | **증상 지표 교체(2026-10-21)** — 배변 횟수 점수·혈변 점수 정의, Truelove-Witts 구분, 단계 판정이 옛 규칙보다 덜 조심스러워지지 않는지(114,400가지 조합), 하루 7회·관해 기준, 화면·CSV·안내문에 SCCAI 글자가 없는지, 평소 배변 횟수 입력·불러오기 |
+| `checks/req2.cjs` | **수정 요청서 v2(2026-10-20)** 항목 1·2·3·4·6·7·10 — 날짜 띠 위치, 안내 글 가운데, 위쪽 알림 높이·글자 가운데, 외식 판정 입력 안내·이유 줄(127개 메뉴의 이유 줄이 기존 문장인지), '지금: 값' 묶음과 200%·320px 가로 넘침 |
+| `checks/wrap.cjs` | 129개 화면·4개 폭의 줄바꿈 검사(줄 끝 한 글자 남음, 가운뎃점·쌍점에서 끊김) |
 | `checks/offline.cjs` | 오프라인 빌드가 네트워크 차단 상태에서 동작하고 기록이 유지되는지, AI 기능 코드가 없고 궁금한 점이 들어 있는지(v1.7.0) |
 | `checks/pass2.cjs`, `checks/pass3.cjs` | 사용 흐름 전반 재점검 |
 
@@ -148,7 +152,7 @@ v1.5.0에서 이 34개에 기대값 확인을 넣었습니다. 출력한 줄을 
 | 갑각류 교차 반응 규칙이 통째로 빠지거나 음식 판정에서만 빠져 새우 알레르기의 '대신 이것'에 게가 다시 나옴(v1.12.0 C-21) | `checks/v1120.cjs` |
 | 술·주정이 절대 금지가 아니게 되거나, 요리용 맛술·미림이 막히거나, 당알코올이 절대 금지로 바뀜(v1.12.0 후속) | `checks/v1120b.cjs` |
 
-돌연변이 <!--n:pairs-->105<!--/n-->쌍은 동시에 돌리되, 쌍마다 임시 폴더를 따로 써서 페이지 파일이 섞이지 않게 합니다.
+돌연변이 <!--n:pairs-->139<!--/n-->쌍은 동시에 돌리되, 쌍마다 임시 폴더를 따로 써서 페이지 파일이 섞이지 않게 합니다.
 처음 돌렸을 때 '신장질환자용 피하기 없앰'을 놓쳤습니다. 그 제품은 시작 단계가 '항상 피하기'라 규칙이 없어도 판정이 같았기 때문이고, 지금은 판정 이유까지 확인합니다.
 
 ## 점검 자체에서 찾아 고친 것(1.1.0)

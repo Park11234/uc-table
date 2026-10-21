@@ -27,7 +27,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 음식 판정 | 끼니 메뉴 | 궁금한 점 | 근거 자료 | 자동 점검 | 저장 데이터 손상 퍼징 | 접근성(WCAG 2.2 AA) | 외부 요청 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->88<!--/n-->건** | **Playwright <!--n:pw-->58<!--/n-->개 + 파이썬 <!--n:pytests-->94<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
+| **<!--n:foods-->1,771<!--/n-->종** | **<!--n:menus-->1,174<!--/n-->개** | **<!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->169<!--/n-->건** | **<!--n:refs-->92<!--/n-->건** | **Playwright <!--n:pw-->62<!--/n-->개 + 파이썬 <!--n:pytests-->94<!--/n-->개** | **1,297가지 → 오류 0** | **위반 0** | **0건**(오프라인 빌드) |
 
 **기술 스택** — Vanilla JS(HTML 한 파일, 프레임워크 없음) · localStorage·IndexedDB · Service Worker(PWA) · Web Crypto(백업 암호화) · html2canvas + jsPDF · Python(음식 데이터 파이프라인) · Playwright · axe-core · ESLint · GitHub Actions / Pages
 
@@ -39,7 +39,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 그래서 이 판단을 세 단계로 자동화하고, 자주 묻는 질문은 원문과 함께 앱에 넣었습니다.
 
-1. **증상 기록 → 지금의 단계**: 증상을 기록하면 SCCAI 점수와 국내 기준으로 섬유를 줄인 식사(저잔사식)·조금씩 늘리는 식사(이행식)·골고루 먹는 식사(지중해식) 중 하나를 고릅니다.
+1. **증상 기록 → 지금의 단계**: 증상을 기록하면 배변·혈변 점수(Mayo 점수의 환자 보고 항목, PRO2)와 국내 기준으로 섬유를 줄인 식사(저잔사식)·조금씩 늘리는 식사(이행식)·골고루 먹는 식사(지중해식) 중 하나를 고릅니다.
 2. **단계 → 음식별 판정**: <!--n:foods-->1,771<!--/n-->종 각각을 좋음·주의·다음 단계·피하기로 나누고, 아질산염(발색제)을 넣은 가공육과 내가 고른 알레르기 음식은 '절대 금지'로 둡니다. 의료진 지시·싫어하는 음식·면역을 누르는 약(날음식)도 함께 반영합니다.
 3. **판정 → 근거**: 모든 판정 문구에 지침·논문 번호가 붙어 있어, 눌러서 출처를 확인할 수 있습니다.
 4. **궁금한 점 → 원문**: 커피·술·영양제처럼 자주 묻는 질문의 답에 학회·병원·국제 지침의 원문 문장을 그대로 붙여, AI 없이도 찾아보고 출처를 대조할 수 있습니다.
@@ -54,7 +54,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 기능 | 내용 |
 |---|---|
-| **증상 기록** | SCCAI 6개 항목에 혈변 횟수·복통·변 모양·복약·체온·맥박(가스·피로는 선택)을 더해 질문 4쪽과 요약 1쪽(꼭 답할 질문 3개)으로 기록. 바쁠 때는 **빠른 기록**(배변 횟수·급박감·피 세 가지), 홈의 '평소와 같음' 한 번으로 최근 기록과 같게 저장. 피 섞인 변 횟수와 피의 정도가 맞지 않으면 알림. 빠른 기록은 목록·PDF·CSV·그래프에서 따로 표시(없는 항목을 0으로 보이지 않음). 14일 점수 추이, 위험 신호, 활동기 기준이면 하루든 3일 연속이든 같은 한 문장 **'주치의(IBD 진료팀)에 알리십시오.'**(예측이 아님) |
+| **증상 기록** | 낮·밤 배변 횟수·급박감·혈변 정도·몸 상태·장 밖 증상에 혈변 횟수·복통·변 모양·복약·체온·맥박(가스·피로는 선택)을 더해 질문 4쪽과 요약 1쪽(꼭 답할 질문 3개)으로 기록. 바쁠 때는 **빠른 기록**(배변 횟수·급박감·피 세 가지), 홈의 '평소와 같음' 한 번으로 최근 기록과 같게 저장. 피 섞인 변 횟수와 피의 정도가 맞지 않으면 알림. 빠른 기록은 목록·PDF·CSV·그래프에서 따로 표시(없는 항목을 0으로 보이지 않음). 14일 배변·혈변 점수(0~6점) 추이, Truelove-Witts 중증도(참고), 위험 신호, 활동기 기준이면 하루든 3일 연속이든 같은 한 문장 **'주치의(IBD 진료팀)에 알리십시오.'**(예측이 아님) |
 | **단계 판정** | 아래 기준표에 따라 자동 판정, 직접 고정도 가능 |
 | **식단** | 끼니 메뉴 **<!--n:menus-->1,174<!--/n-->개**(아침 <!--n:menusB-->226<!--/n--> · 점심 <!--n:menusL-->421<!--/n--> · 저녁 <!--n:menusD-->422<!--/n--> · 곁들임 <!--n:menusS-->105<!--/n-->) 중 단계·알레르기·지시 사항·주의 음식을 통과한 것으로 **7일 식단**(아침·점심·저녁) 구성. 체중에 맞춰 밥·단백질 반찬 양을 늘리거나 줄이고(v1.10.0부터 단백질도 양쪽으로) 나트륨·칼슘·아침 단백질을 맞춤. 끼니마다 '먹음'과 **안 먹음·바꾸기**(안 먹음·다른 메뉴·메뉴 고르기) 두 버튼(메뉴·재료 이름으로 찾기), **내가 만든 메뉴** 저장. 김밥·오므라이스·볶음밥처럼 햄이 흔히 들어가는 음식에는 '햄·소시지는 빼고 드십시오' 안내 |
 | **음식 찾아보기** | <!--n:foods-->1,771<!--/n-->종(일반 음식 <!--n:general-->538<!--/n-->종 + 시판 제품 <!--n:prod-->1,233<!--/n-->종: 뉴케어 등 영양식 <!--n:ons-->39<!--/n-->종, 시판 과자·사탕·젤리·초콜릿·라면, 판매처 고시·포장 표시에서 옮긴 제품. 흔한 외식 메뉴 41종 포함)을 이름·초성·자모로 검색하고, 영어 이름(banana·milk)과 한두 글자 오타는 '혹시 이 음식을 찾으십니까?'로 권함. **지금 먹을 수 있는 음식(좋음·주의)을 맨 앞에**, 일반 음식을 먼저 보이고 시판 제품은 접어 둠. 결과는 한 줄 목록(종류 또는 시판·총 용량, 1회 양·열량), 종류·판정 걸러 보기는 시트 안에서. 음식 정보는 종류·1회·열량 칸, 판정 이유 한 줄 + '자세히', 피하는 음식에는 **대신 이것**(같은 쓰임·주재료의 일반 음식만, 없으면 숨김), 자료가 있는 영양값만, **확인 날짜**(그 음식을 앱에 넣은 날, 기록이 없는 처음 음식은 '…이전'). 용량만 다른 같은 제품은 한 음식으로 묶고 다른 용량을 함께 보임. 용어는 쉬운 말 먼저(예: 가스 유발 성분(FODMAP)), 35개 용어 풀이 |
@@ -79,13 +79,15 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 | 조건 | 단계 | 근거 |
 |---|---|---|
 | 위험 신호(혈변 하루 6회 이상, 배변 하루 15회 이상, 고열과 빠른 맥박, 심한 복통, 구토 등) | 저잔사식 + 진료 안내 | [38], [12], [40], [41] |
-| SCCAI 5점 이상 | 저잔사식 | [15] |
+| 보조 합산 점수 5점 이상(옛 SCCAI 계산식, 화면에는 보이지 않음) | 저잔사식 | [11], [15] |
 | 혈변 하루 4회 이상 | 저잔사식 | [12] |
 | 배변 하루 5회 이상이면서 혈변 | 저잔사식 | [38] |
-| 배변 하루 3회 이하, 혈변·급박감 없음, 복통 4 미만, 주의 신호 없음 | 지중해식 | [38] |
+| 배변 하루 7회 이상 | 저잔사식 | [91] |
+| 배변 하루 3회 이하(평소 횟수를 넘지 않음), 혈변·급박감 없음, 복통 4 미만, 주의 신호 없음 | 지중해식 | [38], [90] |
 | 그 밖 | 이행식 | — |
 
-- **SCCAI**(Simple Clinical Colitis Activity Index, 간이 임상 대장염 활동도 지수)는 낮·밤 배변 횟수, 급박감, 혈변 정도, 전반적 상태, 장외 증상 6개 항목의 합입니다[11]. 5점 이상은 재발을 민감도 92%·특이도 93%로 구분하고, 환자가 직접 작성해도 의사 평가와 차이가 작다고 보고됐습니다[15].
+- 화면에 보이는 **배변·혈변 점수(0~6점)**는 Mayo 점수의 환자 보고 항목(PRO2)인 배변 횟수 점수(0~3)와 혈변 점수(0~3)의 합이며, 0점이 STRIDE-II의 임상적 관해 기준입니다[90][91][92]. 배변 횟수 점수는 '평소 하루 배변 횟수'(내 정보, 비우면 3회)보다 1~2회·3~4회·5회 이상 더 나갈 때 1·2·3점입니다. PRO2에는 활동기를 가르는 확인된 기준값이 없어 점수만으로 단계를 정하지 않습니다. **Truelove-Witts 중증도**(국내 지침 표 3[40][93])는 경증·중등도·중증 범위를 참고로 보입니다.
+- 단계 판정에는 옛 합산 점수(SCCAI 계산식: 낮·밤 배변 횟수, 급박감, 혈변 정도, 전반적 상태, 장외 증상의 합[11])의 5점 이상 규칙을 화면에 보이지 않는 보조 규칙으로 남겼습니다. 이 점수는 재발을 민감도 92%·특이도 93%로 구분하고 환자가 직접 작성해도 의사 평가와 차이가 작다고 보고됐습니다[15]. 이 규칙을 빼면 활동기 기록 일부가 이행식으로 내려가 단계가 덜 조심스러워지므로, 의료진 검토 전까지 남겨 둡니다.
 - 기록이 3일 넘게 없어도 단계를 조용히 내리지 않고 마지막 기록의 단계를 쓰면서 홈에서 요즘 증상을 묻습니다. 2주 넘게 없으면 이행식으로 시작합니다(저잔사식까지 내리지 않음, v1.9.0). 단계를 직접 고정해도 위험 신호가 있으면 저잔사식으로 바뀝니다.
 - 증상 기록이 하나도 없으면 첫 실행 때 고른 요즘 장 상태(심함·좋아지는 중·거의 없음·모름)로 시작 단계를 정합니다(모르면 저잔사식, v1.10.0). 기록하면 기록이 우선합니다.
 - 빠른 기록(세 문항)은 빠진 항목을 0점으로 두고 계산해 실제 점수보다 낮을 수 있음을 화면에 밝힙니다.
@@ -104,7 +106,7 @@ AI 답은 매번 달라 규칙으로 다시 검사해야 했고, 그 검사를 �
 
 ## 기술적으로 신경 쓴 점
 
-**판정은 규칙으로, 근거는 번호로.** 같은 입력엔 항상 같은 답이 나오도록 판정을 결정적인 코드(`foodStatus`)에 두었고, 판정마다 <!--n:refs-->88<!--/n-->건의 지침·논문·공식 발표·제품 자료 중 어디서 왔는지 번호를 붙였습니다
+**판정은 규칙으로, 근거는 번호로.** 같은 입력엔 항상 같은 답이 나오도록 판정을 결정적인 코드(`foodStatus`)에 두었고, 판정마다 <!--n:refs-->92<!--/n-->건의 지침·논문·공식 발표·제품 자료 중 어디서 왔는지 번호를 붙였습니다
 (ESPEN 2023, AGA 2024, IOIBD 2020, ECCO 2025, Monash FODMAP, 병원 저잔사식 안내 등). 원문을 읽지 못한 자료 2건은 인용하지 않고 문서에 그 사실을 남겼습니다.
 궁금한 점의 답은 근거 문장을 원문 그대로 붙여, 누구나 출처와 위치로 찾아 대조할 수 있게 했습니다.
 
@@ -124,7 +126,7 @@ v1.9.0의 시판 제품은 판매처 고시·포장 표시를 옮긴 기록을 �
 **실제 사용 환경을 점검합니다.** 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,400회)과, 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다. 아이폰 사파리와 같은 엔진(WebKit)의 주요 흐름 점검은 CI에서 돌립니다. 디자인을 바꾼 뒤에는 agent-browser로 처음 쓰는 사람처럼 끝까지 써 보며 찾은 24건을 고쳤습니다(v1.11.0). v1.12.0에서는 v1.11.0 전체를 다른 검토자가 다시 읽어 판정·백업·초기화·검색 등 20건을 고쳤습니다.
-앱을 일부러 <!--n:mutants-->103<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->105<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
+앱을 일부러 <!--n:mutants-->137<!--/n-->가지 방식으로 망가뜨려(일반 햄이 다시 '피하기', 묶인 옛 제품 id를 잇지 않음, '샐러드'를 한 음식으로 판정, PC에서 전체 너비, CSV 수식 막기 빠짐, 단백질을 늘리기만 함, 나트륨·지방 규칙 삭제, 교체 메뉴를 이름으로 저장, 버튼 오류, 검색 목록 재생성, 저장 전에 바뀌는 내 정보, 다른 창의 기록 덮어쓰기, BMI 목표 빠짐, 화면 디자인이 몰래 바뀜, 뒤로 가기가 앱 밖으로 넘어감, 끝낸 할 일 줄이 다른 규칙에 걸려 깨짐 등) 해당 점검 <!--n:pairs-->139<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다([점검 체계](docs/testing.md)).
 
 **기록은 기기 밖으로 나가지 않습니다.** 서버·계정·분석 도구가 없고, 저장은 기기의 localStorage(기록)와 IndexedDB(최근 7일 자동 보관본)뿐입니다. 백업 파일은 원하면 비밀번호로 암호화합니다.
 같은 앱을 두 창에서 열어도 서로 덮어쓰지 않게 막고, 백업을 불러올 때는 지금 기록과 비교해 합치거나 되돌릴 수 있습니다.
@@ -149,7 +151,7 @@ flowchart LR
     OFF --> ONE["dist/ 단일 파일"]
   end
   subgraph device["사용자 기기 (브라우저)"]
-    LOG["증상 기록"] --> STAGE["단계 판정<br/>SCCAI·국내 기준"]
+    LOG["증상 기록"] --> STAGE["단계 판정<br/>배변·혈변 점수·국내 기준"]
     STAGE --> RULE["foodStatus<br/>음식 판정"]
     PROF["알레르기·지시·주의 음식"] --> RULE
     RULE --> VIEW["화면 + 근거 번호"]
@@ -218,8 +220,8 @@ python3 tools/build_offline.py   # public/(PWA)과 dist/(단일 파일) 생성
 npm ci && npx playwright install --with-deps chromium   # package-lock.json 그대로 설치
 npm run lint                     # ESLint (경고 0)
 npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->94<!--/n-->개(파이썬 표준 라이브러리만)
-npm test                         # Playwright 점검 <!--n:pw-->58<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
-npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->103<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
+npm test                         # Playwright 점검 <!--n:pw-->62<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
+npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->137<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
@@ -237,7 +239,7 @@ src/app/      앱 코드 한 파일(app.src.html)과 빌드 결과(index.html)
 src/brand/    UC TABLE 로고·앱 아이콘 SVG(tools/brand.cjs가 만듦), 앱 글꼴 uc-table-sans.woff2와 OFL 고지
 src/data/     음식 정의(spec1~10) · 시판 제품 기록(cj10·brand10·label10) · 영양식 표시값(spec8 LABEL) · 끼니 메뉴(menus.py) · 궁금한 점(qa.py) · 설명 템플릿 · 생성·빌드 스크립트
 public/       GitHub Pages로 여는 오프라인 PWA
-tests/        Playwright 점검 <!--n:pw-->58<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->31<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
+tests/        Playwright 점검 <!--n:pw-->62<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->35<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
 tools/        오프라인 빌드 · 근거 표 동기화 · 근거 확인일·링크·말투·문서 숫자 점검 · 로고·아이콘(brand.cjs) · 앱 글꼴(font_subset.py) · 스크린샷 · 린트용 추출 스크립트
 docs/         구조 · 설계 결정 · 점검 · AI 활용 · 데이터 출처 · 근거 목록 · 출시 준비(release.md)
 vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 라이선스(앱 '앱 정보'에도 전문)
@@ -247,7 +249,7 @@ vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 
 
 - **영양성분**: 식품의약품안전처 식품영양성분DB(공공데이터포털 공개본의 이용허락범위 '제한 없음')와 농촌진흥청 국가표준식품성분 DB 10.4(원재료 49종, 밥·죽). 앱의 음식 상세 화면마다 출처·식품명·식품코드를 표시합니다.
 - **시판 과자·사탕·젤리·초콜릿**: 농심몰·롯데웰푸드 스위트몰·해태몰 포장 표시 이미지, 크라운제과·오리온 제품 소개, 식약처 가공식품 DB(2026-08-28)와 3중 대조(2026-09-29~30 확인).
-- **판정 근거**: 진료지침·병원 식이 안내·논문·공식 발표·제품 자료 <!--n:refs-->88<!--/n-->건 — [근거 목록](docs/evidence.md)
+- **판정 근거**: 진료지침·병원 식이 안내·논문·공식 발표·제품 자료 <!--n:refs-->92<!--/n-->건 — [근거 목록](docs/evidence.md)
 - **시판 제품(v1.9.0)**: CJ더마켓 상품정보 제공고시, 동원몰 상품정보 제공고시·상품 상세 포장 표시, 식품안전나라 품목제조보고, 랭킹닭컴·아임닭·풀무원샵 상품 상세 포장 표시(2026-10-14~15 확인, 제품마다 한 곳)
 - **궁금한 점**: 대한장연구학회 환자용 브로셔·치료 지침, 서울아산병원·서울대학교병원·세브란스병원·가천대 길병원 식이 안내, ECCO 2025·ESPEN 2023·AGA 2024·IOIBD 2020·ACG 2025 원문(2026-10-04 확인)
 - **영양식 제품**: 판매처 상품정보 제공고시(롯데아이몰)·다나와·제조사 제품 안내에 올라온 1팩 표시값을 100 ml당으로 바꿔 씁니다(2026-09-25 확인).
@@ -259,7 +261,7 @@ vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 
 
 - 의료기기가 아니며 진단·처방을 대신하지 않습니다. [의료 관련 고지](DISCLAIMER.md)를 먼저 읽어 주세요.
 - 판정은 공개 지침의 일반 권고를 옮긴 것이라 개인의 침범 범위·수술력·동반 질환을 반영하지 않습니다.
-- 단계 판정표는 SCCAI와 국내 기준을 이 앱이 묶은 규칙이며, 이 조합 자체를 검증한 연구는 없습니다.
+- 단계 판정표는 배변·혈변 점수, 옛 합산 점수와 국내 기준을 이 앱이 묶은 규칙이며, 이 조합 자체를 검증한 연구는 없습니다.
 - 영양값은 대표값이라 실제 조리법·분량에 따라 달라집니다. 스테비아 토마토·제로 음료 같은 시판 제품은 대표값이 없어 제품 1종의 값을 쓰므로 제품마다 다를 수 있습니다.
 - 영양식 39종 가운데 18종은 원재료명을 판매처·제조사 공개 자료에서 글자로 확인하지 못해(표시가 이미지로만 올라와 있음) '확인하지 못한 제품'으로 두고 포장 확인을 안내합니다. 영양값은 26종에 표시값을 넣었고, 나머지는 '자료 없음'으로 보입니다. 특수의료용도식품은 포장 문구대로 의료진과 상담한 뒤 쓰도록 '주의해서', 신장질환자용·경관급식 전용은 '피하기'로 둡니다.
 - 스테비아·알룰로스 같은 감미료가 궤양성 대장염에 미치는 영향은 연구가 부족해, 감미료 제품은 '피하기'가 아니라 '주의해서'로 둡니다(탄산음료는 탄산 때문에 '피하기').
@@ -276,14 +278,14 @@ vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 
 ## English summary
 
 **UC TABLE** (UC 식단 관리 도우미, UC Diet Care Assistant) is an offline-first mobile web app that helps people with ulcerative colitis decide what they can eat *today*.
-Symptom logs are scored (SCCAI plus Korean clinical criteria) to pick a diet phase (low-residue → transition → Mediterranean, shown in plain words first), and <!--n:foods-->1,771<!--/n--> foods (including <!--n:prod-->1,233<!--/n--> packaged products and 41 common restaurant dishes) are
-judged by deterministic rules, each linked to one of <!--n:refs-->88<!--/n--> cited guidelines, papers, and product sources. Nutrition values come from the Korean MFDS food database
+Symptom logs are scored (Mayo patient-reported PRO2 stool-frequency and rectal-bleeding subscores, plus Korean clinical criteria) to pick a diet phase (low-residue → transition → Mediterranean, shown in plain words first), and <!--n:foods-->1,771<!--/n--> foods (including <!--n:prod-->1,233<!--/n--> packaged products and 41 common restaurant dishes) are
+judged by deterministic rules, each linked to one of <!--n:refs-->92<!--/n--> cited guidelines, papers, and product sources. Nutrition values come from the Korean MFDS food database
 through a reproducible pipeline (the app build is byte-identical, checked in CI). It is a single HTML file with no framework and stores data only on the device (localStorage, plus a 7-day IndexedDB snapshot).
 Since v1.7.0 the app uses no AI at runtime: <!--n:menus-->1,174<!--/n--> meal templates built from reviewed components and <!--n:qa-->51<!--/n--> Q&A entries whose <!--n:qaev-->169<!--/n--> evidence quotes are verified verbatim against the source texts by a unit test.
 v1.11.0 fixes the v1.10.0 review and applies a new design ("calm ridge", clear blue): a home status band with a one-line summary and a two-week symptom-score ridge chart over a remission band, progress rings, a bundled subset font (UC Table Sans, renamed from Pretendard under the SIL OFL), and plain-language stage names. Rules: foods the user is allergic to are now "never"; immunosuppressant users get raw foods as "avoid" (CDC); the active-disease alert is one fixed sentence; quick logs are marked everywhere instead of reading as zeros; packaged-product status and "instead try" suggestions are rebuilt; optional backup encryption (PBKDF2-SHA256 310k → AES-GCM 256); a full reset also clears local snapshots and keys; lab values and medication-change notes go into the clinic PDF; English names and typos are suggested in search; the open-source license texts ship inside the app. A browser walkthrough with agent-browser after the redesign found and fixed 24 more issues.
 v1.12.0 applies an independent review of the whole v1.11.0 change: the eating-out check now uses each listed food's allergen tags, the food list no longer serves stale verdicts after a medication or allergy change, the raw-food rule for immunosuppressant users also covers off-list menus and package ingredients, a reset that keeps snapshots preserves the pre-reset record, backups stop instead of going out in plaintext when the encryption key cannot be read, and CI now uploads failure logs. The app icon moves to the clear-blue palette and a font-coverage check guards the bundled subset font.
-Quality checks: <!--n:pw-->58<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->94<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
-PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->103<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
+Quality checks: <!--n:pw-->62<!--/n--> Playwright suites (including pixel-level visual regression), a WebKit flow check in CI, and <!--n:pytests-->94<!--/n--> Python unit tests including state-corruption fuzzing (1,297 cases, 0 failures), click/search fuzzing (~2,400 taps), axe-core WCAG 2.2 AA (0 violations), Korean IME input,
+PWA update delivery, 44 px touch targets, a documentation-number check, and weekly mutation checks (<!--n:mutants-->137<!--/n--> deliberately broken builds) that prove the tests fail when rules break. Built in collaboration with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md).
 
 ## 라이선스
 

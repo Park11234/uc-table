@@ -86,7 +86,7 @@ mut={
  'raw_kw_off.html': rep('function rawWords(t){','function rawWords(t){return [];'),  # 목록 밖 외식 메뉴·포장 원재료의 날음식을 다시 못 봄(C-03)
  'reset_keep_off.html':rep('if(!all) keepBeforeReset(); ',''),  # 보관본을 남기고 초기화해도 오늘 보관본이 빈 기록으로 덮임(C-04)
  'own_off.html':   rep('const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:undefined;','const own=(o,k)=>o[k];'),  # constructor 등으로 검색하면 멈춤(C-05)
- 'ridge_score.html':rep('pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(v<=2?"편안한 하루입니다"'),  # 홈 띠가 다시 점수만으로 편안한 하루(C-06)
+ 'ridge_score.html':rep('pv==null?(st===3&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(v<=2?"편안한 하루입니다"'),  # 홈 띠가 다시 점수만으로 편안한 하루(C-06)
  'alc_ingr_off.html':rep('if(alcIngr(f.id)) set("ban"','if(false) set("ban"'),  # 원재료에 알코올이 든 포장 식품이 금지가 아님
  'alc_menu_off.html':rep('if(aw.length) up("ban",`알코올 포함 가능성','if(false) up("ban",`알코올 포함 가능성'),  # 외식 글의 알코올이 금지가 아님
  'alc_label_off.html':rep('if(al.length) add("ban","알코올"','if(false) add("ban","알코올"'),  # 붙여넣은 원재료명의 알코올이 금지가 아님
@@ -112,7 +112,7 @@ mut={
  'alc_kw_alkol.html':rep('"알코올","알콜"','"알코올"'),  # 알콜 표기를 못 찾음
  'alc_detail_why.html':rep('alcIngr(id)&&s.level==="ban"?','false?'),  # 상세 화면에 먹는 방법 문장이 새어 나옴
  'poly_f0_off.html':rep('polyWords(f0?[...(item.ingr||[]),item.cook||""].join(" "):text)','polyWords(f0?"":text)'),  # 목록 음식 이름이면 적은 재료의 당알코올을 못 봄
- 'ridge_stage_only.html':rep('pv==null?(st===3&&v<=2&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(st===3?"편안한 하루입니다"'),  # 몸 상태가 최악이어도 편안한 하루(C-06 후속)
+ 'ridge_stage_only.html':rep('pv==null?(st===3&&(+tl.well||0)<2?"편안한 하루입니다"','pv==null?(st===3?"편안한 하루입니다"'),  # 몸 상태가 최악이어도 편안한 하루(C-06 후속)
  'enc_failopen.html':rep('if(ENC_OK()&&!ENC.ready) throw new Error("enc-unknown"); ',''),  # 열쇠를 못 읽으면 평문 백업(C-07)
  'copy_await.html':rep('else if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write) await','else if(false) await'),  # 암호화를 켜면 복사가 기다린 뒤에(C-10)
  'share_await.html':rep('now=backupNow();\n  if(now==null){let out;','now=await backupOut();\n  if(now==null){let out;'),  # 암호화를 켜면 공유가 기다린 뒤에(C-10)
@@ -123,10 +123,46 @@ mut={
  'crust_off.html':rep('const crustCross=(c,tags)=>{','const crustCross=(c,tags)=>{return [];'),   # 갑각류 교차 반응 규칙이 통째로 빠짐(C-21)
  'crust_food_off.html':rep('  if(!c.crustDone) for(const [o,a] of crustCross(c,f.tags)) set("avoid",crustWhy(o,a));   // v1.12.0 C-21\n',''),   # 음식 판정에서만 빠져 '대신 이것'에 게가 다시 나옴(C-21)
  # v1.12.0 검토 후속(보고서 5번): 단계 판정 기준을 한 칸씩 어긋나게
- 'sc_gt5.html':    rep('if(sc>=5) return {stage:1','if(sc>5) return {stage:1'),            # SCCAI 5점이 활동기가 아님
- 'sc_ge6.html':    rep('if(sc>=5) return {stage:1','if(sc>=6) return {stage:1'),           # SCCAI 6점부터 활동기
+ 'sc_gt5.html':    rep('if(comp>=5) return {stage:1','if(comp>5) return {stage:1'),            # 보조 합산 5점이 활동기가 아님
+ 'sc_ge6.html':    rep('if(comp>=5) return {stage:1','if(comp>=6) return {stage:1'),           # 보조 합산 6점부터 활동기
  'bloody_gt4.html':rep('if(bloody>=4) return {stage:1','if(bloody>4) return {stage:1'),    # 혈변 4회가 활동기가 아님
- 'remit_le4.html': rep('if(total<=3&&blood===0&&bloody===0','if(total<=4&&blood===0&&bloody===0'),  # 하루 4회 배변도 관해
+ 'remit_le4.html': rep('if(p.sf===0&&total<=3&&p.br===0','if(p.sf===0&&total<=5&&p.br===0'),  # 하루 4~5회 배변도 관해(평소 횟수가 많을 때)
+ # v1.12.0 지표 교체(SCCAI → PRO2·Truelove-Witts, 2026-10-21)
+ 'p2_sf_a.html':   rep('const sf=more<=0?0:more<=2?1:more<=4?2:3;','const sf=more<=0?0:more<=3?1:more<=4?2:3;'),   # 배변 횟수 1점 구간이 넓어짐(ACG 2025 표 5: 1~2회 더)
+ 'p2_sf_b.html':   rep('const sf=more<=0?0:more<=2?1:more<=4?2:3;','const sf=more<=0?0:more<=2?1:more<=3?2:3;'),   # 배변 횟수 2점 구간이 좁아짐(3~4회 더)
+ 'p2_usual_off.html':rep('base=usual??USUAL_BM_ASSUMED','base=USUAL_BM_ASSUMED'),                                          # 평소 배변 횟수를 무시
+ 'p2_blood_a.html':rep('(blood>=3||(blood===2&&bl*2>total))?2:1','blood>=3?2:1'),                                          # 가끔 뚜렷한 피 + 절반 넘는 횟수 → 2점이 빠짐
+ 'p2_blood_b.html':rep('const br=(blood===0&&bl===0)?0:','const br=(blood===0)?0:'),                                       # 피 섞인 횟수만 적은 기록이 0점
+ 'p2_rule7_off.html':rep('if(total>=7) return {stage:1','if(false) return {stage:1'),                                      # 하루 7회 이상 규칙 빠짐
+ 'p2_aux_off.html':rep('if(comp>=5) return {stage:1','if(false) return {stage:1'),                                         # 옛 보조 합산 규칙을 없애 민감도가 떨어짐
+ 'p2_remit_nosf.html':rep('if(p.sf===0&&total<=3&&p.br===0','if(total<=3&&p.br===0'),                                       # 관해가 평소 횟수 기준이 아님
+ 'p2_tw_sev.html': rep('if((total>=6&&blood>=3&&sys)||','if((total>=6&&blood>=3)||'),                                      # 열·빈맥 없이도 중증
+ 'p2_tw_mild.html':rep('if(total<=4&&blood<=1&&!sys) return {g:1','if(total<=5&&blood<=1&&!sys) return {g:1'),             # 경증 범위가 넓어짐
+ 'p2_csv_old.html':rep('["날짜","배변·혈변 점수(0-6)","배변 횟수 점수(0-3)","혈변 점수(0-3)"','["날짜","SCCAI","배변 횟수 점수(0-3)","혈변 점수(0-3)"'),  # CSV에 SCCAI 열이 돌아옴
+ 'p2_card_notw.html':rep('<div class="kv"><span>Truelove-Witts 중증도</span><b>${esc(tw.t)}</b></div>',''),              # 기록 결과에서 Truelove-Witts 줄이 빠짐
+ # v1.12.0 수정 요청서 v2(2026-10-20): 항목 1~7·10, 진료기록 시안 v7. 새 규칙마다 하나씩
+ 'v2_toast_pushed.html':rep('body.pushed .toasts:not(.top),body.welcome .toasts:not(.top){','body.pushed .toasts,body.welcome .toasts{'),  # 항목 3: 끼니 상세에서 위쪽 알림이 화면 높이로 늘어남
+ 'v2_toast_left.html':rep('.toast .t-msg{flex:1;min-width:0;text-align:center;padding:8px 4px}','.toast .t-msg{flex:1;min-width:0;text-align:left;padding:8px 4px}'),  # 항목 4: 알림 글자가 왼쪽
+ 'v2_toast_asym.html':rep('.toast::before{content:"";flex:none;width:44px}','.toast::before{content:"";flex:none;width:0}'),  # 항목 4: × 자리만큼의 빈칸이 없어 글자가 치우침
+ 'v2_note_left.html':rep('.plan-note{display:block;text-align:center;margin:0 6px 14px}','.plan-note{display:block;text-align:left;margin:0 6px 14px}'),  # 항목 2: 홈 맨 아래 첫 안내 글이 왼쪽
+ 'v2_days_below.html':end("""{const __v=viewPlan; viewPlan=function(){const h=__v.apply(this,arguments); const a=h.indexOf('<div class="hero hero-days">'), b=h.indexOf('<div class="sec-title" id="meals">'), c=h.indexOf('<div class="list meals">'); return (a<0||b<a||c<b)?h:h.slice(0,a)+h.slice(b,c)+h.slice(a,b)+h.slice(c)}}"""),  # 항목 1: 날짜 띠가 다시 끼니 제목 아래
+ 'v2_ph_two.html':rep('placeholder="예시: 연어 포케, 크림 파스타"','placeholder="예: 연어 포케&#10;크림 파스타"'),  # 항목 7: 입력 안내 글자가 두 줄
+ 'v2_err_old.html':rep('메뉴 이름을 적어 주십시오. 여러 개는 쉼표로 구분합니다.','메뉴 이름을 한 줄에 하나씩 적어 주십시오.'),  # 항목 7: 빈 입력 오류가 쉼표를 설명하지 않음
+ 'v2_nb_off.html':rep('<span class="nb">지금: ','<span>지금: '),  # 항목 10: '지금: 값'이 줄 끝에서 갈라짐
+ 'v2_nb_nowrap.html':rep('.nb{display:inline-block;max-width:100%;vertical-align:baseline}','.nb{white-space:nowrap}'),  # 항목 10·5: 묶음이 큰 글자·좁은 화면에서 가로로 넘침
+ 'v2_bind_off.html':rep('function groupRefs(root){ groupRefs0(root); bindDots(root) }','function groupRefs(root){ groupRefs0(root) }'),  # 항목 5: 가운뎃점·쌍점 묶음 후처리 빠짐
+ 'v2_pretty_off.html':rep('p,li,dd,small,.hint,.muted,.banner{text-wrap:pretty}',''),  # 항목 5: 문단 끝 한 단어 방지 빠짐
+ 'v2_why_off.html':rep('function mjLines(it,rc,f,base){','function mjLines(it,rc,f,base){return {lines:[],refs:[]};'),  # 항목 6: 외식 판정 이유 줄이 없음
+ 'v2_why_invent.html':rep('const WHY_REDMEAT="붉은 고기는 줄이도록 권고(IOIBD·ECCO)"','const WHY_REDMEAT="붉은 고기는 대장암 위험을 높입니다"'),  # 항목 6: 앱에 없는 새 의학 문장
+ 'v2_pdf_sccai.html':rep('<th>하루 배변 횟수(평균·최대)</th>','<th>평균·최고 SCCAI</th>'),  # 시안 v7: 진료 문서에 SCCAI가 다시 나옴
+ 'v2_pdf_cover.html':rep('#printDoc .cover{border:1px solid #111;','#printDoc .cover{border:1px solid #D7DEE9;'),  # 시안 v7: 표지 테두리가 옛 연한 색
+ 'v2_pdf_qs_early.html':rep('if(qs.length) blocks.push(`<h2>이번 진료 때 묻고 싶은 것</h2>','if(qs.length) blocks.splice(3,0,`<h2>이번 진료 때 묻고 싶은 것</h2>'),  # 시안 v7: 묻고 싶은 것이 맨 끝이 아님
+ 'v2_pdf_nodot.html':rep('if(p.blood){g.fillStyle=C.red;','if(false){g.fillStyle=C.red;'),  # 시안 v7: 혈변 빨간 점이 그려지지 않음
+ 'v2_pdf_footer_ko.html':rep('pdf.text(`${i}/${tot}`,PW-M,PH-14,{align:"right"});','pdf.text(`${i}쪽`,PW-M,PH-14,{align:"right"});'),  # 그림 PDF 바닥글에 한글을 글자로 씀(깨짐)
+ 'v2_pdf_weight0.html':rep('const wdTxt=wts.length>=2?','const wdTxt=wts.length>=1?'),  # 체중이 한 번뿐인데 변화 '0kg'
+ 'v2_pdf_disc_off.html':rep('음식 평가는 환자의 주관적 판단입니다. UC TABLE은 의료기기가 아니며','음식 평가는 환자의 주관적 판단입니다. UC TABLE은'),  # 진료 문서의 '의료기기 아님' 안내가 빠짐
+ 'v3_pdf_notice_back.html':rep('{// 진료기록 시안 v7: 건강 관리 점검은 예방접종 한 줄','blocks.push(`<h2>진료 때 알릴 사항 (대한장연구학회 환자 안내 기준)</h2><table><tbody><tr><th>직접 확인해 알릴 것</th><td>□ 우울감이나 죽고 싶다는 생각</td></tr></tbody></table>`);{// 진료기록 시안 v7: 건강 관리 점검은 예방접종 한 줄'),  # 사용자 요청: '진료 때 알릴 사항' 블록이 다시 나옴
+ 'v3_pdf_note_old.html':rep('는 성인 궤양성 대장염의 임상적 관해를 직장 출혈 0점·배변 횟수 0점으로 정의하고','가 증상 평가에 사용합니다. 그리고'),  # 원문 확인 전의 과장 문구('"'"'ACG·STRIDE-II가 PRO2를 증상 평가에 사용'"'"')가 돌아옴
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -239,7 +275,41 @@ crust_food_off.html tests/checks/v1120.cjs
 sc_gt5.html tests/regression/t7.cjs
 sc_ge6.html tests/regression/t7.cjs
 bloody_gt4.html tests/regression/t7.cjs
-remit_le4.html tests/regression/t7.cjs"
+remit_le4.html tests/checks/pro2.cjs
+p2_sf_a.html tests/checks/pro2.cjs
+p2_sf_b.html tests/checks/pro2.cjs
+p2_usual_off.html tests/checks/pro2.cjs
+p2_blood_a.html tests/checks/pro2.cjs
+p2_blood_b.html tests/checks/pro2.cjs
+p2_rule7_off.html tests/checks/pro2.cjs
+p2_aux_off.html tests/checks/pro2.cjs
+p2_remit_nosf.html tests/checks/pro2.cjs
+p2_tw_sev.html tests/checks/pro2.cjs
+p2_tw_mild.html tests/checks/pro2.cjs
+p2_csv_old.html tests/checks/pro2.cjs
+p2_card_notw.html tests/checks/pro2.cjs
+v2_toast_pushed.html tests/checks/req2.cjs
+v2_toast_left.html tests/checks/req2.cjs
+v2_toast_asym.html tests/checks/req2.cjs
+v2_note_left.html tests/checks/req2.cjs
+v2_days_below.html tests/checks/req2.cjs
+v2_ph_two.html tests/checks/req2.cjs
+v2_err_old.html tests/checks/req2.cjs
+v2_nb_off.html tests/checks/req2.cjs
+v2_nb_nowrap.html tests/checks/req2.cjs
+v2_bind_off.html tests/checks/wrap.cjs
+v2_pretty_off.html tests/checks/wrap.cjs
+v2_why_off.html tests/checks/req2.cjs
+v2_why_invent.html tests/checks/req2.cjs
+v2_pdf_sccai.html tests/checks/pdf7.cjs
+v2_pdf_cover.html tests/checks/pdf7.cjs
+v2_pdf_qs_early.html tests/checks/pdf7.cjs
+v2_pdf_nodot.html tests/checks/pdf7.cjs
+v2_pdf_footer_ko.html tests/checks/pdf7.cjs
+v2_pdf_weight0.html tests/checks/pdf7.cjs
+v2_pdf_disc_off.html tests/checks/pdf7.cjs
+v3_pdf_notice_back.html tests/checks/pdf7.cjs
+v3_pdf_note_old.html tests/checks/pdf7.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

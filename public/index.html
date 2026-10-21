@@ -14,7 +14,7 @@
 <title>UC TABLE</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script defer src="app.js?v=c3028b14df"></script>
+<script defer src="app.js?v=133e2a7ace"></script>
 </head>
 <body>
 <style>
@@ -65,7 +65,9 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.6;padding-inline:16px;padding-block:0 110px;min-height:100%}   /* v1.11.0 R-01: 기본 여백 8px이 실제 앱에만 남아 화면이 16px 넘치고 좌우가 좁았음 */
 .wrap{max-width:560px;margin:0 auto}
-.plan-note{display:flex;gap:6px;align-items:flex-start;margin:0 6px 14px}
+/* 수정 요청서 v2 항목 2: 홈 맨 아래 두 안내 글(.plan-note·.foot-note)을 모두 가운데 정렬, 좌우 여백 같게(8px). 아이콘은 글 위 가운데 */
+.plan-note{display:block;text-align:center;margin:0 6px 14px}
+.hint.plan-note{margin:0 8px}
 .bc-cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:4/3}
 .bc-cam video{width:100%;height:100%;object-fit:cover;display:block}
 .bc-cam i{position:absolute;left:10%;right:10%;top:50%;height:2px;background:#ff4d4d;box-shadow:0 0 8px #ff4d4d}
@@ -80,7 +82,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font
 .alt-chip{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:6px 10px;min-height:48px;text-align:left;color:inherit}
 .alt-chip span:nth-child(2){flex:1;min-width:0;font-weight:600;font-size:0.875rem}
 .alt-chip .fic{width:34px;height:34px}
-.plan-note .ic{width:16px;height:16px;margin-top:2px}
+.plan-note .ic{display:block;width:16px;height:16px;margin:0 auto 4px}
 .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:8;display:flex;align-items:center;gap:4px;min-height:58px;margin-inline:-16px;padding:6px 10px 6px 16px;background:var(--bg);box-shadow:0 1px 0 var(--line)} /* v1.9.0 D-11: 불투명 + 아래 구분선(본문이 비치지 않게) */
 .appbar h1{font-family:var(--display);font-size:1.3125rem;font-weight:800;letter-spacing:-.02em}
@@ -200,6 +202,7 @@ button.lrow:active,label.lrow:active,.mrow:active,.hrow:active,.fcard:active,.ti
 .rinfo{display:flex;align-items:center;gap:12px;border:0;background:transparent;text-align:left;color:inherit;padding:0;font:inherit}
 .jrow{padding:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .jrow p{margin:0;font-size:0.875rem}
+.why-lines{display:flex;flex-direction:column;gap:4px}   /* 수정 요청서 v2 항목 6: 판정 이유 줄 묶음 */
 .found{font-weight:700}
 .tipline{color:var(--accent)!important}
 .crit-t{color:var(--crit)!important;font-size:0.8125rem} .warn-t{color:var(--warn)!important;font-size:0.8125rem}
@@ -308,6 +311,14 @@ html{scroll-padding-bottom:104px;scroll-padding-top:72px}
 
 /* v14 */
 body{word-break:keep-all;overflow-wrap:anywhere}
+/* 수정 요청서 v2 항목 5·10: 줄 끝에서 갈라지면 안 되는 말(라벨: 값, A·B 짧은 목록)의 덩어리. nowrap이 아니라 inline-block이라,
+   한 줄에 들어가면 통째로 다음 줄로 넘어가고, 그 줄보다 길 때(글자 200%·좁은 화면)만 안에서 나뉘어 가로로 넘치지 않는다 */
+.nb{display:inline-block;max-width:100%;vertical-align:baseline}
+/* 수정 요청서 v2 항목 5: 줄 나눔. 문단은 마지막 줄에 한 단어만 남지 않게(pretty), 짧은 안내·알림·제목은 줄 길이를 고르게(balance).
+   지원하지 않는 브라우저는 이 줄을 무시하고 예전처럼 나뉜다(해 없음). 진료 PDF(#report, #printDoc)와 인용(.qa-ev)은 따로 둔다 */
+p,li,dd,small,.hint,.muted,.banner{text-wrap:pretty}
+.hint,.foot-note,.plan-note,.banner,.toast .t-msg,.lt b,.mrow b,.sec-title h2,.lt small,dd,li,.warn-t,.o-l,.chip-btn{text-wrap:balance}
+#report,#report *,#printDoc,#printDoc *,.qa-ev,.qa-ev *{text-wrap:wrap}
 .rec-link{min-height:44px!important}
 .rcard details summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
 .chips .chip{min-height:44px!important}
@@ -654,9 +665,15 @@ th{color:var(--muted);font-weight:500}
 /* v1.9.0 D-6: 알림(토스트)은 아래 조작 영역을 가리지 않게 위쪽 전용 영역에 5초 동안. 누르거나 초점이 가면 멈춘다. 영역은 늘 있어(aria-live) 화면 읽기가 알림을 읽는다 */
 /* v1.10.0 디자인 10: 알림은 아래쪽(메뉴 바로 위)에 띄워 화면 제목을 가리지 않는다. 메뉴가 없는 화면(설정·기록 마법사)은 화면 아래 버튼 위 */
 .toasts{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);z-index:30;display:flex;justify-content:center;padding:0 16px;pointer-events:none}
-body.pushed .toasts,body.welcome .toasts{bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
-.toast{pointer-events:auto;display:flex;align-items:center;gap:4px;max-width:528px;background:var(--ink);color:var(--bg);padding:4px 4px 4px 16px;border-radius:16px;font-size:0.875rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:1;transition:opacity .2s}
-.toast .t-msg{flex:1;padding:8px 4px 8px 0}
+body.pushed .toasts:not(.top),body.welcome .toasts:not(.top){bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
+.toast{pointer-events:auto;display:flex;align-items:center;max-width:528px;background:var(--ink);color:var(--bg);padding:4px;border-radius:16px;font-size:0.875rem;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:1;transition:opacity .2s}
+/* 수정 요청서 v2 항목 4: 글자는 알약 가운데. 왼쪽에 × 버튼과 같은 너비(44px)의 빈칸(::before)을 둬 좌우가 대칭.
+   되돌리기 같은 동작 버튼이 있는 알림은 글자 칸이 좁아지지 않게 빈칸 없이 글자 칸 안에서 가운데 */
+.toast::before{content:"";flex:none;width:44px}
+.toast .t-msg{flex:1;min-width:0;text-align:center;padding:8px 4px}
+.toast .t-btns{display:flex;flex:none}
+.toast.has-act::before{display:none}
+.toast.has-act{padding-left:12px}
 .toast button{flex:none;min-height:44px;min-width:44px;border:0;background:transparent;color:inherit;font:inherit;font-weight:700;padding:0 10px;border-radius:12px}
 .toast button.t-act{text-decoration:underline;text-underline-offset:3px}
 .toast button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
@@ -685,7 +702,7 @@ details summary{cursor:pointer;font-weight:700}
 #report .blk{padding:16px 34px}
 #report h1{font-family:var(--display);font-size:25px;margin:0 0 4px}
 #report h2{font-size:15.5px;font-family:var(--body);font-weight:700;color:#12305E;margin:0 0 10px;padding:0 0 0 10px;border-left:4px solid #2F6FED;border-bottom:0;line-height:1.3}
-#report .cover{border:1px solid #D7DEE9;border-radius:10px;padding:18px 20px;background:#F7F9FC}
+#report .cover{border:1px solid #111;border-radius:12px;padding:18px 20px;background:#fff}   /* 진료기록 시안 v7 */
 #report .cover .meta{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:#333}
 #report .cover .meta b{color:#12305E}
 #report table{font-size:12px;width:100%;border-collapse:collapse;border:1px solid #D7DEE9;border-radius:8px;overflow:hidden}
@@ -713,9 +730,10 @@ details summary{cursor:pointer;font-weight:700}
   body>*:not(#printDoc){display:none!important}
   #printDoc{display:block!important;color:#111;font-family:var(--body);font-size:10.5pt;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
   #printDoc .blk{padding:0 0 10pt}
+  #printDoc .blk:not(:has(table)){break-inside:avoid}   /* 제목만 쪽 끝에 남지 않게(표가 없는 짧은 블록은 통째로). 표 블록은 행 단위로 이어짐 */
   #printDoc h1{font-size:18pt;margin:0 0 4pt}
   #printDoc h2{font-size:12pt;font-family:var(--body);font-weight:700;color:#12305E;margin:0 0 6pt;padding:0 0 0 8px;border-left:4px solid #2F6FED;break-after:avoid}
-  #printDoc .cover{border:1px solid #D7DEE9;border-radius:8px;padding:12pt 14pt;background:#F7F9FC}
+  #printDoc .cover{border:1px solid #111;border-radius:10pt;padding:12pt 14pt;background:#fff}   /* 진료기록 시안 v7 */
   #printDoc .cover .meta{display:flex;flex-wrap:wrap;gap:4pt 14pt;margin-top:8pt;font-size:9.5pt}
   #printDoc .cover .meta b{color:#12305E}
   #printDoc table{width:100%;border-collapse:collapse;font-size:9pt;border:1px solid #D7DEE9}

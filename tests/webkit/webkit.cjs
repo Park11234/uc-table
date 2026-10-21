@@ -30,7 +30,7 @@ const F = []; const need = (c, m) => { if (!c) { F.push(m); console.log('  ✗ '
 
   console.log('== 빠른 증상 기록');
   const quick = await p.evaluate(() => { const d = today(); S.logs[d] = { ...BLANK_LOG(), day: 3, night: 0, urg: 0, blood: 0, bloody: 0, well: 0, stool: 4, medtaken: 1, pain: 0, quick: true }; save(); S.tab = 'log'; SCR = null; render();
-    return { n: Object.keys(S.logs).length, row: !!document.querySelector('.hrow'), score: sccai(S.logs[d]) } });
+    return { n: Object.keys(S.logs).length, row: !!document.querySelector('.hrow'), score: pro2(S.logs[d]).sum } });
   need(quick.n === 1 && quick.row, `기록 목록에 오늘 기록 (${JSON.stringify(quick)})`);
   await p.reload(); await p.waitForFunction(() => typeof S === 'object' && !!S.consent, null, { timeout: 30000 });
   need(await p.evaluate(() => Object.keys(S.logs).length === 1), '새로고침 뒤에도 기록이 남음(localStorage)');
