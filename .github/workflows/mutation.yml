@@ -13,7 +13,8 @@ permissions:
 
 jobs:
   mutation:
-    runs-on: ubuntu-latest
+    # Playwright 1.56은 우분투 26.04(ubuntu-latest)에 브라우저를 설치하지 못해 24.04로 고정(2026-11-20)
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
