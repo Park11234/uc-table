@@ -24,7 +24,8 @@ const jsonOf=k=>{const v=logOf(k); if(v==null) return null; try{return JSON.pars
 const lineJSON=pre=>{const l=__LOG.find(x=>x.startsWith(pre)); if(l==null) return null; try{return JSON.parse(l)}catch(e){return null}};
 const FAILS=[]; const expect=(c,m)=>{let ok=false; try{ok=typeof c==='function'?!!c():!!c}catch(e){m+=' ('+e.message+')'} if(!ok) FAILS.push(m)};
 const __done=()=>{ if(FAILS.length){ console.error('FAIL\n'+FAILS.join('\n')); process.exitCode=1 } else console.log('검증 통과') };
-const rateOpen=async p=>{const b=await p.$('[data-act=rateOpen]'); if(b){await b.click(); await p.waitForTimeout(80)}}; // v1.8.0 평가 버튼은 '불편했던 음식 고르기'를 눌러야 보임
+// 15차: 끼니 화면·평가 단추가 그려질 때까지 기다린다(예전에는 0.3초·0.08초를 고정으로 기다려, 여러 점검을 함께 돌릴 때 단추를 못 찾고 null 오류로 끝난 적이 있음)
+const rateOpen=async p=>{await p.waitForSelector('[data-act=rateOpen],[data-act=rateSet]'); const b=await p.$('[data-act=rateOpen]'); if(b){await b.click(); await p.waitForSelector('[data-act=rateSet]')}}; // v1.8.0 평가 버튼은 '불편했던 음식 고르기'를 눌러야 보임
 (async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
@@ -49,7 +50,7 @@ await p.evaluate(()=>{S.logs[today()]={...BLANK_LOG(),day:2};openWizard();WZ.ste
 console.log('existing',await p.evaluate(()=>document.querySelector('[data-act=wzNext]').disabled));
 // taste only -> dislikes
 await p.evaluate(()=>{wizardDirty=()=>false;SCR=null;S.logs={};S.plan=null;S.tab="plan";render()});
-await p.click('.mrow[data-k="0"]'); await p.waitForTimeout(300);
+await p.click('.mrow[data-k="0"]');
 await rateOpen(p); const rated=await p.evaluate(()=>{const g=document.querySelector('[data-act=rateSet][data-j="0"]').closest('[role=group]'); return g.getAttribute('aria-label').replace(/ 평가$/,'')}); console.log('rated',JSON.stringify(rated));
 await rateOpen(p); await p.click('[data-act=rateSet][data-j="0"][data-v=bad]'); await p.click('[data-act=rateSave]'); await p.waitForTimeout(200);
 await p.click('[data-act=badSym][data-v=taste]');

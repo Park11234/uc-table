@@ -15,7 +15,7 @@ v1.10.0
     뼈대가 먼저 그려지고, 앱 코드는 따로 캐시되어 다음 방문에 다시 받지 않는다.
   - 시작 화면 바탕색은 어두운 중립색(W-8): 어두운 모드에서 흰 화면이 번쩍이지 않게
 """
-import os, re, json, shutil, hashlib
+import os, re, json, shutil, hashlib, base64
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'src', 'app', 'index.html')     # 앱 원본(데이터를 넣은 것)
@@ -70,20 +70,48 @@ HEAD = '''<!doctype html>
 ''' % title
 
 
+def sha(code):
+    return "'sha256-%s'" % base64.b64encode(hashlib.sha256(code.encode('utf-8')).digest()).decode()
+
+
+def offline_csp():
+    """오프라인 단일 파일(안드로이드 앱이 APK 안에 넣어 여는 파일이기도 하다)의 콘텐츠 보안 정책(2026-10-24).
+    코드가 통째로 인라인이라 스크립트는 이 파일에 든 스크립트(앱 코드 + 쓸 때만 실행하는 라이브러리)의 해시만 허용하고,
+    네트워크 연결은 막는다(이 파일은 서버와 통신하지 않는다). 해시는 빌드가 그때그때 계산하므로 코드를 바꿔도 손으로 고칠 것이 없다.
+    HTML은 읽을 때 줄바꿈(CRLF)을 LF로 바꾸므로 윈도에서 줄바꿈이 바뀐 파일도 같은 해시가 된다."""
+    hs = ' '.join([sha(c) for c in js_parts] + [sha(code) for lid, fn, code in libs])
+    return ("default-src 'none'; script-src %s; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; "
+            "connect-src 'none'; media-src blob:; worker-src 'none'; base-uri 'none'; form-action 'none'" % hs)
+
+
 def single():
     """오프라인 단일 파일: 모든 것을 한 파일에. 그림 PDF 라이브러리는 실행하지 않는 형태로 끝에 둔다."""
     lib_tags = ''.join('<script type="text/plain" id="%s">%s</script>\n' % (lid, code) for lid, fn, code in libs)
-    return (HEAD + '</head>\n<body>\n' + style + markup + scripts + '\n' + lib_tags + '</body>\n</html>\n')
+    head = HEAD + '<meta http-equiv="Content-Security-Policy" content="%s">\n' % offline_csp()
+    return (head + '</head>\n<body>\n' + style + markup + scripts + '\n' + lib_tags + '</body>\n</html>\n')
+
+
+# 서비스 워커 등록 한 줄. 인라인이라 CSP에는 이 글자 그대로의 해시를 적는다(바꾸면 해시가 자동으로 같이 바뀐다)
+SW_REG_JS = 'if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}'
+
+
+def pwa_csp():
+    """PWA(웹으로 여는 주소)의 콘텐츠 보안 정책. 스크립트는 같은 출처의 파일과 위 한 줄만 허용하고, 네트워크 연결(fetch·XHR·sendBeacon·WebSocket·EventSource)은
+    같은 주소(GitHub 서버)까지 모두 막는다(2026-11-16 21차: 기록은 휴대폰에만. 앱 화면은 연결을 쓰지 않고, 앱 파일은 서비스 워커가 받는다).
+    스타일은 화면 곳곳의 style 속성 때문에 인라인을 허용한다. 오프라인 단일 파일은 offline_csp()(스크립트 해시)를 쓴다."""
+    h = base64.b64encode(hashlib.sha256(SW_REG_JS.encode('utf-8')).digest()).decode()
+    return ("default-src 'none'; script-src 'self' 'sha256-%s'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
+            "font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'self'; media-src 'self' blob:; "
+            "base-uri 'none'; form-action 'none'" % h)
 
 
 def pwa(app_name):
     """PWA 뼈대: 글꼴·색·첫 화면 문구를 먼저 그리고, 앱 코드(app.js)는 defer로 받는다."""
-    head = HEAD + ('<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">'
+    head = HEAD + ('<meta http-equiv="Content-Security-Policy" content="%s">\n' % pwa_csp()) + ('<link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">'
                    '<link rel="apple-touch-icon" href="apple-touch-icon.png">\n'
                    '<link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>\n'
                    '<script defer src="%s"></script>\n' % app_name)
-    sw = ('<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){'
-          'navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>\n')
+    sw = '<script>' + SW_REG_JS + '</script>\n'
     return head + '</head>\n<body>\n' + FONT_RE.sub('url("fonts/uc-table-sans.woff2")', style) + markup + sw + '</body>\n</html>\n'
 
 
@@ -161,7 +189,7 @@ async function ucCheck(){
     const last=st.last||""; const days=last?Math.floor((Date.parse(today)-Date.parse(last))/864e5):99;
     if(days<3||st.notified===today) return;
     st.notified=today; await c.put("./__uc_status",new Response(JSON.stringify(st),{headers:{"Content-Type":"application/json"}}));
-    if(self.registration.showNotification) await self.registration.showNotification("UC TABLE",{body:last?days+"일째 증상 기록이 없습니다. 오늘 상태를 기록해 주십시오.":"증상 기록을 시작해 주십시오.",icon:"icon-192.png",badge:"icon-192.png",tag:"uc-log",lang:"ko"});
+    if(self.registration.showNotification) await self.registration.showNotification("UC TABLE",{body:last?days+"일째 증상 기록이 없습니다. 오늘 상태를 기록할 차례입니다.":"아직 증상 기록이 없습니다. 오늘 상태부터 기록할 수 있습니다.",icon:"icon-192.png",badge:"icon-192.png",tag:"uc-log",lang:"ko"});
     if(self.navigator&&self.navigator.setAppBadge) try{await self.navigator.setAppBadge(1)}catch(e){}
   }catch(e){}
 }

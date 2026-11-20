@@ -2,7 +2,7 @@
    이 저장소의 개발 환경에는 WebKit이 없어 CI(GitHub Actions의 webkit 작업)에서만 돈다.
    손으로 돌리기: npx playwright install --with-deps webkit && node tests/webkit/webkit.cjs
    엔진을 바꿔 보기: BROWSER=chromium node tests/webkit/webkit.cjs (점검 코드 자체를 확인할 때)
-   흐름: 첫 실행 동의 → 홈 → 빠른 증상 기록 → 음식 검색·음식 정보 → 백업 내용 만들기·붙여 넣어 불러오기 → 입력칸 글자 16px(확대 방지) */
+   흐름: 첫 실행 동의 → 홈 → 빠른 증상 기록 → 음식 검색·음식 정보 → 백업 내용 만들기·붙여 넣어 불러오기 → 입력칸 글자 16px(확대 방지) → 오프라인 단일 파일 CSP(4차) */
 const path = require('path'), fs = require('fs');
 const pw = require('playwright');
 const ROOT = path.join(__dirname, '..', '..');
@@ -24,7 +24,7 @@ const F = []; const need = (c, m) => { if (!c) { F.push(m); console.log('  ✗ '
   await p.waitForFunction(() => typeof render === 'function' && !!document.querySelector('#main').firstChild, null, { timeout: 30000 });
 
   console.log(`== ${NAME}: 첫 실행·홈`);
-  await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(400);
+  await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(400);
   const skip = await p.$('[data-act=onbSkip]'); if (skip) { await skip.click(); await p.waitForTimeout(300) }
   need(await p.evaluate(() => !!S.consent && S.tab === 'plan' && !!document.querySelector('.tab[data-tab=plan][aria-current], .tab[data-tab=plan].on, .tab[data-tab=plan]') && document.querySelector('#main').innerText.length > 50), '동의 뒤 홈(오늘 식단)이 열림');
 
@@ -56,6 +56,23 @@ const F = []; const need = (c, m) => { if (!c) { F.push(m); console.log('  ✗ '
   need(fs16.length > 0 && fs16.every(v => v >= 16), `보이는 입력칸 글자 16px 이상 (${fs16.join(',')})`);
 
   need(!errs.length, `페이지 오류 없음 (${errs.join(' / ').slice(0, 200)})`);
+
+  // 2026-10-24 4차: 오프라인 단일 파일(안드로이드 앱이 넣는 파일)의 CSP(스크립트 해시)가 WebKit에서도 앱·쓸 때만 실행하는 라이브러리를 막지 않는지.
+  // 개발 환경에는 WebKit이 없어 CI에서만 확인된다. 파일은 CI가 먼저 만든다(python3 tools/build_offline.py)
+  const OFF = process.env.OFFLINE_FILE || path.join(ROOT, 'dist', 'uc-table-offline.html');
+  console.log('== 오프라인 단일 파일의 콘텐츠 보안 정책');
+  if (!fs.existsSync(OFF)) need(false, `오프라인 단일 파일 없음(${OFF}) — python3 tools/build_offline.py`);
+  else {
+    const c2 = await b.newContext({ ...dev, locale: 'ko-KR' }); const q = await c2.newPage(); const e2 = [];
+    q.on('pageerror', e => e2.push(e.message));
+    await q.addInitScript(() => { document.addEventListener('securitypolicyviolation', e => { (window.__v = window.__v || []).push(e.violatedDirective + ' ' + (e.blockedURI || '')) }) });
+    await q.goto('file://' + OFF);
+    const ok = await q.waitForFunction(() => typeof render === 'function' && !!document.querySelector('#main').firstChild, null, { timeout: 30000 }).then(() => true, () => false);
+    const r = ok ? await q.evaluate(async () => { const o = {}; try { await loadPdfLibs(); o.pdf = !!(window.jspdf && window.html2canvas) } catch (e) { o.pdf = 'err ' + e.message }
+      try { await loadScanLib(); o.scan = !!window.ZXing } catch (e) { o.scan = 'err ' + e.message } o.v = window.__v || []; return o }) : null;
+    need(ok && r && r.pdf === true && r.scan === true && !r.v.length && !e2.length, `CSP 아래서 앱·그림 PDF·바코드 라이브러리 동작, 위반 없음 (${JSON.stringify(r)} ${e2.join(' / ').slice(0, 120)})`);
+    await c2.close();
+  }
   await b.close();
   console.log(F.length ? 'FAIL ' + F.join(' / ') : '검증 통과'); process.exit(F.length ? 1 : 0);
 })();

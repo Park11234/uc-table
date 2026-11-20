@@ -64,7 +64,7 @@ FSERV = {
     'grapefruit': ((80, ''), None, None, [], [58], 'fe', D1006),
     'orange_juice': ((None, '125ml'), None, None, [], [58], 'fe', D0927),
     'dragon_fruit': ((330, '중간 1개'), None, None, [], [55, 58], 'fe', D0927),
-    'apple': ((20, '핑크레이디 20g·그래니스미스 25g'), None, None, [FRU, SOR], [20, 58], 'fe', D1006),
+    'apple': ((20, '핑크레이디 20g, 그래니스미스 25g'), None, None, [FRU, SOR], [20, 58], 'fe', D1006),
     'applesauce': ((3, '약 3/4작은술'), None, None, [FRU, SOR], [58, 20], 'fe', D1006),
     'pear': (None, None, None, [FRU, SOR], [20], 'monash', D1006),
     'mango': (None, None, None, [FRU], [20], 'monash', D1006),

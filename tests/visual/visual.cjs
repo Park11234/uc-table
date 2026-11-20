@@ -18,7 +18,7 @@ const FIXED_DATE=()=>{const FIX=new Date(2026,9,5,9,0,0).getTime(); const D=Date
   class F extends D{constructor(...a){if(a.length===0) super(FIX); else super(...a)} static now(){return FIX}}
   window.Date=F; Math.random=(()=>{let x=42;return()=>{x=(x*16807)%2147483647;return x/2147483647}})()};
 const SEED=()=>{const d=n=>addDays(today(),-n); S.consent={date:today()}; S.onb="done"; S.persist="na";
-  S.profile={height:"174",weight:"63",age:"27",sex:"M",allergies:["shrimp"],allergyOther:"",lactose:false,meds:["asa"],medOther:"",dislikes:"",budget:"보통"};
+  S.profile={height:"174",weight:"63",age:"27",sex:"M",allergies:["shrimp"],allergyOther:"",lactose:false,meds:["asa"],medOther:"",dislikes:"",budget:"보통",usualBM:"3"};   // v1.13.0: 평소 횟수를 비우면 1회 기준이라, 기준 화면(하루 3회 = 관해)을 지키려 3회로 적음
   const mk=(bloody,pain,well)=>({day:3,night:0,bloody,urg:bloody?1:0,blood:bloody?1:0,well,extra:[],stool:0,medtaken:1,pain,gas:"조금",fatigue:"약간",temp:"",pulse:"",other:[],memo:""});
   for(let i=0;i<8;i++) S.logs[d(i)]=mk(i===5?1:0,i%2,i===5?1:0);
   S.water[today()]=4; S.weights=[{date:d(40),kg:63.6},{date:today(),kg:63.1}];

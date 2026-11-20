@@ -506,7 +506,7 @@ class RefInfoTest(unittest.TestCase):
         m = re.search(r'const REF_INFO=\{(.*?)\};', APP_SRC)
         info = dict((int(n), (t, d)) for n, t, d in re.findall(r'(\d+):\["(\w)","(\d{4}-\d{2}-\d{2})"\]', m.group(1)))
         self.assertEqual(set(info), REF_NOS)
-        self.assertTrue(all(t in 'gsho2' for t, _ in info.values()))
+        self.assertTrue(all(t in 'gshopa2' for t, _ in info.values()))
 
 
 class ToneTest(unittest.TestCase):
@@ -707,13 +707,19 @@ class Spec10Test(unittest.TestCase):
 
     def test_brand_products_have_no_nutrition(self):
         """동원몰·식품안전나라 제품은 영양값 없이(N:-) 원재료로 판정, 식품안전나라는 발색제가 든 제품만"""
+        # 6차: 고시의 영양성분 칸에 숫자가 없던 CJ 제품(전부 0, 'kcal' 숫자 없음)은 0이 아니라 영양값 없음(N:-)
+        nonut = {'cj' + p['mat'] for p in cj10.P if spec10.nut_read(p).get('nut_none')}
+        self.assertGreaterEqual(len(nonut), 19)
         for x in spec10.TR10:
             if x[0][:2] in ('dw', 'fs'):
                 self.assertEqual(x[3], 'N:-', x[0])
                 self.assertNotIn(x[0], spec10.LABEL10)
                 self.assertNotIn(x[0], spec10.PLABEL10)
                 self.assertIn('processed', x[5], x[0])
-            elif x[3] == 'N:-' and x[0][:2] == 'cj':      # CJ에서 영양값을 맞출 수 없어 뺀 것은 아질산염 가공육뿐
+            elif x[0] in nonut:
+                self.assertEqual(x[3], 'N:-', x[0])
+                self.assertNotIn(x[0], spec10.LABEL10)
+            elif x[3] == 'N:-' and x[0][:2] == 'cj':      # 그 밖에 CJ에서 영양값을 맞출 수 없어 뺀 것은 아질산염 가공육뿐
                 self.assertIn('nitrite', x[5], x[0])
         for r in brand10.P:
             if r['site'] == 'fs':
@@ -824,3 +830,12 @@ class Spec10Test(unittest.TestCase):
         self.assertGreaterEqual(n_chicken, 9)
         self.assertGreaterEqual(n_rice, 80)
         self.assertGreaterEqual(n_stew, 50)
+
+
+class RegenTextTest(unittest.TestCase):
+    """6차: 근거 문장 틀(templates.py·spec*.py)이나 CJ 제품 설명을 고친 뒤 생성 자료를 다시 만들었는지(원본 CSV 없이 regen_text.py)"""
+    def test_generated_text_is_fresh(self):
+        import regen_text
+        raw = read('src', 'data', 'generated', 'gen_out.json')
+        self.assertEqual(json.dumps(regen_text.regen(json.loads(raw)), ensure_ascii=False), raw,
+                         'python3 src/data/regen_text.py로 gen_out.json을 다시 만드십시오')

@@ -56,8 +56,8 @@ const r=await p.evaluate(()=>{
   const setStage=o=>{S.logs={}; if(o){for(let i=0;i<3;i++){const d=addDays(today(),-i);S.logs[d]={date:d,...L0(o)}}}};
   const base=JSON.parse(JSON.stringify({profile:S.profile,orders:S.orders,triggers:S.triggers}));
   const scen=[
-    ["1단계",null,{}],["2단계",{day:4,urg:1,well:1,pain:2},{}],["3단계",{day:2},{}],
-    ["1단계·유당불내증",null,{lactose:true}],["1단계·달걀 알레르기",null,{allergies:["egg"]}],["3단계·생선 알레르기",{day:2},{allergies:["fish"]}],
+    ["1단계",null,{}],["2단계",{day:4,urg:1,well:1,pain:2},{}],["3단계",{day:1},{}],
+    ["1단계·유당불내증",null,{lactose:true}],["1단계·달걀 알레르기",null,{allergies:["egg"]}],["3단계·생선 알레르기",{day:1},{allergies:["fish"]}],
     ["2단계·알뜰",{day:4,urg:1,well:1,pain:2},{budget:"알뜰"}],["1단계·저지방 지시",null,{},["lowfat"]],["1단계·유동식 지시",null,{},["liquid"]],
   ];
   info.plans={};
@@ -81,26 +81,29 @@ const r=await p.evaluate(()=>{
     if(!orders&&(empty||uniq<18)) fail.push(`${name}: 빈 끼니 ${empty}, 서로 다른 메뉴 ${uniq}/21`);
     if(!orders&&Math.min(fitN.B,fitN.L,fitN.D)<15) fail.push(`${name}: 고를 수 있는 메뉴가 적음 ${JSON.stringify(fitN)}`);
   }
-  // v1.5.0 식단 규칙: 체중에 따른 양 조절, 아침 단백질, 나트륨, 관해기 지중해식·섬유, 칼슘
+  // v1.5.0 식단 규칙: 체중에 따른 양 조절, 아침 단백질, 나트륨, 지중해식 단계의 생선·올리브유(23차), 정상식 단계의 통곡물·콩류 메뉴·섬유, 칼슘
   const planOf=(o,w,sex,age)=>{S.profile={...JSON.parse(JSON.stringify(base.profile)),weight:String(w),sex,age:String(age),height:"165"}; S.weights=[{date:today(),kg:w}]; S.orders=JSON.parse(JSON.stringify(base.orders)); S.triggers=[]; S.ratings=[]; setStage(o); S.plan=null; S.swaps={}; const pl=samplePlan(); return {pl,tg:targets(),c:ctx()}};
   const dayT=d=>totals(d.meals.flatMap(m=>m.items));
   const avgK={}; info.v150={};
-  for(const [nm,o] of [["1단계",null],["2단계",{day:4,urg:1,well:1,pain:2}],["3단계",{day:2}]]){
+  for(const [nm,o] of [["1단계",null],["2단계",{day:4,urg:1,well:1,pain:2}],["3단계",{day:1}]]){
     for(const w of [45,60,80]){ const {pl,tg,c}=planOf(o,w,w===80?"M":"F",w===45?70:35); const ts=pl.days.map(dayT);
       avgK[nm+w]=ts.reduce((a,t)=>a+t.k,0)/7;
       for(const [i,t] of ts.entries()){ if(t.na>tg.na) fail.push(`${nm} ${w}kg 나트륨 ${Math.round(t.na)}>${tg.na} (${i}일)`);
         const bp=totals(pl.days[i].meals[0].items).p; if(bp<Math.max(12,Math.round(tg.p*0.2))) fail.push(`${nm} ${w}kg 아침 단백질 ${Math.round(bp)}g`);
-        if(t.ca<tg.ca*0.85) fail.push(`${nm} ${w}kg 칼슘 ${Math.round(t.ca)}<${tg.ca}`) }
+        if(t.ca<tg.ca*0.4) fail.push(`${nm} ${w}kg 칼슘 ${Math.round(t.ca)}<${tg.ca}의 40%`) }
+      {const avgCa=ts.reduce((a,t)=>a+t.ca,0)/7; if(avgCa<tg.ca*0.75) fail.push(`${nm} ${w}kg 7일 평균 칼슘 ${Math.round(avgCa)}<${tg.ca}의 75%`)}   // 결정 39: 간식이 하루 한 번이라 날마다 85%는 못 채움. 우유 한 컵을 빼면 평균 약 55~70%로 떨어져 잡힘
       if(w===60&&avgK[nm+w]<tg.k*0.85) fail.push(`${nm} 60kg 평균 열량 ${Math.round(avgK[nm+w])}/${tg.k}`);
+      if(c.stage===2){ const ms=pl.days.flatMap(d=>d.meals.filter(m=>!m.snack&&!m.off&&!m.empty)); const fo=ms.filter(m=>m.med||m.items.some(([id])=>id==="olive_oil"||FOOD[id].tags.includes("fish"))).length, red=ms.filter(m=>m.items.some(([id])=>FOOD[id].tags.includes("redmeat"))).length;
+        info.v150[nm+w]={fishOil:fo,red}; if(fo<14) fail.push(`지중해식 단계 생선·올리브유 끼니 ${fo}/21`); if(red>2) fail.push(`지중해식 단계 붉은 고기 ${red}끼`) }   // 23차(결정 53)
       if(c.stage===3){ const medMeals=pl.days.reduce((a,d)=>a+d.meals.filter(m=>m.med).length,0); const fi=ts.map(t=>t.fi); const avgFi=fi.reduce((a,x)=>a+x,0)/7;
         info.v150[nm+w]={medMeals,avgFi:Math.round(avgFi*10)/10,minFi:Math.round(Math.min(...fi)*10)/10};
-        if(medMeals<12) fail.push(`관해기 지중해식 끼니 ${medMeals}/21`); if(avgFi<20) fail.push(`관해기 평균 식이섬유 ${Math.round(avgFi)}g`) }
+        if(medMeals<12) fail.push(`정상식 단계 통곡물·콩류(지중해식) 끼니 ${medMeals}/21`); if(avgFi<17) fail.push(`정상식 단계 평균 식이섬유 ${Math.round(avgFi)}g`) }   // 결정 39: 곁들임이 간식 하나로 줄어 20g → 17g
     }
     if(!(avgK[nm+80]>avgK[nm+60]&&avgK[nm+60]>avgK[nm+45])) fail.push(`${nm}: 체중에 따라 열량이 늘지 않음 ${[45,60,80].map(w=>Math.round(avgK[nm+w])).join('/')}`);
   }
   info.avgK=Object.fromEntries(Object.entries(avgK).map(([k,v])=>[k,Math.round(v)]));
   // 좋았던 식품(끼니 평가 '좋음')이 든 메뉴를 먼저 고름
-  { planOf({day:2},60,"F",35); S.ratings=[{date:addDays(today(),-1),slot:"점심",title:"x",foodId:"salmon",rating:"good"}]; const pl=samplePlan();
+  { planOf({day:1},60,"F",35); S.ratings=[{date:addDays(today(),-1),slot:"점심",title:"x",foodId:"salmon",rating:"good"}]; const pl=samplePlan();
     const n=pl.days.filter(d=>d.meals.some(m=>m.items.some(([id])=>id==="salmon"))).length; info.likedSalmonDays=n; if(n<5) fail.push('좋았던 식품 반영 '+n+'일');
     S.ratings=[{date:addDays(today(),-1),slot:"점심",title:"x",foodId:"salmon",rating:"bad"}]; const pl2=samplePlan();
     const n2=pl2.days.filter(d=>d.meals.some(m=>m.items.some(([id])=>id==="salmon"))).length; if(n2>0) fail.push('나빴던 식품이 들어감 '+n2+'일'); S.ratings=[] }

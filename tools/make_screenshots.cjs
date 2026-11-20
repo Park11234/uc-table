@@ -24,12 +24,13 @@ const SEED=()=>{
   S.water[today()]=5;
   S.weights=[{date:d(6),kg:62.4},{date:d(3),kg:62.8},{date:today(),kg:63.1}];
   S.extras[today()]=[{name:"달걀찜",foodId:"egg_steamed",amt:120,unit:"g",kcal:142,p:13.4,fi:0.4,ca:52}];
+  S.ate={}; for(let i=1;i<=46;i++) S.ate[d(i)]=["아침","점심","저녁"]; S.ate[today()]=["아침","점심"]; S.peb={intro:1,seen:1};   // 25차 조약돌 탭: 2바퀴째 16/30, 오늘 2/3끼
   save();
 };
 (async()=>{
   const b=await chromium.launch();
   const shots=[
-    ["plan","home"],["log","log"],["food","food"],["nutri","nutri"],["me","me"]
+    ["plan","home"],["log","log"],["peb","pebble"],["food","food"],["nutri","nutri"],["me","me"]
   ];
   for(const dark of [false,true]){
     const ctx=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,colorScheme:dark?'dark':'light'});

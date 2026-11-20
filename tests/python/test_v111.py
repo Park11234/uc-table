@@ -84,7 +84,7 @@ class HamRuleTest(unittest.TestCase):
             self.assertIn('hamopt', FOODS[i][2], i)
             self.assertNotIn('nitrite', FOODS[i][2], i)
         # v1.11.0 검토 R-12: 기준(발색제)을 밝힘 — 발색제 없는 김밥햄 제품은 '피하기'라 '햄이면 무조건 절대 금지'와 어긋나지 않게
-        self.assertIn('const HAM_NOTE="햄·소시지는 빼고 드십시오. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.";', APP_SRC)
+        self.assertIn('const HAM_NOTE="햄·소시지는 빼고 먹습니다. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.";', APP_SRC)
 
 
 class ServingTest(unittest.TestCase):

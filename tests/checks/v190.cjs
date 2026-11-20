@@ -108,7 +108,7 @@ const SEED=()=>{
       return {st:cs.stage,stale:cs.stale,ask:/요즘 증상이 어떻습니까/.test(document.getElementById('main').textContent)}});
     need(f4.st===3&&f4.stale&&f4.ask,'F-4 3일 넘게 기록이 없어도 단계를 그대로 두고 홈에서 묻기');
     const f4b=await p.evaluate(()=>{S.logs={}; S.logs[addDays(today(),-20)]={...BLANK_LOG(),day:1,gas:"없음",fatigue:"없음"}; return currentStage().stage});
-    need(f4b===2,'F-4 2주가 넘으면 저잔사식까지 내리지 않고 이행식');
+    need(f4b===2,'F-4 2주가 넘으면 저잔사식까지 내리지 않고 2단계(지중해식)');
     // 2026-10-15 발견: 끝낸 '오늘 할 일' 줄과 물어본 진료 질문이 전역 .done(먹은 끼니 표식, 26px 원)에 걸려 글자가 세로로 흘러내림
     const dn=await p.evaluate(()=>{const t=today(); S.logs[t]={...BLANK_LOG(),day:1,night:0,gas:"없음",fatigue:"없음"}; S.water[t]=99;
       S.qs=[{id:"q1",t:"철분제를 계속 먹어도 됩니까?",date:t,done:t}]; SCR=null; S.tab="plan"; render();
@@ -178,7 +178,7 @@ const SEED=()=>{
       const bk=JSON.parse(JSON.stringify(S)); bk.extras[d]=[{name:"흰쌀밥",foodId:"white_rice",amt:210,unit:"g",kcal:300,p:5,fi:0,ca:6}]; bk.logs[d]={...BLANK_LOG(),day:5,gas:"없음",fatigue:"없음"};
       const st=mergeCore(S,bk).st; const r=mergeStates(S,bk); return {ex:r.extras[d].length,day:r.logs[d].day,keep:st.logKeep}});
     need(m.ex===2&&m.day===2&&m.keep===1,'F-7 같은 날 기록도 항목 단위로 합치고, 서로 다른 증상 기록 수를 알려 줌');
-    const pdf=await p.evaluate(()=>{const before=!!window.jspdf; let printed=0; window.print=()=>{printed++}; printReport(); const t=document.getElementById('printDoc').textContent; return {before,printed,txt:/기간 요약/.test(t)&&!/진료 때 알릴 사항/.test(t)}});
+    const pdf=await p.evaluate(()=>{const before=!!window.jspdf; let printed=0; window.print=()=>{printed++}; printReport(); const t=document.getElementById('printDoc').textContent; return {before,printed,txt:/음식별 경험/.test(t)&&!/진료 때 알릴 사항/.test(t)}});
     need(!pdf.before,'P-1 그림 PDF 라이브러리는 처음에 실행하지 않음');
     need(pdf.printed===1&&pdf.txt,'F-2 글자 PDF: 인쇄용 문서를 글자로 만들고 인쇄 화면을 엶');
     const lib=await p.evaluate(async()=>{await loadPdfLibs(); return !!(window.jspdf&&window.html2canvas)});

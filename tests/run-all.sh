@@ -15,6 +15,6 @@ FAILED=$(grep -c '^FAIL' "$TEST_TMP/summary.txt" || true)
 TOTAL=$(grep -c . "$TEST_TMP/summary.txt" || true)
 # v1.12.0 C-08: 실패한 점검의 로그 끝부분을 그대로 보인다(CI 작업 기록만 보고도 이유를 알 수 있게)
 grep '^FAIL' "$TEST_TMP/summary.txt" | sed -n 's/.*(로그: \(.*\))$/\1/p' | while read -r log; do
-  echo "==== $log (끝 40줄)"; tail -n 40 "$log"; done
+  echo "==== $log"; echo "-- 실패 줄"; grep -n '✗\|^FAIL\|Error' "$log" | head -n 20; echo "-- 끝 40줄"; tail -n 40 "$log"; done   # 15차: 실패 줄이 끝 40줄 밖에 있으면 이유가 안 보였다
 echo "----"; echo "$((TOTAL-FAILED))/$TOTAL 통과"
 [ "$FAILED" -eq 0 ]

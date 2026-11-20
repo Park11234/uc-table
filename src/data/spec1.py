@@ -25,7 +25,7 @@ G=[
  ("red_bean_porridge","팥죽","곡류","D:팥죽",2,["gil","liq"],[250,"그릇"],["팥죽","동지죽","죽"],"🥣",["porridge_bean"],None,None,"",1),
  ("rice_gruel","미음","곡류","D:미음",1,["liq"],[250,"그릇"],["미음","쌀미음"],"🥣",["porridge_ok"],("low","쌀 제품군"),None,"",1),
  ("janchi_guksu","잔치국수","곡류","D:잔치국수",1,["wheat","egg","fodmap","liq"],[500,"그릇"],["잔치국수","국수","온국수"],"🍜",["noodle_ok"],("high","밀국수"),None,"고명은 애호박·달걀만",1),
- ("kalguksu","칼국수","곡류","D:칼국수",1,["wheat","fodmap","liq"],[500,"그릇"],["칼국수"],"🍜",["noodle_ok"],("high","밀국수"),None,"조개가 든 것은 이행식부터",1),
+ ("kalguksu","칼국수","곡류","D:칼국수",1,["wheat","fodmap","liq"],[500,"그릇"],["칼국수"],"🍜",["noodle_ok"],("high","밀국수"),None,"조개가 든 것은 지중해식 단계부터",1),
  ("udon","우동","곡류","D:우동",1,["wheat","fodmap","liq"],[500,"그릇"],["우동"],"🍜",["noodle_ok"],("high","밀국수"),None,"튀김 고명은 빼기",1),
  ("rice_noodle_soup","쌀국수","곡류","D:쌀국수",1,["beef","liq"],[500,"그릇"],["쌀국수","포","퍼"],"🍜",["rice_noodle"],("low","쌀국수 면"),None,"생숙주·고수 빼기",2),
  ("mul_naengmyeon","물냉면","곡류","D:물냉면",2,["buckwheat","wheat","sour","liq"],[550,"그릇"],["냉면","물냉면","평양냉면"],"🍜",["buckwheat","naengmyeon"],None,None,"겨자·식초는 빼기",1),

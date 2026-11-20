@@ -18,7 +18,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
 // 실제 앱(PWA·오프라인 파일)과 같게: 감싸는 페이지가 body 여백을 지우지 않는다
 fs.writeFileSync(raw,'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+BODY+'</body></html>');
 const SEED=()=>{
-  S.consent={date:today()}; S.onb="done";
+  S.consent={date:today()}; S.onb="done"; S.usualAsk=today();   // v1.13.0 2번: 평소 배변 횟수 묻기 창은 v1130에서 본다
   const mk=(day,b)=>({...BLANK_LOG(),day,night:0,bloody:b,urg:0,blood:b?1:0,well:0,stool:4,medtaken:1,pain:1,memo:""});
   for(let i=2;i<=6;i++) S.logs[addDays(today(),-i)]=mk(2,0);
   save();
@@ -45,11 +45,11 @@ const SEED=()=>{
       const bt=document.querySelector('[data-act=onbInit][data-v="2"]'); const sm=bt.querySelector('small');
       const tn=[...bt.querySelectorAll('*'),bt].flatMap(e=>[...e.childNodes]).find(n=>n.nodeType===3&&/좋아지는 중/.test(n.textContent)); const rg=document.createRange(); rg.selectNodeContents(tn);
       const r1=sm.getBoundingClientRect(), r0=rg.getBoundingClientRect();
-      return {age,fs1,fs2,jargon:/저잔사식부터|이행식부터|지중해식부터|\(저잔사식·이행식·지중해식\)/.test(txt),plain:/섬유를 줄인 식사부터/.test(txt)&&/조금씩 늘리는 식사부터/.test(txt)&&/골고루 먹는 식사부터/.test(txt),
+      return {age,fs1,fs2,jargon:/이행식|저잔사식부터|지중해식부터|정상식부터/.test(txt),plain:/저잔사식\(섬유를 줄인 식사\)부터/.test(txt)&&/지중해식\(생선·채소·올리브유 위주 식사\)부터/.test(txt)&&/정상식\(골고루 먹는 식사\)부터/.test(txt),   /* 23차: 식사 이름 + 쉬운 말 */
         below:r1.top>=r0.bottom-2}});
     need(/^예:/.test(r.age),`R-02 나이 칸 예시 글자 (${r.age})`);
     need(r.fs1&&r.fs1===r.fs2,`R-02 '성별' 제목이 다른 칸 제목과 같은 크기 (${r.fs1}/${r.fs2})`);
-    need(!r.jargon&&r.plain,'R-03 시작 설정 3단계는 쉬운 말(…식사부터)');
+    need(!r.jargon&&r.plain,'R-03 시작 설정 3단계는 식사 이름과 쉬운 말(23차: 저잔사식(섬유를 줄인 식사)부터)');
     need(r.below,'R-04 보기 설명은 보기 글자 아래 줄');
     await p.evaluate(()=>{const b=document.querySelector('[data-act=onbInit][data-v="2"]'); b.click()}); await p.waitForTimeout(100);
     await p.click('[data-act=onbDone][data-v=""]'); await p.waitForTimeout(400);
@@ -64,16 +64,16 @@ const SEED=()=>{
       S.tab="plan"; SCR=null; render(); const home=document.querySelector('#main').innerText;
       openScr("pdf"); const pdf=document.querySelector('#main').innerText;
       openScr("set-stage"); const st=document.querySelector('#main').innerText;
-      const o=["섬유를 줄인 식사 ·","조금씩 늘리는 식사 ·","골고루 먹는 식사 ·"].map(s=>st.indexOf(s));
-      return {lg:/참고 식단 단계: (섬유를 줄인|조금씩 늘리는|골고루 먹는) 식사/.test(lg), home:/끼니 메뉴 [\d,]+개 가운데 (섬유를 줄인|조금씩 늘리는|골고루 먹는) 식사 단계/.test(home),
-        pdf:/음식 다시 먹어 보기/.test(pdf)&&!/재도입 결과/.test(pdf), auto:/지금: (섬유를 줄인|조금씩 늘리는|골고루 먹는) 식사/.test(st), order:o.every(x=>x>=0)&&o[0]<o[1]&&o[1]<o[2]}});
-    need(r.lg,'R-03 기록 탭 \'참고 식단 단계\'는 쉬운 말');
-    need(r.home,'R-03 홈 아래 식단 설명은 쉬운 말 단계');
-    need(r.pdf,'R-21 진료용 PDF 설명은 \'음식 다시 먹어 보기\'');
+      const o=[/저잔사식\?? ·/,/지중해식 ·/,/정상식 ·/].map(rx=>st.search(rx));   // 23차: 첫 '저잔사식'에 용어 풀이 '?'가 붙음
+      return {lg:/식단 단계\s+(저잔사식|지중해식|정상식)\s*\(?\s*(섬유를 줄인|생선·채소·올리브유 위주|골고루 먹는) 식사/.test(lg), home:/끼니 메뉴 [\d,]+개 가운데 (저잔사식|지중해식|정상식) 단계/.test(home),
+        pdf:/음식 다시 먹어 보기/.test(pdf)&&!/재도입 결과/.test(pdf), auto:/지금: (저잔사식|지중해식|정상식)/.test(st), order:o.every(x=>x>=0)&&o[0]<o[1]&&o[1]<o[2]}});
+    need(r.lg,'R-03 기록 탭 식단 단계는 식사 이름 + 쉬운 말(윗첨자)');
+    need(r.home,'R-03 홈 아래 식단 설명은 식사 이름 단계');
+    need(r.pdf,'R-21 음식 경험 PDF 설명은 \'음식 다시 먹어 보기\'');
     need(r.auto,'R-22 식단 단계 \'자동\'에 지금 단계 표시');
-    need(r.order,'R-22 기준 설명은 섬유를 줄인→조금씩 늘리는→골고루 순서, 쉬운 말');
+    need(r.order,'R-22 기준 설명은 저잔사식→지중해식→정상식 순서');
     const w=await p.evaluate(()=>{SCR=null; openWizard(today()); WZ.step=WS().length-1; render(); return document.querySelector('#main').innerText});
-    need(/참고 식단 단계\s*(섬유를 줄인|조금씩 늘리는|골고루 먹는) 식사/.test(w),'R-03 기록 요약 \'참고 식단 단계\'는 쉬운 말');
+    need(/식단 단계\s*(저잔사식|지중해식|정상식)\s*\(?\s*(섬유를 줄인|생선·채소·올리브유 위주|골고루 먹는) 식사/.test(w),'R-03 기록 요약 식단 단계는 식사 이름 + 쉬운 말(윗첨자)');
     await p.context().close()}
 
   console.log('== R-06·R-19·R-20·R-24 홈 능선');
@@ -81,13 +81,13 @@ const SEED=()=>{
     const r=await p.evaluate(()=>{for(const k of Object.keys(S.logs)) delete S.logs[k]; S.logs[today()]={...BLANK_LOG(),day:5,night:0,bloody:0,urg:1,blood:0,well:1,stool:4,medtaken:1,pain:2}; save(); SCR=null; S.tab="plan"; render();
       const svg=document.querySelector('.ridge svg.r-chart'); return {dot:!!svg.querySelector('circle.dot'), txt:svg.textContent}});
     need(r.dot&&/2일 이상/.test(r.txt),`R-06 첫 기록도 오늘 점을 그리고 '2일 이상이면 선으로' 안내 (${r.txt.slice(0,60)})`);
-    const z=await p.evaluate(()=>{const v=[1,0,1,1,1,2,1]; v.forEach((x,i)=>{S.logs[addDays(today(),-i)]={...BLANK_LOG(),day:x?4:2,night:0,bloody:0,urg:x>1?1:0,blood:0,well:0,stool:4,medtaken:1,pain:0}}); save(); SCR=null; render();
-      const svg=document.querySelector('.ridge svg.r-chart'); const band=svg.querySelector('rect.band'); const bb=+band.getAttribute('y')+(+band.getAttribute('height'));
+    const z=await p.evaluate(()=>{const v=[1,0,1,1,1,2,1]; v.forEach((x,i)=>{S.logs[addDays(today(),-i)]={...BLANK_LOG(),day:x?4:2,night:0,bloody:i===3?1:0,urg:x>1?1:0,blood:i===3?1:0,well:0,stool:4,medtaken:1,pain:0}}); save(); SCR=null; render();
+      const svg=document.querySelector('.ridge svg.r-chart'); const band=!!svg.querySelector('rect.band'); const bb=89;   /* 22차: 관해 범위 띠는 뺐다. 0회 선(YZ=89) */
       const ys=[...svg.querySelectorAll('path.line')].flatMap(pa=>pa.getAttribute('d').match(/-?\d+(\.\d+)?,-?\d+(\.\d+)?/g).map(s=>+s.split(',')[1]));
       const bl=svg.querySelector('text.bl'); const cs=getComputedStyle(bl);
-      return {bb,maxY:Math.max(...ys),po:cs.paintOrder,sw:parseFloat(cs.strokeWidth)||0}});
-    need(z.maxY<=z.bb-2,`R-19 0점 선이 관해 범위 띠 안쪽(띠 아래 끝 ${z.bb}, 선 가장 아래 ${z.maxY})`);
-    need(/stroke/.test(z.po)&&z.sw>=2,`R-20 '관해 범위' 글자에 바탕색 테두리(${z.po}, ${z.sw})`);
+      return {band,bb,maxY:Math.max(...ys),po:cs.paintOrder,sw:parseFloat(cs.strokeWidth)||0}});
+    need(!z.band&&z.maxY<=z.bb,`R-19(22차) 기준 띠 없이 선이 0회 선 위에 (0회 선 ${z.bb}, 선 가장 아래 ${z.maxY})`);
+    need(/stroke/.test(z.po)&&z.sw>=2,`R-20(22차) '혈변이 있던 날' 글자에 바탕색 테두리(${z.po}, ${z.sw})`);
     await p.context().close()}
   {const p=await open({w:320,h:640});
     const r=await p.evaluate(()=>{S.logs[today()]={...BLANK_LOG(),day:4}; save(); SCR=null; S.tab="plan"; render();
@@ -119,7 +119,9 @@ const SEED=()=>{
       const bs=[...document.querySelectorAll('#sheetRoot .btn')].filter(x=>x.querySelector('svg')); const off=bs.map(x=>{const s=x.querySelector('svg').getBoundingClientRect(), r=x.getBoundingClientRect(); return Math.abs((s.top+s.height/2)-(r.top+r.height/2))});
       closeSheet(); return {n:bs.length, off:Math.max(...off)}});
     need(r.n>=2&&r.off<=2,`R-09 시트 버튼 아이콘이 버튼 세로 가운데 (${r.off.toFixed(1)}px)`);
-    await p.evaluate(()=>{SCR=null; S.tab="food"; render(); showFood("gimbap")}); await p.waitForTimeout(450);   // 시트가 올라오는 움직임(0.28초)이 끝난 뒤
+    await p.evaluate(()=>{SCR=null; S.tab="food"; render(); showFood("gimbap")});
+    // 15차: 시트가 올라오는 움직임(0.28초)이 끝날 때까지 기다린다(예전에는 0.45초를 고정으로 기다려, 여러 점검을 함께 돌려 느릴 때 움직임 도중에 재서 실패했음)
+    await p.waitForFunction(()=>{const sh=document.querySelector('#sheetRoot .sheet'); return !!sh&&sh.getAnimations().every(a=>a.playState==="finished")});
     const s=await p.evaluate(()=>{const sh=document.querySelector('#sheetRoot .sheet');
       const btn=[...sh.querySelectorAll('button')].find(x=>x.dataset.act==="closeSheet"); const rb=btn.getBoundingClientRect(); const st=sh.innerText;
       return {vis:rb.bottom<=innerHeight&&rb.top>=0, scroll:sh.scrollHeight>sh.clientHeight, ham:/발색제/.test(st), paren:/\)\(/.test(st.replace(/\s+/g,""))}});

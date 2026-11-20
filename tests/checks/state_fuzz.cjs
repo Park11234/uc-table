@@ -19,7 +19,7 @@ const SEED=()=>{
   S.consent={date:today()};
   S.profile={height:"170",weight:"60",age:"30",sex:"F",allergies:["shrimp","peanut"],allergyOther:"키위",lactose:true,meds:["asa","iron"],medOther:"유산균",dislikes:"가지",budget:"보통",budgetMonth:20};
   S.orders={checked:["fluid","lowres"],fluidMl:"1500",other:["우유 금지"]};
-  const mk=(day,b,memo)=>({day,night:1,bloody:b,urg:1,blood:b?1:0,well:1,stool:2,medtaken:1,extra:["관절통"],pain:1,gas:"조금",fatigue:"약간",temp:"36.8",pulse:"78",other:["어지러움"],memo});
+  const mk=(day,b,memo)=>({day,night:1,bloody:b,urg:1,blood:b?1:0,well:1,stool:2,medtaken:1,extra:["관절통"],pain:1,gas:"조금",fatigue:"약간",temp:"36.8",other:["어지러움"],memo});
   for(let i=0;i<10;i++) S.logs[d(i)]=mk(3+i%3,i%2,"메모 "+i);
   S.weights=[{date:d(9),kg:60.2},{date:d(2),kg:59.8}];
   S.water[today()]=4; S.water[d(1)]=6;

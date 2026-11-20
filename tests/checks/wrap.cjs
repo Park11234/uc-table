@@ -53,9 +53,9 @@ function scan(){
   const blockish=el=>{for(let e=el;e&&e!==document.body;e=e.parentElement){const d=getComputedStyle(e).display; if(!d.startsWith('inline')&&d!=='contents') return e} return document.body};
   const chars=[]; const rg=document.createRange();
   for(const r0 of sels){
-    const tw=document.createTreeWalker(r0,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement; if(!p||/^(SCRIPT|STYLE|TEXTAREA|OPTION|NOSCRIPT|TITLE)$/.test(p.tagName)) return NodeFilter.FILTER_REJECT; if(!n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+    const tw=document.createTreeWalker(r0,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentElement; if(!p||/^(SCRIPT|STYLE|TEXTAREA|OPTION|NOSCRIPT|TITLE)$/.test(p.tagName)) return NodeFilter.FILTER_REJECT;
       const cs=getComputedStyle(p); if(cs.visibility==='hidden'||cs.display==='none') return NodeFilter.FILTER_REJECT;
-      if(p.closest('.sr-only,[hidden],[aria-hidden="true"],sup.ref')) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT}});
+      if(p.closest('.sr-only,[hidden],[aria-hidden="true"],sup.ref,sup.sx')) return NodeFilter.FILTER_REJECT;   /* 23차: 식사 이름 옆 윗첨자는 조금 위에 있어 줄로 세지 않음 */ return NodeFilter.FILTER_ACCEPT}});   // 빈칸만 있는 마디도 받아 빈칸으로 센다(2026-10-29: 덩어리 사이 빈칸을 놓쳐 띄운 '·'를 붙인 '·'로 잘못 셈)
     while(tw.nextNode()){const n=tw.currentNode, t=n.nodeValue, blk=blockish(n.parentElement); const skip=!!n.parentElement.closest('b,strong,h1,h2,h3,h4,pre,.oss-txt');
       for(let i=0;i<t.length;i++){ if(/\s/.test(t[i])) {chars.push({sp:1,blk}); continue}
         rg.setStart(n,i); rg.setEnd(n,i+1); const rc=rg.getClientRects(); if(!rc.length||rc[0].width===0) continue;
@@ -98,6 +98,6 @@ function scan(){
   console.log(`\n훑은 화면 ${screens}개`);
   need(tot.dots.length===0,`'·'로 이은 짧은 말이 줄 끝에서 갈라진 곳 ${tot.dots.length}곳 (0이어야 함)`); tot.dots.slice(0,15).forEach(m=>console.log('    '+m));
   need(tot.colons.length===0,`'라벨:' 만 줄 끝에 남은 곳 ${tot.colons.length}곳 (0이어야 함)`); tot.colons.slice(0,15).forEach(m=>console.log('    '+m));
-  need(tot.orph.length<=8,`문단 마지막 줄에 짧은 한 낱말만 남은 곳 ${tot.orph.length}곳 (고치기 전 84곳, 지금 3곳. 8곳 이하)`); tot.orph.slice(0,15).forEach(m=>console.log('    '+m));
+  need(tot.orph.length<=8,`문단 마지막 줄에 짧은 한 낱말만 남은 곳 ${tot.orph.length}곳 (고치기 전 84곳, 5차 뒤 0곳. 글꼴이 다른 환경을 생각해 8곳 이하)`); tot.orph.slice(0,15).forEach(m=>console.log('    '+m));
   if(F.length){console.log('\nFAIL '+F.length+'개'); process.exit(1)} console.log('\n검증 통과');
 })().catch(e=>{console.error(e); process.exit(1)});

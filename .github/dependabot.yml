@@ -1,0 +1,14 @@
+# 개선점 9: 실행 도구(GitHub Actions)와 개발 도구(npm)의 새 버전·보안 수정을 달마다 알려 준다.
+# 앱에는 npm 패키지가 들어가지 않는다(점검·빌드용). vendor/의 라이브러리는 손으로 갱신하므로 docs/data-sources.md에 버전을 적어 둔다.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3

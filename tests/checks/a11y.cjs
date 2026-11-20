@@ -44,7 +44,7 @@ const SEED=()=>{
       const res=await p.evaluate(async()=>{const r=await axe.run(document,{runOnly:{type:"tag",values:["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"]},resultTypes:["violations"]});
         return r.violations.map(v=>({id:v.id,impact:v.impact,help:v.help,n:v.nodes.length,ex:v.nodes.slice(0,3).map(x=>({t:x.target.join(" "),h:x.html.slice(0,140),s:(x.failureSummary||"").slice(0,200)}))}))});
       for(const r of res) all.push({view:`${dark?"dark":"light"} ${k}:${v}`,...r});
-      const sm=await p.evaluate(()=>[...document.querySelectorAll('button,a[href],input,select,textarea,[role=button],[tabindex="0"]')].filter(e=>{const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return r.width>0&&r.height>0&&cs.visibility!=="hidden"&&(r.width<44||r.height<44)&&!(e.tagName==="INPUT"&&["checkbox","radio"].includes(e.type)&&e.closest("label"))}).filter(e=>!e.matches('sup.ref,.term,p a,li a,small a')).map(e=>{const r=e.getBoundingClientRect(); return (e.className||e.tagName)+" "+Math.round(r.width)+"x"+Math.round(r.height)+" "+(e.getAttribute("aria-label")||e.textContent||"").trim().slice(0,16)}));
+      const sm=await p.evaluate(()=>[...document.querySelectorAll('button,a[href],input,select,textarea,[role=button],[tabindex="0"]')].filter(e=>{const r=e.getBoundingClientRect(); const cs=getComputedStyle(e); return r.width>0&&r.height>0&&cs.visibility!=="hidden"&&(r.width<44||r.height<44)&&!(e.tagName==="INPUT"&&["checkbox","radio"].includes(e.type)&&e.closest("label"))}).filter(e=>!e.matches('sup.ref,.term,.gq-b,p a,li a,small a')).map(e=>{const r=e.getBoundingClientRect(); return (e.className||e.tagName)+" "+Math.round(r.width)+"x"+Math.round(r.height)+" "+(e.getAttribute("aria-label")||e.textContent||"").trim().slice(0,16)}));
       for(const s of sm) small.set(s.replace(/ \d+x\d+ /," * "),s);
     }
     await ctx.close();
@@ -58,7 +58,7 @@ const SEED=()=>{
     for(const e of g.v.ex) console.log(`      · ${e.t} :: ${e.h}\n        ${e.s.replace(/\n/g," ")}`) }
   console.log(`== 44px 미만 터치 영역 ${small.size}종`); for(const s of [...small.values()].slice(0,40)) console.log("  ",s);
   fs.writeFileSync(path.join(TMP,'a11y.json'),JSON.stringify({all,small:[...small.values()]},null,1));
-  // 터치 영역: 44×44px 미만이면 실패(문장 속 참고문헌 번호·용어 버튼·문장 속 링크는 WCAG 2.5.8 '문장 안' 예외이고, ::after로 누르는 범위를 넓혀 둠)
+  // 터치 영역: 44×44px 미만이면 실패(문장 속 참고문헌 번호·용어 버튼·용어 풀이 ?(v1.13.0)·문장 속 링크는 WCAG 2.5.8 '문장 안' 예외이고, ::after로 누르는 범위를 넓혀 둠)
   if(small.size) console.log('FAIL 44px 미만 터치 영역 '+small.size+'종');
   process.exit(bad.length||small.size?1:0);
 })();

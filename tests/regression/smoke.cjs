@@ -29,7 +29,7 @@ const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.
 await p.route(/cdnjs|fonts/, r=>r.fulfill({body:''}));
 await p.goto('file://'+WRAP('smoke.html'));await p.waitForTimeout(500);
 await p.screenshot({path:T('sm_welcome.png')});
-await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
+await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
 for(const t of ['plan','log','food','me']){await p.click(`.tab[data-tab=${t}]`);await p.waitForTimeout(350);await p.screenshot({path:T(`sm_${t}.png`),fullPage:true});}
 await p.evaluate(()=>openScr('nutri')); await p.waitForTimeout(300); await p.screenshot({path:T('sm_nutri.png'),fullPage:true}); await p.click('[data-act=back]'); await p.waitForTimeout(200);
 for(const v of ['set-data','set-privacy','set-stage','set-about']){await p.click('.tab[data-tab=me]');await p.click(`[data-act=openScr][data-v=${v}]`);await p.waitForTimeout(350);await p.screenshot({path:T(`sm_${v}.png`),fullPage:true});await p.click('[data-act=back]');await p.waitForTimeout(100)}

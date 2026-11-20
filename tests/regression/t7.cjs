@@ -39,7 +39,7 @@ const r=await p.evaluate(()=>{
   S.profile.allergies=[]; S.profile.lactose=true;
   out.menu=[["전복죽",[]],["백김치",["배추","무"]],["닭갈비",["닭고기","양배추"]],["유당분해우유",[]],["김치전",["밀가루","김치"]]].map(([n,g])=>[n,ruleCheck({name:n,ingr:g,cook:""})]);
   out.act1=activity({day:2,night:5,bloody:0,urg:2,blood:0,well:1,extra:[],pain:9});
-  out.act2=activity({day:3,night:0,bloody:0,urg:0,blood:0,well:0,extra:[]});
+  S.profile.usualBM="3"; out.act2=activity({day:3,night:0,bloody:0,urg:0,blood:0,well:0,extra:[]}); S.profile.usualBM="";   // v1.13.0 2번: 비우면 평소 1회로 계산하므로 평소 3회인 사람의 3회
   out.act3=activity({day:4,night:1,bloody:1,urg:1,blood:1,well:0,extra:[]});
   // 단계 판정의 세 기준을 하나씩만 건드리는 기록과 바로 아래 경계값(검토 보고서 5번)
   out.act4=activity({day:2,night:0,bloody:0,urg:2,blood:0,well:3,extra:[]});   // 보조 합산 5점(다른 기준은 모두 비켜감)
@@ -47,7 +47,7 @@ const r=await p.evaluate(()=>{
   out.act6=activity({day:4,night:0,bloody:4,urg:0,blood:0,well:0,extra:[]});   // 혈변 4회(보조 합산 1점, 배변 4회)
   out.act7=activity({day:4,night:0,bloody:3,urg:0,blood:0,well:0,extra:[]});   // 혈변 3회
   out.act8=activity({day:4,night:0,bloody:0,urg:0,blood:0,well:0,extra:[]});   // 배변 4회·피 없음 = 관해 기준(3회 이하) 밖
-  out.d1=dangerSignals({day:3,night:0,bloody:2,temp:"39.2",pulse:"118",pain:3});
+  out.d1=dangerSignals({day:3,night:0,bloody:2,temp:"39.2",pain:3});   // 2026-10-24: 맥박을 받지 않아 고열만으로는 주황 경고
   out.d2=dangerSignals({day:8,night:2,bloody:7,temp:"37.6",pulse:"",pain:3});
   out.d3=dangerSignals({day:14,night:2,bloody:3,temp:"",pulse:"95",pain:3});
   S.weights=[{date:today(),kg:58}]; out.water=[targets().water,targets().waterSrc];
@@ -97,7 +97,7 @@ console.log('errors',errs); {const j=lineJSON('{"label"'); expect(j,'출력 없�
  expect(()=>j.act4.stage===1&&/보조 점수/.test(j.act4.label)&&j.act5.stage===2,'활동도: 보조 합산 5점부터 활동기, 4점은 아님');
  expect(()=>j.act6.stage===1&&/혈변/.test(j.act6.label)&&j.act7.stage===2,'활동도: 혈변 하루 4회부터 활동기, 3회는 아님');
  expect(()=>j.act8.stage===2,'활동도: 하루 배변 4회는 관해 기준(3회 이하) 밖');
- expect(()=>j.d1.severe.length&&j.d2.severe.length&&j.d3.severe.length,'위험 신호');
+ expect(()=>!j.d1.severe.length&&j.d1.urgent.length&&j.d2.severe.length&&j.d3.severe.length,'위험 신호(고열은 주황, 혈변 7회·배변 16회는 빨강)');
  expect(()=>j.water[0]===1740&&j.water[1]==='kg','수분 목표'); expect(()=>j.viol.length===0,'저잔사식 섬유');
  expect(()=>jsonOf('open meal')[0]==='meal','끼니 화면'); expect(()=>jsonOf('after back')[0]===null,'뒤로 가기');
  expect(()=>jsonOf('wizard dirty back')[1]===true,'작성 중 뒤로 가기 확인'); expect(()=>jsonOf('discard')[0]===null,'버리기');

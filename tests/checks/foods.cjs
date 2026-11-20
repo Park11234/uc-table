@@ -32,8 +32,8 @@ const r=await p.evaluate(()=>{
   const lib=FOODS.filter(f=>f.lib); ok(lib.length>=300,'lib '+lib.length);
   // 영양값 자료가 없는 음식은 '자료 없음'으로 보이고 합계에서 빠져야 하며, 영양식(제품)·명시한 음식만 허용
   const NOSRC_OK=new Set(["tteokkochi","salmon_don","gyudon","katsudon","tendon","caesar_salad","ham_toast"]);   // v1.10.0 외식 메뉴 가운데 식약처 음식 DB에 같은 이름 행이 없는 6종은 영양값 없이 판정만
-  for(const f of lib){ ok((f.src&&f.src.code)||((f.tags.includes("ons")||NOSRC_OK.has(f.id)||(PSRC[f.id]&&(f.tags.includes("nitrite")||f.tags.includes("processed"))))&&f.missing.includes("전체")),'no src '+f.id);   // v1.9.0: 영양 표기를 맞출 수 없거나 자료에 영양정보가 글로 없는 가공육(CJ더마켓·동원몰·식품안전나라)은 영양값 없이 넣음 ok(SERV[f.id],'no serv '+f.id); ok(ALIAS[f.id],'no alias '+f.id); ok(EMO[f.id]||FICON[f.id],'no icon '+f.id);
-    ok(typeof f.why==='string'&&f.why.length>10,'why '+f.id); ok(f.refs.every(n=>REFS[n]),'ref '+f.id); ok([1,2,3,9].includes(f.ms),'ms '+f.id);
+  for(const f of lib){ ok((f.src&&f.src.code)||((f.tags.includes("ons")||NOSRC_OK.has(f.id)||(PSRC[f.id]&&(f.tags.includes("nitrite")||f.tags.includes("processed")))||(PSRC[f.id]?.[0]==="cj"&&/영양성분 숫자가 없어 영양값은 넣지 않았습니다/.test(f.why)))&&f.missing.includes("전체")),'no src '+f.id);   // 6차: 상품정보 고시에 영양성분 숫자가 없던 CJ 제품은 0이 아니라 '자료 없음'(설명에 그 까닭을 적음)   // v1.9.0: 영양 표기를 맞출 수 없거나 자료에 영양정보가 글로 없는 가공육(CJ더마켓·동원몰·식품안전나라)은 영양값 없이 넣음 ok(SERV[f.id],'no serv '+f.id); ok(ALIAS[f.id],'no alias '+f.id); ok(EMO[f.id]||FICON[f.id],'no icon '+f.id);
+    ok(typeof f.why==='string'&&(f.why.length>10||isProd(f)&&/^\S.{3,}입니다\.$/.test(f.why)),'why '+f.id); ok(f.refs.every(n=>REFS[n]),'ref '+f.id); ok([1,2,3,9].includes(f.ms),'ms '+f.id);
     ok(["곡류","단백질","유제품","채소","과일","지방","기타","요리","영양식"].includes(f.cat),'cat '+f.id); ok(isFinite(f.fi)&&isFinite(f.k),'num '+f.id) }
   // 검색
   const sh=q=>FOODS.filter(f=>searchHit(f,q)).map(f=>f.id);

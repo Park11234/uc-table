@@ -41,7 +41,7 @@ const out=await p.evaluate(()=>{
     } else R.serv.push([f.id,f.name,"분량없음"]);
     if(f.name.length>16) R.nameLong.push([f.id,f.name,f.name.length]);
     if(!EMO[f.id]&&!FICON[f.id]) R.noEmo.push(f.id);
-    if(typeof f.why!=="string"||f.why.length<15) R.why.push([f.id,f.name]);
+    if(typeof f.why!=="string"||(f.why.length<15&&!(isProd(f)&&/^\S.{3,}입니다\.$/.test(f.why)))) R.why.push([f.id,f.name]);   // 15차: 1회 영양값 문장을 뺀 시판 제품은 식품 유형 한 문장만 남을 수 있다(영양값은 영양 칸에)
   }
   // 같은 별명이 3개 이상 음식에 걸리는 경우(검색 혼란)
   const map={};

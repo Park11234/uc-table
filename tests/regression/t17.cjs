@@ -38,14 +38,15 @@ console.log('A', await p.evaluate(()=>{
    .concat([(()=>{const x=nutriCheck(mk(100),1e9);return ['eat1e9',x.eat.kcal]})(),(()=>{const x=nutriCheck(mk(100),NaN);return ['eatNaN',x.eat.kcal]})()])}));
 // H: 짠 식품 상한
 // v1.7.0: AI 식단 검사(checkDay)가 없어져, 앱 규칙 식단의 모든 단계에서 짠 식품이 한 끼 상한을 넘지 않는지 본다
-console.log('H', await p.evaluate(()=>{const bad=[]; for(const st of [null,{day:4,urg:1,well:1,pain:2},{day:2}]){S.logs={}; S.plan=null;
+console.log('H', await p.evaluate(()=>{const bad=[]; for(const st of [null,{day:4,urg:1,well:1,pain:2},{day:1}]){S.logs={}; S.plan=null;
   if(st){for(let i=0;i<3;i++){const d=addDays(today(),-i);S.logs[d]={...BLANK_LOG(),date:d,...st}}}
   const pl=samplePlan(); for(const d of pl.days) for(const m of d.meals) for(const [id,g] of m.items) if(FOOD[id].tags.includes("salty")&&g>SALTY_CAP) bad.push(id+g)}
   S.logs={}; S.plan=null; return [bad,SALTY_CAP]}));
 // D: 알레르기 등록 + 표시 못 찾음
 console.log('D', await p.evaluate(()=>{S.profile.allergies=["peach"];const r=labelCheck("정제수, 설탕, 구연산","음료");const r2=(S.profile.allergies=[],labelCheck("정제수, 설탕","음료"));return [r.rows[0].lv,r.rows[0].title,r2.rows[0].lv]}));
 // B: 연타 가드
-await p.evaluate(()=>{S.profile.allergies=[];SCR=null;S.tab="plan";render();openWizard();WZ.step=WSTEPS.length-1;draft.day=3;render()});
+await p.evaluate(()=>{S.profile.allergies=[];S.usualAsk=today();SCR=null;S.tab="plan";render();openWizard();   /* v1.13.0 2번: 첫 저장 뒤 평소 배변 횟수 묻기 창은 v1130에서 따로 본다 */
+  WZ.step=WSTEPS.length-1;draft.day=3;render()});
 const btn=await p.locator('[data-act=saveLog]').boundingBox();
 await p.mouse.click(btn.x+btn.width/2, btn.y+btn.height/2);
 await p.mouse.click(btn.x+btn.width/2, btn.y+btn.height/2); // 같은 자리 두 번째 탭
@@ -54,7 +55,9 @@ console.log('B guard', await p.evaluate(()=>[Object.keys(S.logs).length, SCR, S.
 // 같은 버튼 연속 탭(다음→다음)은 막지 않아야 함
 // v1.9.0 F-9: 화면이 바뀐 직후 0.4초 동안은 같은 자리에 새로 나타난 버튼(다음 쪽의 '다음')이 비활성(.cool)으로 보이고, 그 뒤에는 그대로 눌린다.
 //  마법사가 4쪽으로 묶여(U-1) 옛 7번째 단계가 없으므로, 답할 질문이 없는 날짜 쪽(0) → 배변 쪽(1) → 급박감 쪽(2)으로 확인한다
-await p.evaluate(()=>{S.logs={};SCR=null;openWizard();WZ.step=0;render()});
+// 2026-10-24: 앞 단계(연타 가드)의 마지막 탭 기록을 지우고 시작한다. 지우지 않으면 컴퓨터가 바쁠 때 아래 첫 탭이 '0.6초 안에 같은 자리를 다시 누름 + 0.4초 안에 화면이 바뀜'에
+// 걸려 앱의 연타 막기에 정상적으로 막혀(다른 버튼), 이 단계가 가끔 실패했다(시간 기록으로 확인)
+await p.evaluate(()=>{TAP={t:0,x:-99,y:-99,act:""};S.logs={};SCR=null;openWizard();WZ.step=0;render()});
 // 앞 단계(연타 가드)의 0.4초 비활성이 끝난 뒤부터 지켜본다. v1.12.0 C-09: 고정 450ms 대신 조건으로 기다린다
 // (페이지가 잠깐 바쁘면 0.4초 타이머가 늦게 돌아, 450ms 뒤에도 앞 단계의 비활성이 남아 있을 수 있음)
 const coolDone=()=>p.waitForFunction(()=>{const b=document.querySelector('[data-act=wzNext]'); return !!b&&!b.disabled&&!b.classList.contains('cool')},null,{timeout:5000}).catch(()=>{});
@@ -68,5 +71,6 @@ console.log('B same-button', JSON.stringify(await p.evaluate(()=>[window.__cool,
 console.log('errors',errs); expect(()=>{const a=jsonOf('A'); return a.slice(0,6).every(x=>x[1]===null)&&a[6][1]===20&&a[7][1]===5000&&a[8][1]===100},'영양 기준량 방어');
 expect(()=>{const h=jsonOf('H'); return h[0].length===0},'짠 음식 양'); expect(()=>jsonOf('D')[0]==='caution','알레르기 직접 확인');
 expect(()=>jsonOf('B guard')[0]===1,'연타 한 번만 저장');
+expect(()=>jsonOf('B guard')[2]==='plan','연타의 두 번째 탭이 그 자리에 나타난 아래 메뉴(음식 탭)를 누르지 않음(2026-10-24)');
 expect(()=>{const s=jsonOf('B same-button'); return s[0]&&s[0].step===1&&s[0].dis===true&&s[1]===2},'같은 자리 다음→다음: 0.4초 동안 비활성으로 보인 뒤 다시 눌림(v1.9.0)');
 __done(); await b.close()})();

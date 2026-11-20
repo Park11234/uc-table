@@ -37,13 +37,11 @@ console.log('guess', await p.evaluate(()=>[guessFoodId("우유"),guessFoodId("�
 console.log('swap', await p.evaluate(()=>{const before=S.plan.days[0].meals[1].title; const ok=swapMeal(0,1); return [before,ok,S.plan.days[0].meals[1].title,S.plan.days[0].meals[1].rec]}));
 console.log('skip', await p.evaluate(()=>{toggleSkip(today(),"아침");const a=isSkipped(today(),"아침");toggleSkip(today(),"아침");return [a,isSkipped(today(),"아침")]}));
 console.log('stool steps', await p.evaluate(()=>WSTEPS.map(s=>s.k)));
-console.log('suspects', await p.evaluate(()=>{
-  for(let i=0;i<6;i++){const d=addDays(today(),-i);S.logs[d]={date:d,...BLANK_LOG(),day:i%2?6:2,bloody:i%2?2:0};
-    S.extras[d]=[{name:"우유",amt:200,unit:"g",kcal:120,p:6,fi:0,ca:200}]; if(i%2) S.extras[d].push({name:"라면",amt:100,kcal:400,p:8,fi:2,ca:10})}
-  return foodSuspects()}));
+console.log('suspects', await p.evaluate(()=>typeof foodSuspects));   // 22차: 의심 후보 통계는 뺐다
 console.log('recent', await p.evaluate(()=>recentFoods()));
 console.log('errors',errs);expect(()=>{const s=jsonOf('serv'); return s[0][2]==='1공기'&&s[1][2]==='반 공기'&&s[3][2]==='반 개'},'1회 분량 말');
 expect(()=>{const s=Object.fromEntries(jsonOf('search')); return s['계란'].length&&s['흰죽'].length&&s['ㄴㄹㅈ'].length},'검색');
 expect(()=>{const g=jsonOf('guess'); return g[0]&&g[2]},'이름으로 음식 찾기'); expect(()=>{const w=jsonOf('swap'); return w[1]===true&&w[0]!==w[2]},'다른 메뉴');
 expect(()=>{const k=jsonOf('skip'); return k[0]===true&&k[1]===false},'안 먹음 표시');
+expect(()=>logOf('suspects')==='undefined','의심 후보 통계 없음(22차)');
 __done(); await b.close()})();

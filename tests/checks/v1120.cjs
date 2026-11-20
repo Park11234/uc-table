@@ -89,14 +89,14 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
     need(r.eng==="바나나",'C-05 영어 검색은 그대로(banana → 바나나)');
     await p.context().close()}
 
-  console.log('== C-06 홈 상태 띠는 식단 단계와 같은 관해 기준');
+  console.log('== C-06 → 22차: 홈 상태 띠는 적은 값 그대로, 식단 단계 판정은 그대로');
   {const p=await open();
-    const r=await p.evaluate(()=>{S.stageMode="auto"; const t=today(); const one=day=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day,night:0,urg:0,blood:0,bloody:0,well:0,pain:0}; save(); S.tab="plan"; SCR=null; render();
+    const r=await p.evaluate(()=>{S.stageMode="auto"; S.profile.usualBM="3"; /* v1.13.0 2번: 비우면 1회 기준이라 평소 3회를 적음 */ const t=today(); const one=day=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day,night:0,urg:0,blood:0,bloody:0,well:0,pain:0}; save(); S.tab="plan"; SCR=null; render();
         const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage,bl:document.querySelector('.ridge svg text.bl')?.textContent||""}};
       return {six:one(6),three:one(3)}});
     need(r.six.stage===2&&r.six.head!=="편안한 하루입니다"&&!/관해 범위 안|관해 기준에 맞/.test(r.six.sub),`C-06 하루 6회: 편안한 하루·관해라고 하지 않음 (${r.six.head} · ${r.six.sub})`);
-    need(r.three.stage===3&&/관해/.test(r.three.sub),`C-06 하루 3회·증상 없음: 관해 기준이라고 함 (${r.three.head} · ${r.three.sub})`);
-    need(!/관해/.test(r.six.bl),`C-06 그래프 띠 이름은 점수로(관해라고 쓰지 않음) (${r.six.bl})`);
+    need(r.three.stage===3&&r.three.head==="오늘 배변 3회 · 혈변 0회"&&!/관해|편안/.test(r.three.sub),`C-06 하루 3회·증상 없음: 단계는 정상식, 띠에는 적은 값만 (${r.three.head} · ${r.three.sub})`);
+    need(!/관해|점수/.test(r.six.bl),`C-06 그래프에 관해·점수 글자 없음 (${r.six.bl})`);
     await p.context().close()}
 
   console.log('== C-07 암호화 열쇠를 읽지 못하면 평문으로 내보내지 않음');
@@ -140,7 +140,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
       openScr("set-labs"); o.labs=document.querySelector('#main').innerText;
       // C-13: 하나를 못 지워도 나머지를 지우고, 결과를 알림
       const orig=idb, calls=[]; idb=async(st,mode,fn)=>{calls.push(st+":"+mode); if(st==="snaps"&&mode==="readwrite") throw new Error("x"); return orig(st,mode,fn)};
-      o.wipeOk=await wipeLocalCopies(); o.kvDel=calls.filter(c=>c==="kv:readwrite").length; idb=orig;
+      o.wipeOk=await wipeLocalCopies(); o.kvDel=calls.filter(c=>c==="kv:readwrite").length; idb=orig;   // kv 지우기 3번: 불러오기 전 기록(5차부터 IndexedDB)·폴더 연결·암호화 열쇠
       // C-14: 암호화가 꺼져 있으면 폴더 이름과 상관없이 권유, 켜져 있으면 없음
       ENC.key=null; o.adv1=typeof syncAdvice==="function"?syncAdvice("UC 백업"):""; o.adv2=typeof syncAdvice==="function"?syncAdvice("OneDrive"):"";
       ENC.key={}; o.adv3=typeof syncAdvice==="function"?syncAdvice("UC 백업"):"x"; ENC.key=null;
@@ -152,7 +152,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
       return o});
     need(/위/.test(r.remind)&&/오늘 증상 기록/.test(r.remind)&&!/아래 '오늘 할 일'/.test(r.remind),`C-11 증상 기록 알림이 위 '오늘 증상 기록'을 가리킴 (${r.remind.replace(/\s+/g," ").slice(0,80)})`);
     need(/백업/.test(r.labs),'C-12 검사 수치·약 메모 화면에 백업 안내 문장');
-    need(r.wipeOk===false&&r.kvDel===2,`C-13 보관본을 못 지워도 폴더 연결·암호화 열쇠는 지우고 실패를 알림 (결과 ${r.wipeOk}, kv 지우기 ${r.kvDel}번)`);
+    need(r.wipeOk===false&&r.kvDel===3,`C-13 보관본을 못 지워도 폴더 연결·암호화 열쇠는 지우고 실패를 알림 (결과 ${r.wipeOk}, kv 지우기 ${r.kvDel}번)`);
     need(/암호화/.test(r.adv1)&&/암호화/.test(r.adv2)&&!r.adv3,`C-14 동기화 폴더 권유: 꺼짐이면 이름과 상관없이, 켜짐이면 없음 (${JSON.stringify([!!r.adv1,!!r.adv2,!!r.adv3])})`);
     need(/'햄'으로/.test(r.ham)&&/'바나나'로/.test(r.ban)&&!/\(으\)로/.test(r.ham+r.ban),`C-15 영어 검색 안내 조사 (${r.ham} / ${r.ban})`);
     need(!!r.and&&!/1\.10\.0/.test(r.and),`C-16 안드로이드 다시 가져오기 설명에 낸 적 없는 1.10.0이 없음 (${r.and.replace(/\s+/g," ")})`);

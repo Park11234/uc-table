@@ -20,7 +20,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: 오프라인 파일 만들기
         run: python3 tools/build_offline.py
       - name: 릴리스 만들기 또는 파일 교체

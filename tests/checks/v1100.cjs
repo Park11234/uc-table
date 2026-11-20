@@ -36,7 +36,7 @@ const SEED=()=>{
     need(h.wiz===1&&h.inTasks&&h.quick&&!h.tile,`디자인 1 홈의 증상 기록 입구는 한 곳(+빠른 기록), v1.11.0 디자인 A: 맨 위 상태 띠 (${h.wiz}개)`);
     need(h.cupAdd===1,`디자인 1 '+1잔'은 한 곳 (${h.cupAdd}개)`);
     need(JSON.stringify(h.mact)===JSON.stringify(["ateToggle","mealMore"]),`디자인 2 끼니 줄 버튼은 '먹음'과 '바꾸기' 둘 (${h.mact})`);
-    need(h.H<2300,`디자인 1 홈 길이 줄임(${h.H}px, v1.11.0 디자인 A의 상태 띠·그래프를 넣어 2,100 → 2,300px)`);
+    need(h.H<2520,`디자인 1 홈 길이 줄임(${h.H}px, v1.11.0 디자인 A의 상태 띠·그래프를 넣어 2,100 → 2,400px. 오늘의 메뉴 길이에 따라 날마다 2,270~2,310px로 달라져 2,300px 기준은 날짜에 따라 실패했음. 10차에 넷째 칸 간식 줄(약 100px)이 생겨 2,520px)`);
     await p.click('.mwrap [data-act=mealMore]'); await p.waitForTimeout(150);
     const sh=await p.evaluate(()=>[...document.querySelectorAll('#sheetRoot button[data-act]')].map(x=>x.dataset.act));
     need(sh.includes("skipToggleDate")&&sh.includes("menuPick")&&sh.includes("swapMeal"),`디자인 2 '바꾸기'에 안 먹음·메뉴 고르기·다른 메뉴 (${sh})`);
@@ -51,13 +51,13 @@ const SEED=()=>{
     const r=await p.evaluate(()=>{S.stageMode="2"; S.tab="food"; S.foodSub="search"; S.foodQ=""; S.foodCat="전체"; S.foodLv="전체"; SCR=null; render();
       const chipsOut=document.querySelectorAll('#foodRes .cats .chip').length;
       const firstGroup=document.querySelector('#foodRes .fgroup:not(:has(.qa-entry)) .fg-h')?.textContent||"";
-      const rem=/관해기\(지중해식 단계\)가 되면 좋음 [\d,]+개·주의 [\d,]+개/.test(document.querySelector('#foodRes').innerText);
+      const rem=/기록이 나아져 정상식 단계가 되면 좋음 [\d,]+개·주의 [\d,]+개/.test(document.querySelector('#foodRes').innerText);
       const emoji=document.querySelectorAll('#foodRes .fic .emo').length, svg=document.querySelectorAll('#foodRes .fcard .fic svg').length;
       return {chipsOut,firstGroup,rem,emoji,svg,later:LV.later}});
     need(r.chipsOut===0,`디자인 3 결과 위 칩 없음(걸러 보기 시트로) (${r.chipsOut})`);
     need(/지금 먹을 수 있는 음식/.test(r.firstGroup),`사용자 1 첫 묶음은 '지금 먹을 수 있는 음식' (${r.firstGroup.slice(0,30)})`);
-    need(r.rem,'사용자 1 관해기가 되면 늘어나는 수를 안내');
-    need(r.emoji===0&&r.svg>0,`디자인 11 그림 문자 대신 아이콘 (그림 문자 ${r.emoji}, 아이콘 ${r.svg})`);
+    need(r.rem,'사용자 1 정상식 단계가 되면 늘어나는 수를 안내(22차: 관해기라는 말 없이, 23차: 3단계 이름 정상식)');
+    need(r.emoji===0&&r.svg===0,`디자인 11 그림 문자 없음, 24차부터 음식 그림 칸도 없음 (그림 문자 ${r.emoji}, 아이콘 ${r.svg})`);
     need(r.later==="다음 단계",`디자인 8 '보류' → '다음 단계' (${r.later})`);
     await p.click('[data-act=filterOpen]'); await p.waitForTimeout(150);
     await p.click('#sheetRoot [data-act=lvS][data-v=now]'); await p.waitForTimeout(150);
@@ -78,7 +78,7 @@ const SEED=()=>{
     need(d.sum&&d.more,'디자인 7 판정 이유 한 줄 + 자세히');
     need(d.alt>=1,`사용자 1 피하는 음식에 '대신 이것' (${d.alt}개)`);
     need(d.dash===0,'디자인 6 영양 칸에 – 없음(자료 없음은 한 줄로)');
-    need(/^2026-\d\d-\d\d( 이전\(.+\))?$/.test(d.date),`개발자 4 확인 날짜(넣은 날) 표시, v1.11.0 M8: 추정 날짜는 '이전(첫 공개판)' (${d.date})`);
+    need(/^2026-\d\d-\d\d( 이전)?$/.test(d.date),`개발자 4 확인 날짜(넣은 날) 표시, M8: 추정 날짜는 '…이전'(26차부터 버전 이름 없이) (${d.date})`);
     need(/278g/.test(d.size),`디자인 5 용량은 이름과 따로 (${d.size})`);
     need(d.fam,'개발자 2 묶은 제품에 다른 용량 표시');
     await p.context().close()}
@@ -97,9 +97,9 @@ const SEED=()=>{
     await p.click('[data-act=wzNext]'); await p.waitForTimeout(150); await p.click('[data-act=saveLog]'); await p.waitForTimeout(200);
     const q=await p.evaluate(()=>S.logs[today()]);
     need(q1===3&&q&&q.quick===true&&q.day===1&&q.urg===1,`사용자 6 빠른 기록 세 문항 저장(quick 표시) (${q1}문항)`);
-    // 3일 연속 5점 이상
-    const t=await p.evaluate(()=>{const hi={...BLANK_LOG(),day:8,night:2,bloody:3,urg:2,blood:2,well:2}; for(let i=0;i<3;i++) S.logs[addDays(today(),-i)]=hi; SCR=null; S.tab="plan"; render(); return {tr:trend3(),txt:document.querySelector('#main').innerText}});
-    need(t.tr&&/3일 연속 활동기 기준입니다/.test(t.txt)&&/주치의\(IBD 진료팀\)에 알리십시오/.test(t.txt)&&/예측하지 않습니다/.test(t.txt),'사용자 5·8번 3일 연속 5점 이상이면 주치의에 알리라는 고정 문장(예측 아님)');
+    // 3일 연속 5점 이상 → 22차(결정 52): 알림을 뺐다. 식단 단계만 가장 부드러운 단계로
+    const t=await p.evaluate(()=>{const hi={...BLANK_LOG(),day:8,night:2,bloody:3,urg:2,blood:2,well:2}; for(let i=0;i<3;i++) S.logs[addDays(today(),-i)]=hi; SCR=null; S.tab="plan"; render(); return {st:currentStage().stage,txt:document.querySelector('#main').innerText}});
+    need(t.st===1&&!/3일 연속|활동기|주치의/.test(t.txt),'사용자 5·8번 → 22차: 3일 연속이어도 알림 없이 식단 단계만 바뀜');
     await p.context().close()}
   {const p=await open({noSeed:true});
     const s=await p.evaluate(()=>{S.consent={date:today()}; S.onb="3"; S.logs={}; S.stageInit=null; render(); const has=!!document.querySelector('[data-act=onbInit][data-v="3"]'); document.querySelector('[data-act=onbInit][data-v="3"]').click(); return {has,st:currentStage().stage,src:currentStage().src}});

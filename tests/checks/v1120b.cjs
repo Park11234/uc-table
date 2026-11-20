@@ -177,13 +177,13 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
     need(r.na===2400&&r.vd===7.5,`합계: 나트륨 ${r.na}mg(1800+600), 비타민 D ${r.vd}μg(5+2.5), 문자·음수·빈 값은 0`);
     await p.context().close()}
 
-  console.log('== C-06 후속: 몸 상태가 나쁘면 배변 기준을 채워도 "편안한 하루"라고 하지 않음');
+  console.log('== C-06 후속 → 22차: 몸 상태와 상관없이 상태 띠는 적은 값만(편안한 하루·관해 같은 판정 없음)');
   {const p=await open();
-    const r=await p.evaluate(()=>{S.stageMode="auto"; const t=today(); const one=well=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day:2,night:0,well}; save(); S.tab="plan"; SCR=null; render(); const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage}};
+    const r=await p.evaluate(()=>{S.stageMode="auto"; const t=today(); const one=well=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day:1,night:0,well};   /* v1.13.0 2번: 평소 1회 기준의 관해 */ save(); S.tab="plan"; SCR=null; render(); const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage}};
       return {good:one(0),worst:one(4),poor:one(2)}});
-    need(r.good.head==="편안한 하루입니다"&&r.good.stage===3,`몸 상태 아주 좋음: 편안한 하루 (${r.good.head})`);
+    need(r.good.head==="오늘 배변 1회 · 혈변 0회"&&r.good.stage===3,`몸 상태 아주 좋음: 적은 값 그대로 (${r.good.head})`);
     need(r.worst.head!=="편안한 하루입니다"&&r.poor.head!=="편안한 하루입니다",`몸 상태 최악·나쁨: 편안한 하루라고 하지 않음 (${r.worst.head} / ${r.poor.head})`);
-    need(r.worst.stage===3&&/관해 기준/.test(r.worst.sub),`식단 단계 기준 문장은 그대로(단계 판정은 바꾸지 않음) (${r.worst.stage}, ${r.worst.sub})`);
+    need(r.worst.stage===3&&!/관해/.test(r.worst.sub),`식단 단계 판정은 그대로, 관해라는 말은 없음 (${r.worst.stage}, ${r.worst.sub})`);
     await p.context().close()}
 
   console.log('== 알코올(주정·에탄올·술)은 절대 금지, 요리에 넣는 맛술·미림·청주는 막지 않음');
@@ -248,7 +248,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
       o.alcNotPoly=Object.fromEntries(["당알코올 젤리"].map(n=>[n,ruleCheck({name:n,ingr:[]}).reasons.some(x=>/^알코올 포함 가능성/.test(x))]));
       return o});
     need(r.prodN>=60&&r.prodBad===0,`원재료에 당알코올이 든 포장 식품 ${r.prodN}개 모두 피하기 이상 (벗어난 것 ${r.prodBad})`);
-    need(/당알코올/.test(r.reason)&&/피하기/.test(r.reason),`이유 문장에 당알코올과 피하기 (${r.reason.slice(0,60)})`);
+    need(/당알코올/.test(r.reason)&&/피하기|피합니다/.test(r.reason),`이유 문장에 당알코올과 피하기 (${r.reason.slice(0,60)})`);
     need(r.notBan===0,`당알코올만으로는 절대 금지가 되지 않음 (${r.notBan})`);
     need(r.tagged==="",`당알코올 표시가 있는 음식은 모두 피하기 이상 (${r.tagged})`);
     need(r.cleanPoly===0,`당알코올이 없는 제품에는 당알코올 이유가 붙지 않음 (${r.cleanPoly})`);

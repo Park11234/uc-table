@@ -60,7 +60,8 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="3"; save()
   {const p=await open({w:320});
     const r=await p.evaluate(async()=>{document.documentElement.style.fontSize='200%'; const out=[];
       for(const [n,fn] of [["set-diet",()=>{S.profile.budgetMonth=""; openScr("set-diet")}],["set-stage",()=>{S.stageMode="auto"; openScr("set-stage")}],["home",()=>{SCR=null; S.tab="plan"; render()}],["meal",()=>{SCR=null; S.tab="plan"; render(); openScr("meal",{k:0})}]]){
-        SCR=null; fn(); await new Promise(r=>setTimeout(r,60)); const W=document.documentElement.clientWidth; const nb=[...document.querySelectorAll('.nb')];
+        SCR=null; fn(); await new Promise(r=>setTimeout(r,60)); for(let i=0;i<40&&document.getAnimations().some(a=>a.playState==="running");i++) await new Promise(r=>setTimeout(r,25));   // 20차: 화면이 밀려 들어오는 움직임(오른쪽 26px에서 시작) 도중에 재면 줄 끝 덩어리가 화면 밖으로 잡혔음(부하가 클 때)
+        const W=document.documentElement.clientWidth; const nb=[...document.querySelectorAll('.nb')];
         out.push([n,nb.length,nb.filter(e=>{const r=e.getBoundingClientRect(); return r.right>W+1||r.left<-1}).length,document.documentElement.scrollWidth<=W])}
       return out});
     for(const [n,cnt,bad,ok] of r) need(bad===0&&ok,`글자 200%·320px ${n}: 묶음 ${cnt}개 중 화면 밖으로 나간 것 ${bad}개, 가로 스크롤 ${ok?'없음':'있음'}`);
@@ -145,9 +146,9 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="3"; save()
       const R=judge(["새우 샐러드","삼겹살 구이","튀김 우동","소시지 야채볶음","크림 파스타","흰쌀밥","라면"]);
       const dom=[...document.querySelectorAll('#main .jrow')].map(row=>({name:row.querySelector('b').textContent,ps:[...row.querySelectorAll('.why-lines p')].map(e=>({t:e.textContent,c:e.className}))}));
       // 모든 줄은 앱에 이미 있는 문장이어야 한다: ruleCheck의 이유, 아래 이유 문장 상수, 음식 목록 설명, 사실 그대로 적은 '걸린 말 없음'뿐
-      const allowed=new Set(["붉은 고기는 줄이도록 권고(IOIBD·ECCO)","기름진 음식이라 소량만(길병원: 기름진 음식은 증상 악화 음식)","가스 유발 성분(FODMAP)이 많아 가스·복부팽만을 늘릴 수 있음",GLOSS.lactose[1],...AVOID_TAG.map(x=>x[1])]);   // 앞의 세 문장은 foodStatus가 이미 쓰던 문장 그대로
+      const allowed=new Set(["붉은 고기는 줄이도록 권합니다(IOIBD·ECCO)","기름진 음식이라 조금만 먹습니다. 길병원은 기름진 음식을 증상 악화 음식으로 꼽습니다","가스 유발 성분(FODMAP)이 많아 가스·복부팽만을 늘릴 수 있습니다",GLOSS.lactose[1],...AVOID_TAG.map(x=>x[1])]);   // 앞의 세 문장은 foodStatus가 이미 쓰던 문장 그대로
       const FS=new Set(); for(const f of Object.values(FOOD)) for(const x of foodStatus(f).reasons) FS.add(`${f.name}: ${x}`);   // 종류가 많은 메뉴는 가장 엄격한 후보 음식의 판정 이유를 쓴다
-      const known=(it,l)=>{const rc=ruleCheck(it).reasons; if(rc.includes(l)||FS.has(l)) return true; if(/^걸린 말 없음: /.test(l)) return true;
+      const known=(it,l)=>{const rc=ruleCheck(it).reasons; if(rc.includes(l)||FS.has(l)) return true; if(/^걸리는 재료 없음: /.test(l)) return true;
         const i=l.indexOf(": "); if(i<0) return false; const rest=l.slice(i+2); if(allowed.has(rest)) return true;
         return Object.values(FOOD).some(f=>f.why&&l===`${f.name}: ${f.why}`)};
       const names=Object.values(FOOD).slice(0,120).map(f=>f.name).concat(["새우 샐러드","삼겹살 구이","튀김 우동","소시지 야채볶음","연어 포케","라면","아무말대잔치"]);
@@ -159,11 +160,11 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="3"; save()
       return {R,dom,bad,empty,n:res.length,alLines,alLv,broad:res.find(x=>x.name==='칼국수')}});
     const by=n=>r.R.find(x=>x.name===n), dm=n=>r.dom.find(x=>x.name===n);
     const L=n=>(by(n)?by(n).lines.join(" | "):"");
-    need(by("새우 샐러드").lines.length===1&&/^걸린 말 없음: /.test(by("새우 샐러드").lines[0])&&by("새우 샐러드").level==="caution",`목록에 없고 걸린 낱말도 없으면 지어내지 않고 사실대로 적음, 판정은 주의 그대로 (${L("새우 샐러드")} / ${by("새우 샐러드").level})`);
-    need(/^삼겹: 붉은 고기는 줄이도록 권고\(IOIBD·ECCO\)$/.test(by("삼겹살 구이").lines[0])&&by("삼겹살 구이").refs.includes(3),`삼겹살 구이 → '삼겹: 이유' + 근거 번호 3 (${L("삼겹살 구이")} / ${by("삼겹살 구이").refs})`);
-    need(/^튀김: 기름진 음식이라 소량만\(길병원/.test(by("튀김 우동").lines[0])&&by("튀김 우동").refs.includes(39),`튀김 우동 → '튀김: 이유' + 근거 번호 39 (${L("튀김 우동")})`);
+    need(by("새우 샐러드").lines.length===1&&/^걸리는 재료 없음: /.test(by("새우 샐러드").lines[0])&&by("새우 샐러드").level==="caution",`목록에 없고 걸린 낱말도 없으면 지어내지 않고 사실대로 적음, 판정은 주의 그대로 (${L("새우 샐러드")} / ${by("새우 샐러드").level})`);
+    need(/^삼겹: 붉은 고기는 줄이도록 권합니다\(IOIBD·ECCO\)$/.test(by("삼겹살 구이").lines[0])&&by("삼겹살 구이").refs.includes(3),`삼겹살 구이 → '삼겹: 이유' + 근거 번호 3 (${L("삼겹살 구이")} / ${by("삼겹살 구이").refs})`);
+    need(/^튀김: 기름진 음식이라 조금만 먹습니다\. 길병원은/.test(by("튀김 우동").lines[0])&&by("튀김 우동").refs.includes(39),`튀김 우동 → '튀김: 이유' + 근거 번호 39 (${L("튀김 우동")})`);
     need(/^소시지: .*가공육/.test(by("소시지 야채볶음").lines[0]),`소시지 야채볶음 → '소시지: 이유' (${L("소시지 야채볶음")})`);
-    need(by("크림 파스타").lines.length===2&&/단계부터 권장/.test(by("크림 파스타").lines[0])&&/크림소스는 생크림/.test(by("크림 파스타").lines[1]),`목록 음식이 '단계부터 권장'뿐이면 음식 목록의 설명을 덧붙임 (${L("크림 파스타")})`);
+    need(by("크림 파스타").lines.length===2&&/단계부터 먹을 수 있습니다/.test(by("크림 파스타").lines[0])&&/크림소스는 생크림/.test(by("크림 파스타").lines[1]),`목록 음식이 '단계부터 권장'뿐이면 음식 목록의 설명을 덧붙임 (${L("크림 파스타")})`);
     need(by("흰쌀밥").level==="ok"&&by("흰쌀밥").lines.length===1&&/흰쌀밥: /.test(by("흰쌀밥").lines[0]),`'좋음'에도 짧은 이유 한 줄 (${L("흰쌀밥")})`);
     need(by("삼겹살 구이").level==="caution"&&by("소시지 야채볶음").level==="avoid"&&by("라면").level==="avoid"&&by("크림 파스타").level==="later"&&by("흰쌀밥").level==="ok",`판정 단계는 그대로 (삼겹살 ${by("삼겹살 구이").level}, 소시지 ${by("소시지 야채볶음").level}, 라면 ${by("라면").level}, 크림 파스타 ${by("크림 파스타").level}, 흰쌀밥 ${by("흰쌀밥").level})`);
     need(dm("삼겹살 구이")&&dm("삼겹살 구이").ps.length===1&&dm("삼겹살 구이").ps[0].c==="warn-t",`카드에 이유 줄이 나옴(.why-lines p, 주의 색) (${JSON.stringify(dm("삼겹살 구이"))})`);

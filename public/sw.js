@@ -1,6 +1,6 @@
 // 자동 생성 파일 — tools/build_offline.py
-const CACHE="uc-table-8db55ccbd7";
-const ASSETS=["./", "./index.html", "./app.js?v=133e2a7ace", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html", "./fonts/uc-table-sans.woff2", "./vendor/html2canvas.min.js", "./vendor/jspdf.umd.min.js"];
+const CACHE="uc-table-cebdddfae0";
+const ASSETS=["./", "./index.html", "./app.js?v=849de2bf40", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./apple-touch-icon.png", "./privacy.html", "./accessibility.html", "./fonts/uc-table-sans.woff2", "./vendor/html2canvas.min.js", "./vendor/jspdf.umd.min.js"];
 self.addEventListener("install",e=>{
   // HTTP 캐시를 건너뛰고 새로 받아야 옛 파일이 새 캐시에 들어가지 않는다
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS.map(u=>new Request(u,{cache:"reload"})))).then(()=>self.skipWaiting()));
@@ -26,7 +26,7 @@ async function ucCheck(){
     const last=st.last||""; const days=last?Math.floor((Date.parse(today)-Date.parse(last))/864e5):99;
     if(days<3||st.notified===today) return;
     st.notified=today; await c.put("./__uc_status",new Response(JSON.stringify(st),{headers:{"Content-Type":"application/json"}}));
-    if(self.registration.showNotification) await self.registration.showNotification("UC TABLE",{body:last?days+"일째 증상 기록이 없습니다. 오늘 상태를 기록해 주십시오.":"증상 기록을 시작해 주십시오.",icon:"icon-192.png",badge:"icon-192.png",tag:"uc-log",lang:"ko"});
+    if(self.registration.showNotification) await self.registration.showNotification("UC TABLE",{body:last?days+"일째 증상 기록이 없습니다. 오늘 상태를 기록할 차례입니다.":"아직 증상 기록이 없습니다. 오늘 상태부터 기록할 수 있습니다.",icon:"icon-192.png",badge:"icon-192.png",tag:"uc-log",lang:"ko"});
     if(self.navigator&&self.navigator.setAppBadge) try{await self.navigator.setAppBadge(1)}catch(e){}
   }catch(e){}
 }

@@ -38,7 +38,7 @@ fs.writeFileSync(T('pass2.html'),'<!doctype html><html><head><meta charset="utf-
 await p.goto('file://'+WRAP('pass2.html')); await p.waitForTimeout(500);
 // S1 신규 사용자: 동의 화면 → 시작
 out('S1 welcome', await p.evaluate(()=>[!!document.querySelector('#consentGo'), document.querySelector('#consentGo').disabled]));
-await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
+await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
 out('S1 home', await p.evaluate(()=>[S.tab, !!document.querySelector('.mrow'), document.querySelectorAll('.mrow').length]));
 // 마법사 전체(실제 클릭)
 await p.click('.ridge [data-act=wizard]'); await p.waitForTimeout(300);
@@ -51,14 +51,15 @@ while(guard++<30){
     else if(q.type==="one"){await p.locator(`[data-act=set][data-k=${q.k}]`).nth(1).click()}
     else if(q.type==="oneS"){await p.locator(`[data-act=setS][data-k=${q.k}]`).nth(1).click()}
     else if(q.type==="range"){await p.fill('#pain','3')}
-    else if(q.type==="vitals"){await p.fill('#temp','36.9'); await p.fill('#pulse','78')}
+    else if(q.type==="vitals"){await p.fill('#temp','36.9')}
   }
   if(st.type==="result"){await p.waitForTimeout(500); await p.screenshot({path:T('s1_result.png')}); await p.click('[data-act=saveLog]'); break}
   const dis=await p.evaluate(()=>document.querySelector('[data-act=wzNext]')?.disabled);
   if(dis){out('S1 stuck at',st.k); break}
   await p.click('[data-act=wzNext]'); await p.waitForTimeout(450);
 }
-out('S1 saved log', await p.evaluate(()=>{const l=S.logs[today()];return l?[l.day,l.night,l.bloody,l.urg,l.blood,l.well,l.pain,l.gas,l.fatigue,l.stool,l.medtaken,l.temp,l.pulse]:null}));
+await p.waitForTimeout(300); out('S1 usual ask', await p.locator('#sheetRoot [data-act=usualAskSave]').count()); if(await p.locator('#sheetRoot [data-act=usualAskSave]').count()) await p.click('#sheetRoot [data-act=closeSheet]');   // v1.13.0 2번: 첫 저장 뒤 평소 배변 횟수 묻기 → 건너뛰기
+out('S1 saved log', await p.evaluate(()=>{const l=S.logs[today()];return l?[l.day,l.night,l.bloody,l.urg,l.blood,l.well,l.pain,l.gas,l.fatigue,l.stool,l.medtaken,l.temp,"pulse" in l]:null}));
 // S2 일주일 사용
 await p.click('.tab[data-tab=plan]'); await p.waitForTimeout(200);
 await p.click('[data-act=ateToggle][data-k="0"]'); await p.waitForTimeout(450);
@@ -71,7 +72,7 @@ await p.evaluate(()=>openScr("nutri")); await p.waitForTimeout(200);
 await p.click('.cup'); await p.click('.cup:nth-child(2)'); await p.waitForTimeout(100);
 await p.click('[data-act=extraOpen]'); await p.fill('#exQ','바나나'); await p.waitForTimeout(100); await p.click('#exList [data-act=exPick]'); await p.click('[data-act=exSave]'); await p.waitForTimeout(200);
 const nut=await p.evaluate(()=>{const tg=targets();const eaten=SLOTS.filter(sl=>isAte(today(),sl));const e=totals(eaten.flatMap(sl=>ateItems(today(),sl)));for(const x of (S.extras[today()]||[])){e.k+=x.kcal||0}
-  const shown=(document.querySelector('#main').textContent.match(/(\d+)\/(\d+)kcal/)||[]); return [Math.round(e.k), shown[1], shown[2], tg.k, S.water[today()]]});
+  const shown=(document.querySelector('#main').textContent.match(/([\d,]+)\/([\d,]+)kcal/)||[]).map(x=>String(x).replace(/,/g,'')); return [Math.round(e.k), shown[1], shown[2], tg.k, S.water[today()]]});
 out('S2 nutri consistency', nut);
 await p.screenshot({path:T('s2_nutri.png'),fullPage:true});
 // S3 지난 날
@@ -106,7 +107,7 @@ for(let i=0;i<5;i++){await p.evaluate(()=>openSheet('<h2>t</h2>')); await p.wait
 out('S6 sheets', await p.evaluate(()=>[!!document.querySelector('#sheetRoot').firstChild, !!document.querySelector('#main').textContent.trim()]));
 console.log('errors',errs);expect(()=>jsonOf('S1 welcome').every(Boolean),'처음 화면'); expect(()=>jsonOf('S1 home')[0]==='plan','홈');
 // v1.9.0 U-1: 쪽으로 묶인 마법사를 끝까지 눌러 저장한 값(낮·밤 +2, 혈변 +2, 보기 두 번째, 복통 3, 체온·맥박)
-expect(()=>logOf('S1 stuck at')==null&&JSON.stringify(jsonOf('S1 saved log'))===JSON.stringify([2,2,2,1,1,1,3,"약간","약간",1,1,"36.9","78"]),'마법사 전체를 눌러 기록 저장');
+expect(()=>logOf('S1 stuck at')==null&&JSON.stringify(jsonOf('S1 saved log'))===JSON.stringify([2,2,2,1,1,1,3,"약간","약간",1,1,"36.9",false]),'마법사 전체를 눌러 기록 저장');
 expect(()=>{const n=jsonOf('S2 nutri consistency'); return String(n[1]).endsWith(String(n[0]))&&+n[2]===n[3]},'영양 합계와 화면 일치');
 expect(()=>jsonOf('S3 after back')[1]==='plan','뒤로 가기'); expect(()=>+logOf('S4 search 계란')>0&&+logOf('S4 search 흰죽')>0&&+logOf('S4 search ㄴㄹㅈ')>0&&+logOf('S4 search ㅋㅋㅋㅎ')===0,'검색');
 expect(()=>logOf('S4 detail sheet')==='true','음식 상세'); expect(()=>/백업 불러오기/.test(logOf('S5 restore sheet')),'복원 확인');

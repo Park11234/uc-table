@@ -57,7 +57,8 @@ for(const [w,h,dark,font] of [[320,640,false,"md"],[360,760,true,"xl"],[430,930,
   const q2=await open(w,h,dark,font);
   await q2.evaluate(()=>{S.foodQ="";render(); for(let i=0;i<8;i++){const bs=[...document.querySelectorAll('[data-act="fMore"]')]; if(!bs.length) break; bs.forEach(b=>FMORE.add(b.dataset.v)); refreshFoodRes()}}); await q2.waitForTimeout(250);   // 묶음별 '더 보기'를 모두 펼쳐 전체 목록으로 점검(U-7)
   const m=await q2.evaluate(()=>{
-    const over=[...document.querySelectorAll('#main *')].filter(el=>el.scrollWidth>el.clientWidth+2&&!el.className.toString().includes("cats")&&!el.className.toString().includes("days")).slice(0,5).map(el=>el.className+" "+el.scrollWidth+">"+el.clientWidth);
+    // v1.13.0: 용어 '?' 단추(gq-b)는 ::after로 누르는 범위를 일부러 넓혀 scrollWidth가 커지므로 뺀다(a11y.cjs와 같은 예외)
+    const over=[...document.querySelectorAll('#main *')].filter(el=>el.scrollWidth>el.clientWidth+2&&!el.className.toString().includes("cats")&&!el.className.toString().includes("days")&&!el.className.toString().includes("gq-b")).slice(0,5).map(el=>el.className+" "+el.scrollWidth+">"+el.clientWidth);
     const cards=[...document.querySelectorAll('.fcard')];
     const clipped=cards.filter(c=>{const b=c.querySelector('b'); return b&&b.scrollHeight>b.clientHeight+2}).length;
     return {doc:document.documentElement.scrollWidth, over, cards:cards.length, clipped}});

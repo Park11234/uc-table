@@ -33,12 +33,12 @@ await p.goto('file://'+WRAP('t29.html'));await p.waitForTimeout(400);
 // v1.9.0: 저장 위치 안내는 동의 화면('기록은 이 기기에만 저장됩니다')으로 모으고 첫 실행 안내에서는 뺐다.
 //  백업 파일 불러오기는 label[for=restore] 대신 키보드로도 누르는 버튼(data-act=restorePick, A-5)
 const where=await p.evaluate(()=>/기록은 이 기기에만 저장됩니다/.test(document.querySelector('#main').textContent));
-await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(250);
+await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(250);
 const intro=await p.evaluate(()=>({onb:S.onb,tabsHidden:document.body.classList.contains('welcome'),restore:!!document.querySelector('button[data-act=restorePick]')&&!!document.querySelector('input#restore[type=file]'),paste:!!document.querySelector('[data-act=restorePaste]'),skip:!!document.querySelector('[data-act=onbSkip]')}));
 console.log('intro',JSON.stringify(intro),where);
 expect(intro.onb==="0"&&intro.tabsHidden&&intro.restore&&intro.paste&&intro.skip&&where,'첫 실행 안내: 백업 불러오기·그냥 시작하기·저장 위치(동의 화면)');
 {const fc=p.waitForEvent('filechooser',{timeout:3000}).then(()=>true).catch(()=>false); await p.click('[data-act=restorePick]'); expect(await fc,'백업 파일 불러오기 버튼이 파일 선택 창을 엶')}
-expect(await p.evaluate(()=>{const b=[...document.querySelectorAll('.bottom-bar .btn,.bottom-bar label')].map(x=>x.textContent.trim()); return b.indexOf('그냥 시작하기')>b.indexOf('백업 파일 불러오기')}),'그냥 시작하기는 백업 불러오기 아래');
+expect(await p.evaluate(()=>{const b=[...document.querySelectorAll('.bottom-bar .btn,.bottom-bar label')].map(x=>x.textContent.trim()); return b.includes('나중에 넣고 시작하기')&&!b.some(x=>/불러오기|붙여 넣기/.test(x))}),'24차: 아래 막대에는 주 단추와 나중에 넣기만, 백업 불러오기는 막대 밖 한 줄');
 await p.click('[data-act=onbGo]'); await p.waitForTimeout(200);
 await p.fill('#o_height','170'); await p.fill('#o_weight','90'); await p.fill('#o_age','40'); await p.click('[data-act=onbSex][data-v=F]'); await p.waitForTimeout(150);
 await p.click('[data-act=onbNext]'); await p.waitForTimeout(200);
@@ -56,7 +56,7 @@ const ob=await p.evaluate(()=>({onb:S.onb,h:S.profile.height,age:S.profile.age,s
 console.log('onboard',JSON.stringify(ob));
 expect(ob.onb==="done"&&ob.h==="170"&&ob.age==="40"&&ob.sex==="F"&&ob.w===90&&ob.al.includes("peanut")&&ob.al.includes("pine")&&ob.lac,'첫 실행 설정 값 저장');
 expect(["yes","no","na"].includes(ob.persist),'기록 보존 요청');
-expect(ob.tabs===4&&!ob.nutriTab,'하단 탭 4개(오늘 영양 탭 없음)');
+expect(ob.tabs===5&&!ob.nutriTab,'하단 탭 5개(v1.13.0 25차 조약돌 탭 더함, 오늘 영양 탭 없음)');
 // 2. BMI에 따른 열량 목표(대한비만학회 표: 과체중·비만 25kcal/kg)
 const tg=await p.evaluate(()=>{const t=targets(); return {bmi:t.bmi.bmi,cat:t.bmi.cat,kpk:t.kpk,k:t.k}});
 console.log('bmi',JSON.stringify(tg)); expect(tg.cat==="비만"&&tg.kpk===25&&tg.k===2250,'비만이면 25kcal/kg');
@@ -151,17 +151,9 @@ expect(/75g까지/.test(fb)&&/208g부터/.test(fb)&&/279g부터/.test(fb)&&/프�
 expect(fbx==='FODMAP 낮음 75, 중간 208, 높음 279','브로콜리 신호등 칸(낮음·중간·높음)');
 expect(/가정식 실측값/.test(fe)&&/13~39kcal/.test(fe)&&/완성된 음식 무게/.test(fe),'계란국 값 종류·범위');
 expect(/익힌 뒤 무게/.test(fr)&&/국가표준식품성분표 실측값/.test(fr)&&/152/.test(fr),'흰쌀밥 값(실측)·무게 기준');
-// 15. 음식·증상 분석: 평소 나쁜 날 비율과 비교, 전날 포함, 거의 매일 먹는 음식 제외
-const sus=await p.evaluate(()=>{S.logs={}; S.extras={}; S.ratings=[]; S.ateMeals={}; S.ate={};
-  const bad={day:6,night:2,bloody:3,urg:2,blood:2,well:2,extra:[],pain:5,gas:"많이",fatigue:"심함",temp:"",pulse:"",other:[],memo:"",stool:0,medtaken:1};
-  const good={day:1,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:"",stool:0,medtaken:1};
-  for(let i=0;i<14;i++){const d=addDays(today(),-i); S.logs[d]=i%4===0?bad:good; S.extras[d]=[{name:"흰쌀밥",foodId:"white_rice",amt:200,unit:"g",kcal:300,p:5,fi:0,ca:0}]; if(i%4===1) S.extras[d].push({name:"우유",foodId:"milk",amt:200,unit:"g",kcal:130,p:6,fi:0,ca:200}); if(i%3===2) S.extras[d].push({name:"사과",foodId:"apple",amt:100,unit:"g",kcal:50,p:0,fi:2,ca:5})}
-  const r=foodSuspects(); return {base:r.base,n:r.n,names:r.map(x=>x.name),milk:r.find(x=>x.name==="우유")}});
-console.log('suspects',JSON.stringify(sus)); expect(sus.n===14&&sus.names.includes("우유")&&!sus.names.includes("흰쌀밥")&&sus.milk.pct>sus.milk.rest,'음식·증상 분석 보정');
-expect(!sus.names.includes("사과"),'나쁜 날 비율이 평소와 비슷한 음식은 의심하지 않음');
-// 16. 체중 감소 경고(GLIM)
-const gl=await p.evaluate(()=>{S.weights=[{date:addDays(today(),-100),kg:70},{date:today(),kg:62}]; const r=weightLoss(); return {lv:r.level,p6:r.p6,html:/6개월 안에 11.4% 줄었습니다/.test(glimHTML())}});
-console.log('glim',JSON.stringify(gl)); expect(gl.lv===2&&gl.html,'6개월 안 10% 넘게 줄면 2단계 경고');
+// 15·16. 22차: 음식·증상 분석(의심 후보)과 체중 감소 경고(GLIM)는 뺐다. 체중 감소는 경고 없이 몸무게 기록만 남는다
+const gone=await p.evaluate(()=>{S.weights=[{date:addDays(today(),-100),kg:70},{date:today(),kg:62}]; SCR=null; S.tab="plan"; render(); return {fn:[typeof foodSuspects,typeof weightLoss,typeof glimHTML],txt:/줄었습니다|영양불량/.test(document.querySelector('#main').innerText)}});
+console.log('gone',JSON.stringify(gone)); expect(gone.fn.every(x=>x==="undefined")&&!gone.txt,'의심 후보 통계·체중 감소 경고 없음');
 // 17. 다른 창에서 저장하면 이 창은 저장을 멈추고 알린다
 const st=await p.evaluate(()=>{save(); const before=localStorage.getItem(KEY); localStorage.setItem(KEY+".rev",String(MY_REV+5)); window.dispatchEvent(new StorageEvent("storage",{key:KEY+".rev",newValue:String(MY_REV+5)})); S.profile.dislikes="다른창"; save(); return {stale:STALE,unchanged:localStorage.getItem(KEY)===before,banner:/다른 창에서 기록이 바뀌었습니다/.test(document.querySelector('#main').textContent)}});
 await p.evaluate(()=>reloadState()); const st2=await p.evaluate(()=>({stale:STALE,d:S.profile.dislikes}));

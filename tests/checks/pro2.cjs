@@ -11,7 +11,8 @@ const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});retur
 /* 수정 요청서 v2 항목 11(2026-10-21 원문 확인): 증상 지표를 SCCAI에서 Mayo 환자 보고 2항목(PRO2)·Truelove-Witts로 바꾼 뒤에도
    (1) 점수 정의가 원문(ACG 2025 표 5, STRIDE-II 권고 4, 국내 지침 표 3)과 같고
    (2) 단계 판정이 옛 규칙보다 덜 조심스러워지지 않고(민감도 유지)
-   (3) 화면·CSV 어디에도 SCCAI 글자가 보이지 않는지 확인한다 */
+   (3) 화면·CSV 어디에도 SCCAI 글자가 보이지 않는지 확인한다
+   22차(2026-11-16): PRO2는 식단 단계 판정 안에서만 쓰고 화면·CSV에는 점수를 보이지 않는다(결정 52) */
 const { chromium } = require('playwright'); const fs=require('fs');
 const F=[]; const need=(c,m)=>{if(!c){F.push(m); console.log('  ✗ '+m)} else console.log('  ✓ '+m)};
 const BODY=fs.readFileSync(APP,'utf8');
@@ -29,7 +30,7 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
   {const p=await open();
     const r=await p.evaluate(()=>{const L=(o)=>({...BLANK_LOG(),...o}); const sf=(d,n,u)=>{S.profile.usualBM=u??""; return pro2(L({day:d,night:n})).sf};
       const br=(o)=>pro2(L(o)).br; const out={};
-      out.sf3=[0,3,4,5,6,7,8,12].map(t=>sf(t,0));            // 평소 비움 → 3회 기준
+      out.sf3=[0,3,4,5,6,7,8,12].map(t=>sf(t,0));            // 평소 비움 → 1회 기준(v1.13.0 2번, 예전 3회)
       out.sf3n=sf(2,2);                                       // 낮+밤 합계로 계산
       out.sf1=[1,2,3,4,5,6].map(t=>sf(t,0,1));                // 평소 1회
       out.brs=[br({}),br({blood:1,bloody:1,day:3}),br({blood:3,bloody:2,day:3}),br({blood:2,bloody:2,day:3}),br({blood:2,bloody:1,day:3}),br({blood:0,bloody:1,day:3}),br({blood:2,bloody:2,day:4})];
@@ -37,27 +38,16 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
       S.profile.usualBM="2"; out.base2=pro2(L({day:2})).base; out.assumed2=pro2(L({day:2})).assumed;
       S.profile.usualBM="abc"; out.bad=usualBM(); S.profile.usualBM="25"; out.bad2=usualBM(); S.profile.usualBM="0"; out.zero=usualBM(); S.profile.usualBM="";
       return out});
-    need(JSON.stringify(r.sf3)==='[0,0,1,1,2,2,3,3]',`평소 비움(3회로 계산): 합계 0·3·4·5·6·7·8·12회 → 0·0·1·1·2·2·3·3 (${JSON.stringify(r.sf3)})`);
-    need(r.sf3n===1,`낮+밤 합계로 계산: 2+2회 → 1점 (${r.sf3n})`);
+    need(JSON.stringify(r.sf3)==='[0,1,2,2,3,3,3,3]',`평소 비움(1회로 계산, v1.13.0): 합계 0·3·4·5·6·7·8·12회 → 0·1·2·2·3·3·3·3 (${JSON.stringify(r.sf3)})`);
+    need(r.sf3n===2,`낮+밤 합계로 계산: 2+2회 → 2점 (${r.sf3n})`);
     need(JSON.stringify(r.sf1)==='[0,1,1,2,2,3]',`평소 1회: 1~6회 → 0·1·1·2·2·3 (${JSON.stringify(r.sf1)})`);
     need(JSON.stringify(r.brs)==='[0,1,2,2,1,1,1]',`혈변: 없음 0·약간 1·대부분 뚜렷 2·가끔 뚜렷이면서 배변 절반 넘게 피 2·절반 미만 1·정도 없이 횟수만 있으면 1·4회 중 2회는 절반이라 '대부분'이 아님 1 (${JSON.stringify(r.brs)})`);
-    need(r.sum===3&&r.assumed===true&&r.base===3,`빠른 기록(하루 5회·대부분 뚜렷) → 배변 1 + 혈변 2 = 3 (합 ${r.sum}, 평소 가정 ${r.assumed}, 기준 ${r.base})`);
+    need(r.sum===4&&r.assumed===true&&r.base===1,`빠른 기록(하루 5회·대부분 뚜렷, 평소 1회 가정) → 배변 2 + 혈변 2 = 4 (합 ${r.sum}, 평소 가정 ${r.assumed}, 기준 ${r.base})`);
     need(r.base2===2&&r.assumed2===false,'평소 2회를 적으면 그 값을 기준으로 씀');
     need(r.bad===null&&r.bad2===null&&r.zero===0,`평소 횟수 입력 검사: 글자·20 초과는 무시, 0은 허용 (${r.bad}/${r.bad2}/${r.zero})`);
     await p.context().close()}
 
-  console.log('== Truelove-Witts(국내 지침 표 3)');
-  {const p=await open();
-    const r=await p.evaluate(()=>{const L=(o)=>({...BLANK_LOG(),...o}); const g=o=>twGrade(L(o));
-      return {mild:g({day:2}),mild4:g({day:4,blood:1,bloody:1}),mod:g({day:5}),modBlood:g({day:3,blood:2,bloody:1}),sev:g({day:6,blood:3,bloody:3,temp:"38.1"}),sevHr:g({day:7,blood:3,bloody:4,pulse:"96"}),
-        sevNoVit:g({day:7,blood:3,bloody:4}),bloody6:g({day:8,blood:3,bloody:6}),hot:g({day:2,temp:"37.6"}),vit:g({day:2,temp:"36.5",pulse:"70"}).vit}});
-    need(r.mild.g===1&&r.mild4.g===1,'경증: 배변 4회 이하·혈변 (−)~(+)·열·빈맥 없음');
-    need(r.mod.g===2&&r.modBlood.g===2&&r.hot.g===2,'중등도: 배변 5회, 혈변이 가끔 뚜렷, 체온 37.6℃는 경증이 아님');
-    need(r.sev.g===3&&r.sevHr.g===3,'중증: 배변 6회 이상 + 혈변 (+++) + 열(37.5℃↑) 또는 빈맥(90↑)');
-    need(r.sevNoVit.g===2,`체온·맥박 없이 배변 7회·혈변 (+++)만으로는 중증으로 단정하지 않음(중등도) (${r.sevNoVit.g})`);
-    need(r.bloody6.g===3,'혈변 하루 6회 이상은 기존 중증 경고와 같이 중증');
-    need(r.vit===true,'체온·맥박을 적으면 vit 표시');
-    await p.context().close()}
+  // 22차(2026-11-16): Truelove-Witts 중증도 칸은 뺐다(병의 상태를 화면에 말하지 않음, 결정 52). 중증 조건은 dangerSignals로 식단 단계에만 쓴다
 
   console.log('== 단계 판정: 옛 규칙보다 덜 조심스러워지지 않음(민감도 유지)');
   {const p=await open();
@@ -73,10 +63,10 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
           const tot=day+night; for(const bloody of (blood===0?[0,1]:[1,Math.max(1,Math.ceil(tot/2)),Math.max(1,tot)])){
             const l={...BLANK_LOG(),day,night,urg,blood,bloody,well,pain}; const o=old(l), nw=activity(l).stage; res.n++;
             if(nw>o){res.lessCautious++; if(res.ex.length<5) res.ex.push(JSON.stringify({usual,l,o,nw}))}
-            if(nw<o){res.moreCautious++; const byUsual=(usual!==""&&+usual<3&&o===3&&nw===2); if(tot<7&&!byUsual) {res.moreNot7++; if(res.ex.length<5) res.ex.push(JSON.stringify({usual,l,o,nw}))}} }}}
+            if(nw<o){res.moreCautious++; const byUsual=((usual===""?1:+usual)<3&&o===3&&nw===2); /* v1.13.0 2번: 비우면 1회로 계산 */ if(tot<7&&!byUsual) {res.moreNot7++; if(res.ex.length<5) res.ex.push(JSON.stringify({usual,l,o,nw}))}} }}}
       S.profile.usualBM=""; return res});
     need(r.lessCautious===0,`옛 규칙이 더 조심스러웠던 조합이 0개여야 함 (${r.lessCautious}/${r.n}개 조합, 예: ${r.ex.join(' ; ')})`);
-    need(r.moreNot7===0,`새 규칙이 더 조심스러워진 조합은 하루 7회 이상 배변(ACG 2025 표 4)이거나, 평소 횟수가 3회 미만이라 '회복' 기준이 더 엄격해진 경우(3→2단계)뿐 (${r.moreCautious}개 중 7회 미만 ${r.moreNot7}개)`);
+    need(r.moreNot7===0,`새 규칙이 더 조심스러워진 조합은 하루 7회 이상 배변(ACG 2025 표 4)이거나, 평소 횟수가 3회 미만(비우면 1회로 계산)이라 '회복' 기준이 더 엄격해진 경우(3→2단계)뿐 (${r.moreCautious}개 중 7회 미만 ${r.moreNot7}개)`);
     await p.context().close()}
 
   console.log('== 단계 판정: 관해(평소 횟수 기준)와 하루 7회 규칙을 하나씩 확인');
@@ -100,10 +90,11 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
       return {txt,w,hdr,row,sccaiAny:[...Object.entries(txt).filter(([k,v])=>/SCCAI/.test(v)).map(([k])=>k),...(/SCCAI/.test(guide)?['안내문']:[])],csvHas:JSON.stringify(csv).includes("SCCAI"),
         usual:!!document.getElementById("p_usualBM")||/평소 하루 배변 횟수/.test(txt.profile)}});
     need(r.sccaiAny.length===0,`홈·기록·기록 결과·단계 안내·내 정보 화면에 SCCAI 글자 없음 (있는 곳: ${r.sccaiAny.join(',')||'없음'})`);
-    need(!r.csvHas&&r.hdr[1]==='배변·혈변 점수(0-6)'&&r.hdr[2]==='배변 횟수 점수(0-3)'&&r.hdr[3]==='혈변 점수(0-3)',`CSV 열: ${r.hdr.slice(0,4).join(' | ')}`);
-    need(r.row&&r.row[1]===2&&r.row[2]===1&&r.row[3]===1,`CSV 값: 4+1회(평소 3회 가정 → 배변 1점)·약간 묻어남(혈변 1점) → 합계 2 (${JSON.stringify(r.row&&r.row.slice(0,4))})`);
-    need(/배변·혈변 점수/.test(r.txt.home)&&/\/ 6점|\/6점/.test(r.txt.home),'홈 문장에 "배변·혈변 점수 N/6점"');
-    need(/배변 횟수 점수 1 \/ 3/.test(r.w)&&/혈변 점수 1 \/ 3/.test(r.w)&&/Truelove-Witts 중증도 경증 범위|Truelove-Witts 중증도 중등도 범위/.test(r.w),`기록 결과에 배변 횟수 점수·혈변 점수·Truelove-Witts (${r.w.slice(0,260)})`);
+    // 22차: CSV는 적은 값만(계산한 점수 칸 없음), 홈·기록 결과에도 점수·중증도를 말하지 않음
+    need(!r.csvHas&&!r.hdr.some(h=>/점수/.test(h))&&r.hdr[1]==='빠른 기록'&&r.hdr.includes('하루 배변 합계'),`CSV 열에 점수 없음: ${r.hdr.slice(0,8).join(' | ')}`);
+    need(r.row&&r.row[r.hdr.indexOf('하루 배변 합계')]===5&&r.row[r.hdr.indexOf('피 섞인 변')]===1,`CSV 값은 적은 그대로: 하루 4+1=5회, 피 섞인 변 1회 (${JSON.stringify(r.row&&r.row.slice(0,9))})`);
+    need(!/점수|Truelove|중증도/.test(r.txt.home)&&/배변 5회/.test(r.txt.home),'홈 문장은 적은 값(배변 5회) 그대로, 점수 없음');
+    need(!/점수|Truelove|중증도/.test(r.w)&&/식단 단계/.test(r.w),`기록 결과에 점수·중증도 없이 식단 단계 (${r.w.slice(0,200)})`);
     await p.context().close()}
 
   console.log('== 내 정보에 평소 배변 횟수 입력칸');

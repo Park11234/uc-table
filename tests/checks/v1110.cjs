@@ -14,7 +14,7 @@ const F=[]; const need=(c,m)=>{if(!c){F.push(m); console.log('  ✗ '+m)} else c
 const page=T('v1110.html');
 fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs.readFileSync(APP,'utf8')+'</body></html>');
 const SEED=()=>{
-  S.consent={date:today()}; S.onb="done";
+  S.consent={date:today()}; S.onb="done"; S.profile.usualBM="2";   // v1.13.0 2번: 비우면 평소 1회로 계산하므로, 하루 2회 기록이 관해가 되게 평소 횟수를 적어 둔다
   const mk=(day,b)=>({...BLANK_LOG(),day,night:0,bloody:b,urg:0,blood:b?1:0,well:0,stool:4,medtaken:1,pain:1,memo:""});
   for(let i=2;i<=6;i++) S.logs[addDays(today(),-i)]=mk(2,0);
   save();
@@ -30,24 +30,23 @@ const SEED=()=>{
   {const p=await open();
     const r=await p.evaluate((qs)=>{const d=(new Function('return ('+qs+')()'))(); S.tab="log"; SCR=null; render();
       const row=[...document.querySelectorAll('.hrow')].find(b=>b.dataset.v===d); const rowTxt=row?row.innerText.replace(/\s+/g,' '):"";
-      const bl=reportBlocks(); const div=document.createElement('div'); div.innerHTML=bl.blocks.join("");
+      S.ratings.push({date:d,slot:"아침",title:"흰쌀죽",foodId:"rice_porridge",rating:"ok"}); const bl=reportBlocks(); const div=document.createElement('div'); div.innerHTML=bl.blocks.join("");   /* 22차: 음식 경험 PDF는 평가한 음식의 날만 */
       const tr=[...div.querySelectorAll('tr')].find(t=>t.innerText.includes(d.slice(5))); const all=div.innerText;
       const csv=csvRows("logs"); const hdr=csv[0]; const rowC=csv.find(x=>x[0]===d);
-      const pts=typeof symPts==="function"?symPts(addDays(today(),-13),14):[]; const qp=pts.find(x=>x.d===d);
+      const pts=stoolPts(addDays(today(),-13),14); const qp=pts.find(x=>x.d===d);
       return {d,rowTxt,trTxt:tr?tr.innerText.replace(/\s+/g,' '):"",note:/빠른 기록 1일/.test(all),hdr,rowC,qp}},QUICK.toString());
-    need(/빠른 기록/.test(r.rowTxt)&&/하루 6회/.test(r.rowTxt)&&!/밤 0회/.test(r.rowTxt)&&!/복통 0/.test(r.rowTxt),`H2 기록 목록: '빠른 기록·하루 6회', 밤·복통 없음 (${r.rowTxt})`);
-    need(/빠른/.test(r.trTxt)&&!/6\/0/.test(r.trTxt)&&!/0\/10/.test(r.trTxt),`H2 PDF 표: 빠른 표시, 밤 배변·복통 칸 비움 (${r.trTxt})`);
-    need(r.note,'H2 PDF에 빠른 기록 날 수와 점수가 낮을 수 있다는 안내');
+    need(/빠른 기록/.test(r.rowTxt)&&/배변 6회/.test(r.rowTxt)&&!/밤 0회/.test(r.rowTxt)&&!/복통 0/.test(r.rowTxt),`H2 기록 목록: '배변 6회·빠른 기록', 밤·복통 없음 (${r.rowTxt})`);
+    need(/배변 하루 6회\(빠른 기록\)/.test(r.trTxt)&&!/밤/.test(r.trTxt)&&!/복통/.test(r.trTxt),`H2 음식 경험 PDF: 그날 증상에 빠른 기록 표시, 밤 배변·복통은 쓰지 않음 (${r.trTxt})`);
     const iT=r.hdr.indexOf("하루 배변 합계"), iD=r.hdr.indexOf("낮 배변"), iN=r.hdr.indexOf("밤 배변");
     need(iT>0&&r.rowC&&r.rowC[iT]===6&&r.rowC[iD]===""&&r.rowC[iN]==="",`H2 CSV: '하루 배변 합계' 6, 낮·밤 칸 비움 (${JSON.stringify(r.rowC&&[r.rowC[iD],r.rowC[iN],r.rowC[iT]])})`);
     need(r.qp&&r.qp.quick===true,'H2 그래프 점에 빠른 기록 표시');
     await p.context().close()}
 
-  console.log('== L6 점수 원 안 글자');
+  console.log('== L6 빠른 기록 표시');
   {const p=await open();
     const r=await p.evaluate(()=>{S.logs[today()]={...BLANK_LOG(),day:3,urg:0,blood:0,quick:true}; save(); S.tab="log"; SCR=null; render();
-      return {inCircle:document.querySelector('.today-card .score small')?.textContent||"",tag:!!document.querySelector('.today-card .qtag')}});
-    need(r.inCircle==="증상 점수"&&r.tag,`L6 '빠른 기록'은 점수 원 밖 표시 (${r.inCircle}, 표시 ${r.tag})`);
+      return {score:!!document.querySelector('.today-card .score'),tag:!!document.querySelector('.today-card .qtag')}});
+    need(!r.score&&r.tag,`L6(22차) 점수 원 없이 '빠른 기록' 표시 (점수 원 ${r.score}, 표시 ${r.tag})`);
     await p.context().close()}
 
   console.log('== H1 전체 초기화 범위');
@@ -103,17 +102,15 @@ const SEED=()=>{
     need(r.back!=="avoid",'H5 약을 지우면 바로 원래 판정');
     await p.context().close()}
 
-  console.log('== M4(8번) 활동기 알림 문장 하나로 고정');
+  console.log('== M4(8번) 활동기 알림 → 22차에 뺌(결정 52)');
   {const p=await open();
     const r=await p.evaluate(()=>{const hi={...BLANK_LOG(),day:7,night:2,urg:2,blood:1,bloody:2,well:1,stool:6,medtaken:1,pain:3};
       for(const i of [0,1,2]) S.logs[addDays(today(),-i)]={...hi}; save(); SCR=null; S.tab="log"; render();
       const b3=[...document.querySelectorAll('.banner')].map(x=>x.innerText).join("|");
       for(const i of [1,2]) delete S.logs[addDays(today(),-i)]; save(); render();
       const b1=[...document.querySelectorAll('.banner')].map(x=>x.innerText).join("|");
-      return {b3,b1,tell:ALERT_TELL}});
-    need(r.tell==="주치의(IBD 진료팀)에 알리십시오.",`8번 고정 문장 (${r.tell})`);
-    need(r.b3.includes(r.tell)&&!/고려하십시오/.test(r.b3),`8번 3일 연속 알림은 고정 문장 (${r.b3.slice(0,90)})`);
-    need(r.b1.includes(r.tell),`8번 하루 알림도 같은 문장 (${r.b1.slice(0,90)})`);
+      return {b3,b1}});
+    need(!/주치의|활동기|내원/.test(r.b3)&&!/주치의|활동기|내원/.test(r.b1),`8번 → 22차: 3일 연속·하루 활동기 알림을 뺐다 (${(r.b3+r.b1).slice(0,90)})`);
     await p.context().close()}
 
   console.log('== M2 시판 제품 표시');
@@ -163,7 +160,7 @@ const SEED=()=>{
       MJ={step:"edit",items:[{name:"김밥",ingr:[],cook:""}],results:[],err:"",text:""}; mjJudge(); S.tab="food"; S.foodMode="eatout"; SCR=null; render();
       const mj=document.querySelector('#main')?.innerText||""; const duck=FOOD.smoked_duck;
       return {out,plain,mjNote:MJ.results[0]&&MJ.results[0].ham===true,mjTxt:mj.includes(HAM_NOTE),note:HAM_NOTE,duckLv:foodStatus(duck).level,duckWhy:duck.why}});
-    need(r.note==="햄·소시지는 빼고 드십시오. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.",`M3 안내 문장(검토 R-12: 기준을 밝힘) (${r.note})`);
+    need(r.note==="햄·소시지는 빼고 먹습니다. 발색제(아질산나트륨)가 든 햄·소시지는 절대 금지, 없는 제품도 피하기입니다.",`M3 안내 문장(검토 R-12: 기준을 밝힘) (${r.note})`);
     need(Object.values(r.out).every(x=>x.note&&x.lv!=="ban"),`M3 김밥·오므라이스·볶음밥 정보에 안내, 판정은 그대로 (${JSON.stringify(r.out)})`);
     need(!r.plain,'M3 햄과 관계없는 음식(우동)에는 안내 없음');
     need(r.mjNote,'M3 외식 판정 김밥에도 같은 안내');
@@ -189,7 +186,7 @@ const SEED=()=>{
       SCR=null; openScr("set-about"); const ab=(document.querySelector('#main')?.innerText||"").replace(/\s+/g," "); SCR=null;
       S.tab="home"; SCR=null; render(); const sw=[...document.querySelectorAll('.mswap')].map(x=>x.innerText.trim());
       return {a,b,c,ab,sw}});
-    need(/2026-09-24 이전\(첫 공개판\)/.test(r.a)&&!/2026-09-24 이전\(첫 공개판\)[^.]*넣으며 자료를 확인한 날/.test(r.a),`M8 첫 공개판 음식은 '2026-09-24 이전(첫 공개판)' (${(r.a.match(/확인 날짜.{0,60}/)||[""])[0]})`);
+    need(/2026-09-24 이전/.test(r.a)&&!/2026-09-24 이전[^.]*넣으며 자료를 확인한 날/.test(r.a),`M8 처음부터 있던 음식은 '2026-09-24 이전'(26차: 버전 이름 뺌) (${(r.a.match(/확인 날짜.{0,60}/)||[""])[0]})`);
     need(/2026-10-13 이전/.test(r.b),`M8 v1.1~v1.8 음식도 추정 날짜로 (${(r.b.match(/확인 날짜.{0,60}/)||[""])[0]})`);
     need(/2026-10-14/.test(r.c)&&/넣으며 자료를 확인한 날/.test(r.c)&&!/이전/.test((r.c.match(/확인 날짜.{0,30}/)||[""])[0]),`M8 기록이 있는 날짜는 그대로 (${(r.c.match(/확인 날짜.{0,60}/)||[""])[0]})`);
     need(/마지막으로 음식을 넣은 날/.test(r.ab)&&!/음식 자료 마지막 확인 날짜/.test(r.ab),"M8 설정 항목 이름 '마지막으로 음식을 넣은 날'");
@@ -199,20 +196,22 @@ const SEED=()=>{
   console.log('== M10 백업 암호화·동기화 폴더 안내');
   {const p=await open();
     const r=await p.evaluate(async()=>{const d=addDays(today(),-2); S.logs[d].memo="비밀메모-처방약"; save();
-      SCR=null; openScr("set-data"); await new Promise(z=>setTimeout(z,300)); render(); const before=document.querySelector('#main').innerText;
+      SCR=null; openScr("set-data"); for(let i=0;i<60&&!ENC.ready;i++) await new Promise(z=>setTimeout(z,100)); render(); const before=document.querySelector('#main').innerText;
       await encSet("correct-horse-1"); SCR=null; openScr("set-data"); const after=document.querySelector('#main').innerText;
       const plain=backupJSON(); const out=await encWrap(plain); const obj=JSON.parse(out);
       const bo=await backupOut(); let boEnc=false; try{boEnc=JSON.parse(bo).enc==="AES-GCM-256"&&!bo.includes("비밀메모")}catch(e){}   // 파일 저장·복사·보내기·자동 백업 폴더가 모두 쓰는 함수
       restoreFromText(out); await new Promise(z=>setTimeout(z,100)); const ask=!!document.querySelector('#sheetRoot input[type=password]');
-      document.querySelector('#encPw').value="wrong-pass-0"; document.querySelector('[data-act=encRestore]').click(); await new Promise(z=>setTimeout(z,2500));
+      document.querySelector('#encPw').value="wrong-pass-0"; document.querySelector('[data-act=encRestore]').click();
+      for(let i=0;i<200&&!/비밀번호가 맞지 않/.test(document.querySelector('#encErr')?.textContent||"");i++) await new Promise(z=>setTimeout(z,100));   // 7차: 고정 2.5초 대신 결과가 나올 때까지(PBKDF2 60만 회는 점검을 여럿 함께 돌리면 2.5초를 넘기기도 함)
       const wrongMsg=document.querySelector('#sheetRoot')?.innerText||""; const stillAsk=!!document.querySelector('#encPw');
-      document.querySelector('#encPw').value="correct-horse-1"; document.querySelector('[data-act=encRestore]').click(); await new Promise(z=>setTimeout(z,2500));
+      document.querySelector('#encPw').value="correct-horse-1"; document.querySelector('[data-act=encRestore]').click();
+      for(let i=0;i<200&&!PENDING_RESTORE;i++) await new Promise(z=>setTimeout(z,100)); await new Promise(z=>setTimeout(z,100));
       const okSheet=document.querySelector('#sheetRoot')?.innerText||""; const pend=PENDING_RESTORE&&PENDING_RESTORE.logs[d]&&PENDING_RESTORE.logs[d].memo;
       closeSheet(); await encOff(); const offOut=await encWrap(plain);
       return {before:/암호화/.test(before)&&/꺼짐/.test(before),after:/켜짐/.test(after),hasMemo:out.includes("비밀메모"),obj:{enc:obj.enc,kdf:obj.kdf,iter:obj.iter,salt:!!obj.salt,iv:!!obj.iv},ask,
         wrong:/비밀번호가 맞지 않/.test(wrongMsg)&&stillAsk,ok:/백업 불러오기/.test(okSheet),pend,off:offOut===plain,sync:/동기화/.test(before),boEnc}});
     need(r.before&&r.after,`M10 백업 화면에 암호화 켜기·켜짐 표시 (${r.before}/${r.after})`);
-    need(!r.hasMemo&&r.obj.enc==="AES-GCM-256"&&r.obj.kdf==="PBKDF2-SHA256"&&r.obj.iter===310000&&r.obj.salt&&r.obj.iv,`M10 암호화 백업에 메모 평문 없음, AES-GCM·PBKDF2 31만 회 (${JSON.stringify(r.obj)})`);
+    need(!r.hasMemo&&r.obj.enc==="AES-GCM-256"&&r.obj.kdf==="PBKDF2-SHA256"&&r.obj.iter===600000&&r.obj.salt&&r.obj.iv,`M10 암호화 백업에 메모 평문 없음, AES-GCM·PBKDF2 60만 회 (${JSON.stringify(r.obj)})`);
     need(r.boEnc,'M10 백업 저장·복사·보내기·자동 백업 폴더가 쓰는 내용(backupOut)도 암호화');
     need(r.ask&&r.wrong,`M10 불러올 때 비밀번호를 묻고, 틀리면 거절 (${r.ask}/${r.wrong})`);
     need(r.ok&&r.pend==="비밀메모-처방약",`M10 맞는 비밀번호면 비교 화면으로 (${r.ok}/${r.pend})`);
@@ -268,11 +267,11 @@ const SEED=()=>{
     const r=await p.evaluate(()=>{S.stageMode="1"; S.tab="plan"; SCR=null; render(); const chip=document.querySelector('.ridge .r-stage')?.innerText||"";
       SCR=null; openScr("set-stage"); const st=document.querySelector('#main').innerText; SCR=null; openScr("set-about"); const ab=document.querySelector('#main').innerText;
       const f=FOODS.find(x=>FSERV[x.id]&&FSERV[x.id].grp.includes("fructan")); SCR=null; S.tab="food"; render(); showFood(f.id); const fb=!!document.querySelector('#sheetRoot .term[data-v=fructan]'); closeSheet();
-      return {n:Object.keys(GLOSS).length,chip,st:/섬유를 줄인 식사\(저잔사식\)/.test(st)&&/골고루 먹는 식사\(지중해식\)/.test(st),ab:/앱에 나오는 용어 \d+개/.test(ab),fb,
+      return {n:Object.keys(GLOSS).length,chip,st:/저잔사식\s*\(?\s*섬유를 줄인 식사/.test(st)&&/정상식\s*\(?\s*골고루 먹는 식사/.test(st),   /* 23차: 식사 이름 옆 윗첨자(화면 읽기는 괄호) */ab:/앱에 나오는 용어 \d+개/.test(ab),fb,
         later:foodStatus(FOOD.brown_rice,{...ctx(),stage:1,fiberStage:1}).reasons.join("|")}});
     need(r.n>=30,`U-2 용어 풀이 30개 이상 (${r.n})`);
-    need(/섬유를 줄인 식사/.test(r.chip),`U-2 홈 단계 표시는 쉬운 말 (${r.chip.trim()})`);
-    need(r.st,'U-2 식단 단계 설정은 쉬운 말(용어)');
+    need(/저잔사식/.test(r.chip)&&/섬유를 줄인 식사/.test(r.chip),`U-2 홈 단계 표시는 식사 이름 + 쉬운 말 (${r.chip.trim()})`);
+    need(r.st,'U-2 식단 단계 설정은 식사 이름 + 쉬운 말');
     need(r.ab,'U-2 앱 정보에 용어 풀이 모음');
     need(r.fb,'U-2 음식 정보의 FODMAP 성분(프럭탄)은 풀이 단추');
     await p.context().close()}
@@ -288,10 +287,10 @@ const SEED=()=>{
       const bl=reportBlocks(); const div=document.createElement('div'); div.innerHTML=bl.blocks.join(""); const rep=div.innerText;
       const bk=JSON.parse(backupJSON()); const back=normalizeState(bk).labs.length;
       S.labs=[]; const mg=mergeStates(S,bk).labs.length;
-      return {err,n,list:/CRP 3\.2 mg\/L/.test(list)&&/메살라진 하루 4g/.test(list),rep:/검사 수치·약 메모/.test(rep)&&/3\.2 mg\/L/.test(rep),back,mg}});
+      return {err,n,list:/CRP 3\.2 mg\/L/.test(list)&&/메살라진 하루 4g/.test(list),rep:!/검사 수치|3\.2 mg\/L|메살라진/.test(rep),back,mg}});
     need(/숫자/.test(r.err),`F-13 수치가 숫자가 아니면 안내 (${r.err})`);
     need(r.n===2&&r.list,`F-13 검사 수치·약 메모 저장·목록 (${r.n})`);
-    need(r.rep,'F-13 진료용 PDF에 검사 수치·약 메모');
+    need(r.rep,'F-13 → 22차: 음식 경험 PDF에는 검사 수치·약 메모를 넣지 않음');
     need(r.back===2&&r.mg===2,`F-13 백업·합치기에도 들어감 (${r.back}/${r.mg})`);
     await p.context().close()}
 

@@ -40,11 +40,12 @@ await p.goto('file://'+WRAP('pdflong/pdflong.html'));await p.waitForTimeout(1200
 await p.evaluate(()=>{S.consent={date:today()};
   const long="아침에 배가 살살 아프고 화장실을 여러 번 갔습니다. 점심 이후에는 조금 나아졌지만 저녁에 다시 가스가 차서 불편했습니다. 물은 여섯 컵 정도 마셨고 잠은 잘 못 잤습니다. 내일 병원 가기 전에 체온을 한 번 더 재 볼 예정입니다.";
   for(let i=0;i<14;i++){const d=addDays(today(),-i);S.logs[d]={date:d,day:3+(i%4),night:i%2,bloody:i%3,urg:i%4,blood:i%4,well:i%3,extra:["관절통"],pain:(i*3)%11,gas:"약간",fatigue:"심함",temp:i%2?"37.9":"",pulse:i%2?"104":"",other:["두통","어지러움"],memo:long+(i%2?long:""),stool:(i%7)+1,medtaken:(i%5)}}
+  S.ratings=[...Array(14)].map((_,i)=>({date:addDays(today(),-i),slot:"아침",title:"흰쌀죽 아침",foodId:"rice_porridge",rating:["good","ok","bad"][i%3],...(i%3===2?{sym:["pain","gas"]}:{})}));   // 22차: 음식 경험 PDF는 평가한 음식의 날만 담는다(긴 메모가 그날 증상 칸에 들어감)
   S.triggers=[{name:"흰살생선(대구·가자미 등)",foodId:"white_fish",date:today(),source:"식단 평가",sym:["diarrhea","gas"],never:false},{name:"우유",foodId:"milk",date:addDays(today(),-3),source:"직접",sym:["gas"],never:true}];
   S.reportDays=14; SCR=null; S.tab="log"; render()});
 await p.click('[data-act=openScr][data-v=pdf]'); await p.click('[data-act=pdf]');
 await p.waitForFunction(()=>window.__pdf,null,{timeout:30000});
 const arr=await p.evaluate(()=>window.__pdf); fs.writeFileSync(OUT,Buffer.from(arr));
 console.log('saved',await p.evaluate(()=>JSON.stringify(window.__saved)),'errors',errs);
-expect(()=>{const s=JSON.parse(__LOG.find(x=>x.startsWith('saved')).match(/\{.*?\}/)[0]); return s.size>100000&&/^uc-table-report-\d{4}-\d\d-\d\d\.pdf$/.test(s.filename)},'긴 PDF 저장(v1.11.0 F-1: 영문 파일 이름)');
+expect(()=>{const s=JSON.parse(__LOG.find(x=>x.startsWith('saved')).match(/\{.*?\}/)[0]); return s.size>100000&&/^uc-table-food-\d{4}-\d\d-\d\d\.pdf$/.test(s.filename)},'긴 PDF 저장(v1.11.0 F-1: 영문 파일 이름)');
 __done(); await b.close();})();

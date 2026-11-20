@@ -59,8 +59,8 @@ console.log('ex list', await p.evaluate(()=>document.querySelector('#exList').te
 await p.click('#exList [data-act=exPick]'); await p.fill('#exG','40'); await p.click('[data-act=exSave]'); await p.waitForTimeout(150);
 console.log('extras', JSON.stringify(await p.evaluate(()=>S.extras[today()])));
 await p.click('[data-act=back]');
-// copy yesterday → v1.9.0 U-1 '평소와 같음': 최근 7일 안 마지막 기록과 같게 바로 저장(체온·맥박·메모는 비움)하고 되돌리기 알림
-await p.evaluate(()=>{S.logs[addDays(today(),-1)]={day:2,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:1,gas:"없음",fatigue:"약간",temp:"37",pulse:"70",other:[],memo:"어제"};delete S.logs[today()];S.tab="log";SCR=null;render()});
+// copy yesterday → v1.9.0 U-1 '평소와 같음': 최근 7일 안 마지막 기록과 같게 바로 저장(체온·메모는 비움)하고 되돌리기 알림
+await p.evaluate(()=>{S.logs[addDays(today(),-1)]={day:2,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:1,gas:"없음",fatigue:"약간",temp:"37",other:[],memo:"어제"};delete S.logs[today()];S.tab="log";SCR=null;render()});
 await p.click('.today-card [data-act=quickSame]'); await p.waitForTimeout(200);
 console.log('copy', await p.evaluate(()=>{const l=S.logs[today()]||{}; return [SCR&&SCR.name,l.memo,l.temp,l.fatigue,/되돌리기/.test(document.querySelector('#toasts').textContent),l.pulse,l.pain,l.day]}));
 await p.click('#toasts .t-act'); await p.waitForTimeout(200);
@@ -83,6 +83,7 @@ await goStep('bloody'); await p.fill('#step_bloody','30');
 console.log('bloody clamp', await p.evaluate(()=>draft.bloody));
 await p.screenshot({path:T('t11_step.png')});
 await p.evaluate(()=>{WZ.step=WSTEPS.length-1;render()}); await p.click('[data-act=saveLog]'); await p.waitForTimeout(200);
+if(await p.locator('#sheetRoot [data-act=usualAskSave]').count()) await p.click('#sheetRoot [data-act=closeSheet]');   // v1.13.0 2번: 첫 저장 뒤 평소 배변 횟수 묻기 → 건너뛰기
 console.log('saved', JSON.stringify(await p.evaluate(()=>S.logs[today()])));
 // term sheet
 await p.evaluate(()=>{S.tab="food";render()}); await p.click('.fcard'); await p.waitForTimeout(100); await p.click('.sheet [data-act=term]'); await p.waitForTimeout(100);
@@ -122,11 +123,11 @@ console.log('reset', await p.evaluate(()=>[Object.keys(S.logs).length,!!S.consen
 await p.evaluate(()=>{S.consent=null;render()});
 console.log('welcome', await p.evaluate(()=>[document.body.className,document.querySelector('#consentGo').disabled]));
 console.log('errors',errs); {const a=jsonOf('sample allergy'); expect(()=>a.bad.length===0&&a.empties===0,'알레르기 예시 식단');
- expect(()=>jsonOf('extreme').every(t=>/\(empty\)$/.test(t)),'모두 제외면 빈 끼니'); expect(()=>jsonOf('issue banner')===true,'조건 바뀜 안내');
+ expect(()=>jsonOf('extreme').slice(0,3).every(t=>/\(empty\)$/.test(t)),'모두 제외면 빈 끼니');   // 넷째 칸 간식은 조건에 맞는 것이 남으면 나옴(결정 39) expect(()=>jsonOf('issue banner')===true,'조건 바뀜 안내');
  expect(()=>jsonOf('expired').every(Boolean),'지난 식단 새로'); expect(()=>{const f=jsonOf('future meal'); return f[0]===false&&f[1]===true},'앞날 끼니');
  expect(()=>jsonOf('extras').some(x=>x.foodId==='nurungji'&&x.amt===40),'먹은 음식 기록');
  // v1.9.0 U-1·U-3: 마법사를 열지 않고 바로 저장(증상은 그대로, 체온·맥박·메모는 비움) + 되돌리기
- expect(()=>{const c=jsonOf('copy'); return c[0]===null&&c[1]===''&&c[2]===''&&c[3]==='약간'&&c[4]===true&&c[5]===''&&c[6]===1&&c[7]===2},'평소와 같음(어제 기록 가져오기)');
+ expect(()=>{const c=jsonOf('copy'); return c[0]===null&&c[1]===''&&c[2]===''&&c[3]==='약간'&&c[4]===true&&c[5]==null&&c[6]===1&&c[7]===2},'평소와 같음(어제 기록 가져오기)');
  expect(()=>{const c=jsonOf('copy undo'); return c[0]===false&&c[1]===true},'평소와 같음 되돌리기');
  expect(()=>{const c=jsonOf('to result'); return c[0]===true&&c[1]==='약간'&&c[2]===''},'저장한 기록 고치기: 요약까지');
  expect(()=>jsonOf('back to first')===true,'첫 단계로'); expect(()=>jsonOf('stepIn')===12,'숫자 입력'); expect(()=>jsonOf('bloody clamp')<=12,'혈변 수 제한');

@@ -87,7 +87,7 @@ out('7 cup convert', await p.evaluate(()=>[S.water[today()], S.water[today()]*S.
 // P3-8 1년치 데이터 렌더 성능
 out('8 perf', await p.evaluate(()=>{for(let i=0;i<365;i++){const d=addDays(today(),-i);S.logs[d]={date:d,...BLANK_LOG(),day:(i%5)+1};S.ate[d]=["아침","점심"];S.ateMeals[d]={"아침":{t:"흰죽",it:[["rice_porridge",250]]}};S.extras[d]=[{name:"바나나",amt:50,kcal:45,p:.5,fi:1.3,ca:3}]}
   const t=[];for(const tab of ["plan","log","nutri"]){const t0=performance.now();SCR=null;if(tab==="nutri"){S.tab="plan";openScr("nutri")}else{S.tab=tab;render()};t.push(Math.round(performance.now()-t0))}
-  const t0=performance.now(); foodSuspects(); const t1=performance.now(); return [t, Math.round(t1-t0), JSON.stringify(S).length]}));
+  S.ratings.push({date:today(),slot:"아침",title:"흰죽",foodId:"rice_porridge",rating:"ok"}); const t0=performance.now(); foodExperiences(addDays(today(),-89)); const t1=performance.now(); /* 22차: 의심 후보 대신 음식 경험 PDF의 90일 모으기 */ return [t, Math.round(t1-t0), JSON.stringify(S).length]}));
 console.log('errors',errs);expect(()=>jsonOf('1 load fail')[0]===true,'불러오기 실패 보호'); expect(()=>logOf('1b banner on welcome')==='true'&&logOf('1c banner home')==='true','불러오기 실패 안내');
 expect(()=>JSON.stringify(jsonOf('4 overflow(px>0 = 넘침)'))==='{}','넘침'); expect(()=>jsonOf('5 unnamed buttons').length===0,'이름 없는 버튼');
 // v1.9.0 U-3: 확인 창 없이 바로 바뀌고(평가도 지움) 알림의 '되돌리기'로 돌아온다

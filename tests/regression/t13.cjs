@@ -35,14 +35,14 @@ await p.evaluate(()=>{S.consent={date:today()};render()});
 const L=(o)=>({day:2,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:"",...o});
 // sample plans per stage
 const chk=await p.evaluate((logs)=>{const out={};
-  const setups={s1:null,s2:{day:4,night:0,bloody:0,urg:1,blood:0,well:1,pain:2},s3:{day:2}};
+  const setups={s1:null,s2:{day:4,night:0,bloody:0,urg:1,blood:0,well:1,pain:2},s3:{day:1}};   // v1.13.0 2번: 평소 배변을 비우면 1회로 계산하므로 관해 예시는 하루 1회
   for(const [k,o] of Object.entries(setups)){
     S.logs={}; S.plan=null; if(o){for(let i=0;i<3;i++){const d=addDays(today(),-i);S.logs[d]={date:d,...logs,...o}}}
     const c=ctx(); const pl=samplePlan(); const allowed=new Set(menuFoods(c).map(f=>f.id));
     const bad=[];
     for(const d of pl.days) for(const m of d.meals){
       if(m.empty){bad.push('empty '+m.slot);continue}
-      if(!m.rec.length&&!(m.cook&&m.cook.length)) bad.push('norec '+m.title); // 레시피 링크가 없으면 '만드는 법'이 있어야 함
+      if(!m.snack&&!m.rec.length&&!(m.cook&&m.cook.length)) bad.push('norec '+m.title); // 레시피 링크가 없으면 '만드는 법'이 있어야 함(간식은 조리하지 않음)
       for(const r of m.rec) if(!recipeOK(r,allowed,c)) bad.push('recNotOK '+r);
       for(const r of m.rec) for(const f of RECIPES[r].foods) if(!m.items.some(x=>x[0]===f)) bad.push('recFoodMissing '+r+':'+f);
       if(c.fiberStage===1){const veg=m.items.filter(([id])=>FOOD[id].cat==="채소"); if(veg.length>1) bad.push('2veg '+m.title); for(const [id,g] of veg) if(g>35) bad.push('veg>35 '+id);
@@ -86,7 +86,7 @@ console.log('trigs2',await p.evaluate(()=>S.triggers.map(t=>[t.name,t.sym,t.neve
 // v1.7.0: AI 요청문이 없어져 앱 규칙 식단(samplePlan)과 식단 식품(menuFoods)에서 주의 음식이 빠지는지 본다
 console.log('excluded',await p.evaluate(()=>{S.plan=null; const pl=samplePlan(); const used=new Set(pl.days.flatMap(d=>d.meals.flatMap(m=>m.items.map(x=>x[0])))); const ids=new Set(menuFoods().map(f=>f.id));return S.triggers.filter(t=>t.foodId&&(ids.has(t.foodId)||used.has(t.foodId))).map(t=>t.name)}));
 // reintro lists
-await p.evaluate(()=>{S.triggers.push({name:"우유",foodId:"milk",date:today(),source:"직접",sym:["gas"],never:false});for(let i=0;i<7;i++){const d=addDays(today(),-i);S.logs[d]={date:d,day:2,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:""}} SCR=null;S.tab="log";render()});
+await p.evaluate(()=>{S.triggers.push({name:"우유",foodId:"milk",date:today(),source:"직접",sym:["gas"],never:false});for(let i=0;i<7;i++){const d=addDays(today(),-i);S.logs[d]={date:d,day:1,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:""}} SCR=null;S.tab="log";render()});
 await p.click('[data-act=openScr][data-v=reintro]');
 console.log('reintro',await p.evaluate(()=>({cand:[...document.querySelectorAll('[data-act=riStart]')].map(x=>x.textContent.slice(0,12)),dis:[...document.querySelectorAll('[data-act=riStart]')].map(x=>x.disabled),never:document.querySelector('#main').textContent.includes('다시 시험하지 않는 음식')})));
 await p.screenshot({path:T('n_ri.png'),fullPage:true});
@@ -128,7 +128,7 @@ console.log('errors',errs);
  expect(()=>jsonOf('tasteDefault')==='dislike','맛은 싫어하는 음식'); expect(()=>jsonOf('trigs2').length===2&&jsonOf('excluded').length===0,'주의 음식 식단 제외');
  expect(()=>jsonOf('riStop').length===1,'다시 먹어 보기 중단'); expect(()=>{const e=jsonOf('elig'); return e[0]===true&&e[1]===false},'다시 먹어 보기 조건');
  expect(()=>{const d=jsonOf('danger'); return d[0].urgent.length&&d[1].urgent.length&&d[2].urgent.length&&d[3].urgent.length},'위험 신호');
- expect(()=>jsonOf('otherOpts').length===3,'기타 증상 선택지'); expect(()=>jsonOf('banner').some(b=>/진료를 미루지/.test(b)),'진료 안내 배너');
+ expect(()=>jsonOf('otherOpts').length===3,'기타 증상 선택지'); expect(()=>!jsonOf('banner').some(b=>/내원|주치의|활동기|위험/.test(b)),'22차: 위험 신호 기록에도 경고·내원 배너 없음');
  expect(()=>jsonOf('care')[0].includes('flu'),'건강 관리 점검'); expect(()=>jsonOf('oldTrig')[0].never===false,'예전 주의 음식 정리');
  expect(()=>{const o=jsonOf('overflow'); return o[0]<=o[1]},'어두운 모드 큰 글자 넘침');}
 __done(); await b.close();})();

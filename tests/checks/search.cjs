@@ -52,14 +52,17 @@ need(ord.first==="egg_steamed",'먹은 음식 추가 창 첫 결과');
 await p.evaluate(()=>{SCR=null;S.tab="food";S.foodSub="search";S.foodQ="";render()});
 const cdp=await p.context().newCDPSession(p); await p.focus('#foodQ');
 const steps=[];
-const st=async t=>{await cdp.send('Input.imeSetComposition',{text:t,selectionStart:t.length,selectionEnd:t.length}); await p.waitForTimeout(60); steps.push([await p.inputValue('#foodQ'), await p.evaluate(()=>[...document.querySelectorAll('#foodRes .fcard b')].map(x=>x.textContent).filter(n=>n.includes('우유')).length)])};
-await st('ㅇ'); await st('우'); await st('웅'); await cdp.send('Input.insertText',{text:'우'}); await st('유'); await cdp.send('Input.insertText',{text:'유'}); await p.waitForTimeout(80);
+// 15차: 느린 기기에서는 앱이 검색을 0.12초 늦춰 한 번에 한다(foodQInput). 고정 0.06초만 기다리면 옛 결과를 읽어 실패했다.
+// 0.13초 타이머는 앱의 0.12초 타이머보다 늦게 걸어 늘 그 뒤에 돌므로, 느려도 검색이 끝난 뒤에 읽는다
+const settle=()=>p.evaluate(()=>new Promise(r=>setTimeout(r,130)));
+const st=async t=>{await cdp.send('Input.imeSetComposition',{text:t,selectionStart:t.length,selectionEnd:t.length}); await settle(); steps.push([await p.inputValue('#foodQ'), await p.evaluate(()=>[...document.querySelectorAll('#foodRes .fcard b')].map(x=>x.textContent).filter(n=>n.includes('우유')).length)])};
+await st('ㅇ'); await st('우'); await st('웅'); await cdp.send('Input.insertText',{text:'우'}); await st('유'); await cdp.send('Input.insertText',{text:'유'}); await settle();
 steps.push(['final',await p.inputValue('#foodQ')]);
 console.log('steps',JSON.stringify(steps));
 // '우'를 조합하다 받침이 붙은 '웅'이 되어도 결과가 같아야 한다. '우유'는 새 검색어라 한 글자 검색(F-6: 낱말 처음·끝만)보다 결과가 같거나 많다
 need(steps[1][1]>0&&steps[1][1]===steps[2][1]&&steps[3][1]>=steps[2][1]&&steps[4][1]==="우유",'한글 조합 중간에 결과 수가 흔들림');
 // 조합이 깨진 키보드처럼 낱자로 들어오는 경우
-await p.fill('#foodQ',''); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅜ'); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅠ'); await p.waitForTimeout(80);
+await p.fill('#foodQ',''); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅜ'); await p.keyboard.insertText('ㅇ'); await p.keyboard.insertText('ㅠ'); await settle();
 const jt=await p.evaluate(()=>[...document.querySelectorAll('#foodRes .fcard b')].map(x=>x.textContent).slice(0,6));  // 락토프리 제품(판정 '좋음')이 앞에 오므로 상위 6개에서 확인
 console.log('jamoTyped',await p.inputValue('#foodQ'),jt); need(jt.includes('우유'),'낱자 입력 검색');
 // Enter: 검색칸은 키보드 닫기(blur)

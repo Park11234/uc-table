@@ -63,7 +63,7 @@ class BanTextTest(unittest.TestCase):
 
 class GenericHamTest(unittest.TestCase):
     def ham_counts(self):
-        """시판 햄·소시지·베이컨(spec10 그림 기준) 가운데 발색제가 든 것 / 전체"""
+        """시판 가공육(spec10 햄·소시지·베이컨 그림 + 가공 꼬리표, 닭가슴살 가공품 포함) 가운데 발색제가 든 것 / 전체"""
         ic = {spec10.ICON['ham'], spec10.ICON['sausage'], spec10.ICON['bacon']}
         xs = [x for x in spec10.TR10 if x[8] in ic and 'processed' in x[5]]
         return sum(1 for x in xs if 'nitrite' in x[5]), len(xs)
@@ -75,6 +75,10 @@ class GenericHamTest(unittest.TestCase):
         self.assertIn('"nitrite"', m.group(0))
         self.assertIn('제품 %d종 가운데 %d종' % (tot, n), m.group(0))
         self.assertIn('%d종 가운데 %d종' % (tot, n), TPL['nitrite_generic'][0])
+        # 21차: 센 묶음(햄·소시지·베이컨 그림 + 가공 꼬리표)에는 닭가슴살·닭다리 가공품도 들어 있어, '햄·소시지·베이컨 193종'이 아니라 '가공육 제품'으로 적는다
+        for t in (m.group(0), TPL['nitrite_generic'][0]):
+            self.assertIn('시판 가공육 제품 %d종 가운데 %d종' % (tot, n), t)
+            self.assertNotRegex(t, r'햄·소시지·베이컨 %d종' % tot)
 
     def test_generic_dishes_with_ham_are_ban(self):
         for i in ('budae_jjigae', 'hotdog', 'ham_toast'):

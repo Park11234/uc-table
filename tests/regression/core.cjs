@@ -45,7 +45,7 @@ await p.route('https://fonts.googleapis.com/**', r=>r.fulfill({body:'',contentTy
 const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 await p.goto('file://'+WRAP('core/uc_test.html')); await p.waitForTimeout(1500);
 console.log('noAI', await p.evaluate(()=>[!!document.querySelector('#c_ai'),typeof generateWeek,typeof askFood,typeof foodAI]));
-await p.click('label.swrow:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(200);
+await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(200);
 await p.screenshot({path:T('s1.png'),fullPage:false});
 await p.waitForTimeout(300);
 const plan = await p.evaluate(()=>({n:S.plan.days.length, sample:!!S.plan.sample, gen:!!document.querySelector('[data-act=gen]'), m0:S.plan.days[0].meals[0].items, rec:S.plan.days[0].meals.map(m=>m.rec), refs:S.plan.days[0].meals[0].refs}));
@@ -78,9 +78,10 @@ await p.fill('#otherAdd','두통'); await p.click('[data-act=otherAdd]'); await 
 await p.fill('#temp','38.1'); await p.click('[data-act=wzNext]'); // 요약
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_wz3.png')});
 await p.click('[data-act=saveLog]'); await p.waitForTimeout(100);
+if(await p.locator('#sheetRoot [data-act=usualAskSave]').count()) await p.click('#sheetRoot [data-act=closeSheet]');   // v1.13.0 2번: 첫 저장 뒤 평소 배변 횟수 묻기 → 건너뛰기
 console.log('log', await p.evaluate(()=>JSON.stringify({l:S.logs[today()],tab:S.tab,scr:SCR})));
 await p.click('.tab[data-tab=plan]');
-console.log('alerts', (await p.textContent('#main')).match(/진료를[^<]{0,40}/)?.[0]);
+console.log('alerts', (await p.textContent('#main')).match(/병원에 내원[^<]{0,40}/)?.[0]);
 await p.click('.tab[data-tab=log]'); await p.click('[data-act=openScr][data-v=pdf]');
 await p.click('[data-act=pdf]'); await p.waitForFunction(()=>window.__saved,null,{timeout:60000}).catch(()=>{});   // 여러 점검을 동시에 돌리면 PDF 만들기가 6초를 넘을 수 있어 저장될 때까지 기다림
 console.log('saved', await p.evaluate(()=>JSON.stringify(window.__saved))); const arr=await p.evaluate(()=>window.__pdf); if(arr) fs.writeFileSync(T('report.pdf'), Buffer.from(arr));
@@ -110,7 +111,7 @@ await p.click('[data-act=mjJudge]'); await p.waitForTimeout(300);
 console.log('mj', await p.evaluate(()=>JSON.stringify({res:MJ.results.map(r=>[r.name,r.level,r.rules])})));
 await p.waitForTimeout(400); await p.screenshot({path:T('sh_mj.png'),fullPage:true});
 // reintro
-await p.evaluate(()=>{for(let i=0;i<7;i++){S.logs[addDays(today(),-i)]={date:addDays(today(),-i),day:2,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:""}} S.reintro={active:null,history:[]}; render()});
+await p.evaluate(()=>{for(let i=0;i<7;i++){S.logs[addDays(today(),-i)]={date:addDays(today(),-i),day:1,night:0,bloody:0,urg:0,blood:0,well:0,extra:[],pain:0,gas:"없음",fatigue:"없음",temp:"",pulse:"",other:[],memo:""}} S.reintro={active:null,history:[]}; render()});   // v1.13.0 2번: 평소 횟수를 비우면 1회 기준이라 관해 예시는 하루 1회
 await p.click('.tab[data-tab=log]'); await p.click('[data-act=openScr][data-v=reintro]');
 await p.click('[data-act=riStart][data-i="0"]');
 await p.evaluate(()=>{S.reintro.active.start=addDays(today(),-2);render()});
@@ -121,7 +122,7 @@ console.log('ri', await p.evaluate(()=>JSON.stringify({hist:S.reintro.history.ma
 console.log('errors', errs);
 {const pl=lineJSON('{"n":'); expect(()=>pl.n===7,'식단 7일');
  expect(()=>JSON.parse(logOf('mealScr')).scr.name==='meal','끼니 화면'); expect(()=>logOf('ratedId')&&logOf('triggers').includes('"foodId":"'+logOf('ratedId')+'"'),'주의 음식 추가');   // v1.7.0: 앱 규칙 식단의 둘째 음식
- expect(()=>/진료를/.test(logOf('alerts')||''),'진료 안내'); expect(()=>JSON.parse(logOf('saved')).size>100000,'PDF 저장');
+ expect(()=>!logOf('alerts'),'22차: 체온 38.1℃ 기록에도 내원 안내 없음'); expect(()=>JSON.parse(logOf('saved')).size>100000,'PDF 저장');
  // v1.9.0 U-1: 쪽으로 묶인 마법사 — 답해도 저절로 넘어가지 않고, 쪽마다 적은 값이 모두 저장됨
  expect(()=>{const a=jsonOf('noAutoAdv'); return a[0]===a[1]},'답해도 다음 쪽으로 저절로 넘어가지 않음');
  expect(()=>{const o=JSON.parse(logOf('log')), l=o.l; return o.tab==='plan'&&o.scr===null&&l.day===7&&l.night===0&&l.bloody===3&&l.urg===1&&l.blood===2&&l.well===1&&l.extra.length===1&&l.pain===6&&l.gas==='약간'&&l.fatigue==='심함'&&l.stool===6&&l.medtaken===2&&l.temp==='38.1'&&l.other.includes('두통')&&l.memo==='테스트 메모'},'증상 기록 쪽마다 적은 값 저장');

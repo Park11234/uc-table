@@ -20,6 +20,7 @@ app.src.html에는 화면·판정 규칙·식단 코드가 모두 들어 있고,
   /*@GEN:added@*/  v1.10.0 확인 날짜(그 음식을 넣은 날, 날짜별로 묶음) ← generated/gen_out.json(src/data/added.json)
   /*@GEN:logo@*/   UC TABLE 로고(SVG 글자열)                ← src/brand/logo-mono.svg (tools/brand.cjs)
   /*@GEN:font@*/   v1.11.0 UC Table Sans 글꼴(Pretendard를 줄여 이름을 바꿈, data URL)           ← src/brand/uc-table-sans.woff2 (tools/font_subset.py)
+  /*@GEN:dari@*/   v1.13.0 25차 조약돌 탭 그림(수달 달이 3장·조약돌 5색, WebP data URL) ← src/brand/dari/*.webp
   /*@GEN:lic@*/    v1.11.0 오픈 소스 라이선스 전문(글꼴 OFL·html2canvas·jsPDF MIT·zxing Apache) ← src/brand/Pretendard-OFL.txt, vendor/*.LICENSE
 
 식약처 원본 CSV가 있으면 generate_dataset.py로 gen_out.json부터 다시 만들 수 있다.
@@ -82,11 +83,15 @@ def render():
         'logo': js(open(os.path.join(ROOT, 'src', 'brand', 'logo-mono.svg'), encoding='utf-8').read().strip()),
         # v1.11.0 디자인: Pretendard(OFL-1.1) 가변 글꼴을 앱 글자 + KS X 1001 한글로 줄인 것(tools/font_subset.py). PWA는 build_offline.py가 따로 파일로 뺀다
         'font': js('data:font/woff2;base64,' + base64.b64encode(open(os.path.join(ROOT, 'src', 'brand', 'uc-table-sans.woff2'), 'rb').read()).decode('ascii')),
+        # v1.13.0 25차: 조약돌 탭의 수달 '달이' 3장과 조약돌 5색(WebP, 서버 연결 없이 앱 안에)
+        'dari': js({k: 'data:image/webp;base64,' + base64.b64encode(open(os.path.join(ROOT, 'src', 'brand', 'dari', f), 'rb').read()).decode('ascii')
+                    for k, f in (('n', 'dari-normal.webp'), ('h', 'dari-happy.webp'), ('w', 'dari-hello.webp'), ('p1', 'pebble-1.webp'), ('p2', 'pebble-2.webp'),
+                                 ('p3', 'pebble-3.webp'), ('p4', 'pebble-4.webp'), ('p5', 'pebble-5.webp'))}),
         # v1.11.0 검토 R-18: 글꼴·라이브러리를 파일 하나에 넣는 오프라인 판·안드로이드 앱에도 라이선스 전문이 함께 가도록 앱 안에 넣는다
         'lic': js([[t, open(os.path.join(ROOT, *f), encoding='utf-8').read().strip()] for t, f in (
             ('UC Table Sans(Pretendard 1.3.9) · SIL Open Font License 1.1', ('src', 'brand', 'Pretendard-OFL.txt')),
             ('html2canvas 1.4.1 · MIT License', ('vendor', 'html2canvas.LICENSE')),
-            ('jsPDF 2.5.1 · MIT License', ('vendor', 'jspdf.LICENSE')),
+            ('jsPDF 4.2.1 · MIT License', ('vendor', 'jspdf.LICENSE')),
             ('@zxing/library · Apache License 2.0', ('vendor', 'zxing.LICENSE')))]),
     }
     found = re.findall(r'/\*@GEN:(\w+)@\*/', s)
