@@ -21,7 +21,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 현재 버전 v<!--n:ver-->1.13.0<!--/n-->([변경 기록](CHANGELOG.md)) · 의료기기가 아니며 진단·처방을 대신하지 않습니다([의료 관련 고지](DISCLAIMER.md)).
 
-<img src="demo.gif" width="300" alt="앱 사용 흐름: 오늘 식단 → 음식 검색 → 근거 확인 → 증상 기록">
+<img src="docs/demo.gif" width="300" alt="앱 사용 흐름: 오늘 식단 → 음식 검색 → 근거 확인 → 증상 기록">
 
 </div>
 
@@ -152,7 +152,7 @@ npm run lint                     # ESLint (경고 0)
 npm run typecheck                # TypeScript checkJs 타입 검사 (오류 0, types/globals.d.ts)
 npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->120<!--/n-->개(파이썬 표준 라이브러리만)
 npm test                         # Playwright 점검 <!--n:pw-->79<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
-npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->214<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
+npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->216<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
@@ -193,7 +193,7 @@ python3 tools/stale_check.py --soon 90   # 근거 확인일 기한 90일 전 미
 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0·TypeScript 타입 오류 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,600회)과 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다. 아이폰 사파리와 같은 엔진(WebKit)의 주요 흐름 점검은 CI에서 돌립니다. 디자인을 바꾼 뒤에는 agent-browser로 처음 쓰는 사람처럼 끝까지 써 보며 찾은 24건을 고쳤습니다. 이어서 그 판 전체를 다른 검토자가 다시 읽어 판정·백업·초기화·검색 등 20건을 고쳤습니다.
-앱을 일부러 <!--n:mutants-->214<!--/n-->가지 방식으로 망가뜨린 뒤 해당 점검 <!--n:pairs-->219<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다. 망가뜨리는 방식에는 일반 햄이 다시 '피하기'로 바뀜, 나트륨·지방 규칙 삭제, 다른 창의 기록 덮어쓰기, 뒤로 가기가 앱 밖으로 넘어감 등이 있습니다. 전체 목록은 [점검 체계](docs/testing.md)에 있습니다.
+앱을 일부러 <!--n:mutants-->216<!--/n-->가지 방식으로 망가뜨린 뒤 해당 점검 <!--n:pairs-->221<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다. 망가뜨리는 방식에는 일반 햄이 다시 '피하기'로 바뀜, 나트륨·지방 규칙 삭제, 다른 창의 기록 덮어쓰기, 뒤로 가기가 앱 밖으로 넘어감 등이 있습니다. 전체 목록은 [점검 체계](docs/testing.md)에 있습니다.
 
 ### 기록 보관
 
@@ -316,7 +316,7 @@ No AI runs inside the app. Meal plans come from <!--n:menus-->1,174<!--/n--> mea
 A pebble tab adds one pebble for each day on which every planned meal is marked as eaten, and a per-food PDF lists each rated food with the dates eaten, the user's rating and notes, and that day's logged symptoms.
 
 Testing: <!--n:pw-->79<!--/n--> Playwright suites and <!--n:pytests-->120<!--/n--> Python unit tests. The Playwright suites cover state-corruption fuzzing (1,373 cases, 0 failures), click and search fuzzing (about 2,600 taps), axe-core WCAG 2.2 AA (0 violations) with 44 px touch targets, Korean IME input, and PWA update delivery.
-Separate scripts compare 10 main screens with reference images pixel by pixel, and CI runs the main flows in WebKit. A documentation-number check keeps the figures in this README current, and a weekly job confirms that the tests fail on <!--n:mutants-->214<!--/n--> deliberately broken builds.
+Separate scripts compare 10 main screens with reference images pixel by pixel, and CI runs the main flows in WebKit. A documentation-number check keeps the figures in this README current, and a weekly job confirms that the tests fail on <!--n:mutants-->216<!--/n--> deliberately broken builds.
 The app was built with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md). Release history is in [CHANGELOG.md](CHANGELOG.md).
 
 ## 라이선스
