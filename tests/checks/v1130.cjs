@@ -20,7 +20,10 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
 const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.persist="na"; S.stageMode="auto"; S.profile={...S.profile,height:"174",weight:"63",age:"27",sex:"M",usualBM:""}; save(); };
 (async()=>{
   const b=await chromium.launch();
-  const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true}); const p=await ctx.newPage();
+  const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  /* 2026-11-21: 식단은 날짜로 메뉴를 골라 오늘 날짜로 재면 날에 따라 실패했음(관해기 섬유는 사흘에 하루꼴로 90% 미만, 열량·간식 배율도 가끔). 앱 날짜를 2026-11-02로 고정하고 시간은 흐르게 둔다. 여러 날짜는 plan_dates.cjs와 아래 우유 한 컵 점검이 본다 */
+  await ctx.addInitScript(d=>{const _D=Date, OFF=new _D(d+"T12:00:00").getTime()-_D.now(); class D extends _D{constructor(...a){if(!a.length) super(_D.now()+OFF); else super(...a)} static now(){return _D.now()+OFF}} window.Date=D},"2026-11-02");
+  const p=await ctx.newPage();
   await p.route(/^https?:/, r=>r.fulfill({body:''}));
   const ready=()=>p.waitForFunction(()=>typeof render==="function"&&!!document.querySelector('#main').firstChild,null,{timeout:20000});
   await p.goto('file://'+page); await ready(); await p.evaluate(SEED); await p.reload(); await ready(); await p.waitForTimeout(150);
