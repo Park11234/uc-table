@@ -8,7 +8,6 @@ UC 식단 관리 도우미
 
 **궤양성 대장염 환자가 "오늘 이거 먹어도 되나?"를 근거와 함께 바로 확인하는 모바일 웹앱**
 
-[![test](https://github.com/Park11234/uc-table/actions/workflows/test.yml/badge.svg)](https://github.com/Park11234/uc-table/actions/workflows/test.yml)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![AI assisted](https://img.shields.io/badge/built%20with-Claude-8A63D2)
 
