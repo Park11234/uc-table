@@ -16,6 +16,8 @@ UC 식단 관리 도우미
 
 [**앱 열기**](https://park11234.github.io/uc-table/) &nbsp;·&nbsp; [**오프라인 파일 받기**](https://github.com/Park11234/uc-table/releases/latest/download/uc-table-offline.html)
 
+<img width="592" height="742" alt="uc-table-앱-QR" src="https://github.com/user-attachments/assets/26a5129a-84a5-4c16-a33c-b976c172905d" />
+
 설치 없이 브라우저에서 열리고 휴대폰에서는 '홈 화면에 추가'하면 인터넷 없이도 씁니다.
 AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안의 자료와 규칙으로 기기에서 처리합니다.
 
