@@ -2,7 +2,7 @@
 
 <img src="public/icon-192.png" width="96" alt="UC TABLE 앱 아이콘">
 
-# <img src="src/brand/logo.svg" height="40" alt="UC TABLE">
+# <img src="src/brand/logo.svg" height="10" alt="UC TABLE">
 
 UC 식단 관리 도우미
 
