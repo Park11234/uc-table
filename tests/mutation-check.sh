@@ -47,7 +47,7 @@ mut={
  'pe_noask.html': rep('function peDirty(){if(!PE) return false;','function peDirty(){return false;'),  # 저장하지 않고 나가도 묻지 않음
  'pe_nodraft.html':rep('const PP=()=>PE?PE.profile:S.profile','const PP=()=>S.profile'),  # 저장 전에 기록이 바로 바뀜
  # v1.8.0
- 'onb_skip.html':  rep('S.consent={date:today()}; S.onb="0";','S.consent={date:today()}; S.onb="done";'),  # 동의 뒤 첫 실행 설정이 안 나옴
+ 'onb_skip.html':  rep('S.consent={date:today()}; S.onb=installStep()?"i":"0";','S.consent={date:today()}; S.onb="done";'),  # 동의 뒤 첫 실행 설정이 안 나옴
  'ratio_off.html': rep('.map(([id,g])=>[id,r===1?g:Math.round(g*r)])',''),   # '반·더 많이'가 먹은 양에 반영 안 됨
  'stale_off.html': rep('if(cur!==MY_REV){STALE=true; setTimeout(render,0); return}',''),  # 다른 창이 저장해도 덮어씀
  'merge_off.html': rep('S=mode==="merge"?mergeStates(prev,PENDING_RESTORE):PENDING_RESTORE;','S=PENDING_RESTORE;'),  # 합치기를 골라도 바꿔 버림
@@ -273,6 +273,16 @@ mut={
  'r33_fold_off.html':rep('out.push(cur); return out.join("\\r\\n ")};','out.push(cur); return l};'),  # 캘린더 파일의 긴 줄을 접지 않음
  'r33_encoff_silent.html':rep('catch(e){ok=false; toast("백업 암호화 설정을 지우지 못했습니다. 한 번 더 끄면 됩니다")}','catch(e){ok=false}'),  # 암호화 끄기가 실패해도 알리지 않음
  'r33_peb_three.html':rep('const mealSlots=()=>[...oldSlots(),...(fourMeals()?["오후"]:[])];','const mealSlots=()=>oldSlots();'),  # 4끼를 골라도 세 끼만 먹으면 조약돌
+ 'r34_step_off.html':rep('S.onb=installStep()?"i":"0";','S.onb="0";'),  # 시작하기 다음 설치 화면이 안 나옴
+ 'r34_bip_btn_off.html':rep('${BIP?`<button class="btn primary full" data-act="installApp">${ic("inst")} 앱 설치하기</button>`:""}',''),  # 설치 창이 준비돼도 '앱 설치하기' 단추가 없음
+ 'r34_installed_off.html':rep('BIP=null; INSTALLED=true;','BIP=null;'),  # 설치한 뒤에도 설치 방법을 계속 보임
+ 'r34_standalone_off.html':rep('&&!isStandalone()&&!window.UCTableAndroid&&location.protocol!=="file:"','&&!window.UCTableAndroid&&location.protocol!=="file:"'),  # 설치한 앱으로 열어도 설치 화면
+ 'r34_resume_off.html':rep('const st=S.onb==="i"&&!installStep()?"0":S.onb||"";','const st=S.onb||"";'),  # 설치 화면에서 멈췄다가 설치한 앱으로 열면 또 설치 화면
+ 'r34_norm_off.html':rep('s.onb=["done","i","0","1","2","3"].includes','s.onb=["done","0","1","2","3"].includes'),  # 설치 화면에서 다시 열면 첫 실행 설정을 건너뜀
+ 'r34_inapp_off.html':rep('const inApp=()=>/','const inApp=()=>false&&/'),  # 카카오톡 안에서 설치 방법만 보이고 크롬으로 열기가 없음
+ 'r34_intent_off.html':rep('#Intent;scheme=https;package=com.android.chrome;','#Intent;scheme=https;'),  # '크롬으로 열기'가 크롬을 지정하지 않음
+ 'r34_kakao_ios_off.html':rep('href="kakaotalk://web/openExternal?url=${encodeURIComponent(SITE)}"','href="${SITE}"'),  # 아이폰 카카오톡에서 사파리로 열지 못함
+ 'r34_ios_note_off.html':rep('${ios&&onb?`<p class="ins-note">','${false?`<p class="ins-note">'),  # 아이폰에 설치한 앱으로 열어 시작하라는 안내가 없음
  'r33_peb_retro.html':rep('const req=d===today()?mealSlots():(S.daySlots?.[d]||oldSlots());','const req=mealSlots();'),  # 끼니 수를 바꾸면 지난 조약돌 수가 달라짐
  'r25_recelebrate.html':rep('if(done>S.peb.seen){S.peb.seen=done; save(); openSheet(pebUpHTML(done,P))}','if(done>S.peb.seen){openSheet(pebUpHTML(done,P))}'),  # 같은 바퀴를 들어올 때마다 축하
 }
@@ -516,7 +526,17 @@ r33_comma_off.html tests/checks/v1130l.cjs
 r33_fold_off.html tests/checks/v1130l.cjs
 r33_encoff_silent.html tests/checks/v1130l.cjs
 r33_peb_three.html tests/checks/v1130l.cjs
-r33_peb_retro.html tests/checks/v1130l.cjs"
+r33_peb_retro.html tests/checks/v1130l.cjs
+r34_step_off.html tests/checks/v1130m.cjs
+r34_bip_btn_off.html tests/checks/v1130m.cjs
+r34_installed_off.html tests/checks/v1130m.cjs
+r34_standalone_off.html tests/checks/v1130m.cjs
+r34_resume_off.html tests/checks/v1130m.cjs
+r34_norm_off.html tests/checks/v1130m.cjs
+r34_inapp_off.html tests/checks/v1130m.cjs
+r34_intent_off.html tests/checks/v1130m.cjs
+r34_kakao_ios_off.html tests/checks/v1130m.cjs
+r34_ios_note_off.html tests/checks/v1130m.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

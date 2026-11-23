@@ -469,6 +469,7 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .btn.sm{padding:8px 12px;font-size:0.8125rem;border-radius:12px}
 .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .full{width:100%}
+a.btn.full{display:flex;align-items:center;justify-content:center;text-decoration:none}   /* 링크로 된 넓은 단추(크롬으로 열기 등)도 단추처럼 가운데·밑줄 없이 */
 
 .banner{border-radius:12px;padding:12px 16px;border:1px solid}
 .banner.crit{background:var(--crit-soft);border-color:var(--crit);border-width:2px;color:var(--ink)}
@@ -966,6 +967,36 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-c{text-align:center}
 .peb-steps,.peb-stages{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .peb-steps li{display:flex;align-items:center;gap:12px}
+/* 설치 안내 그림: 실제 설치 창·브라우저 단추를 본떠 누를 곳(.ins-on)을 진하게 */
+.ins-shot{position:relative;height:200px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);overflow:hidden}
+.ins-lines{position:absolute;inset:16px 16px auto;display:flex;flex-direction:column;gap:8px}
+.ins-lines i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.ins-lines i:nth-child(2){width:70%}
+.ins-lines i:nth-child(3){width:85%}
+.ins-top+.ins-lines{top:64px}
+.ins-on{background:var(--fill);color:var(--fill-ink);outline:3px solid var(--accent);outline-offset:3px}
+.ins-dlg{position:absolute;inset:auto 0 0;background:var(--surface);border-radius:12px 12px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.12)}
+.ins-app{display:flex;align-items:center;gap:12px}
+.ins-app .dari{width:48px;aspect-ratio:400/369;border-radius:12px;background-color:var(--surface-2)}
+.ins-app small{display:block;color:var(--muted);font-size:0.75rem}
+.ins-btns{display:flex;justify-content:flex-end;gap:8px;font-size:0.875rem;font-weight:600}
+.ins-btns span{padding:8px 16px;border-radius:999px}
+.ins-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ins-pair .ins-shot{height:148px}
+.ins-cap{font-size:0.8125rem;font-weight:600;margin:0 0 4px}
+.ins-bar,.ins-top{position:absolute;left:0;right:0;height:48px;background:var(--surface);display:flex;align-items:center;color:var(--muted)}
+.ins-bar{bottom:0;border-top:1px solid var(--line);justify-content:space-around}
+.ins-top{top:0;border-bottom:1px solid var(--line);gap:8px;padding:0 8px}
+.ins-url{flex:1;height:28px;border-radius:999px;background:var(--surface-2)}
+.ins-bar .ic,.ins-top .ic{width:20px;height:20px}
+.ins-bar .ins-on,.ins-top .ins-on{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;outline-offset:2px}
+.ins-list{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:12px 12px 0 0;display:flex;flex-direction:column;font-size:0.75rem}
+.ins-list span{display:flex;justify-content:space-between;align-items:center;gap:4px;padding:8px 12px;border-top:1px solid var(--line)}
+.ins-list .ic{width:16px;height:16px}
+.ins-list .ins-on{font-weight:600;outline:none}
+.ins-menu{top:8px;right:8px;bottom:auto;left:24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);overflow:hidden}
+.ins-menu span:first-child{border-top:0}
+.ins-note{background:var(--surface-2);border-radius:12px;padding:12px 16px;margin:0;font-size:0.875rem;line-height:1.5}
 .peb-num{font-weight:600;color:var(--on-soft)}
 .peb-row{display:flex;justify-content:space-between;gap:4px;background:var(--surface-2);border-radius:12px;padding:12px 8px;margin-bottom:16px}
 .peb-row>span{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
@@ -3355,7 +3386,7 @@ function normalizeState(o){
   if(s.consent&&!obj(s.consent)) s.consent=null;
   s.lastBackup=isDate(o.lastBackup)?o.lastBackup:"";
   if(!["group","num","hide"].includes(s.refMode)) s.refMode="group";
-  s.onb=["done","0","1","2","3"].includes(String(o.onb))?String(o.onb):(o.consent?"done":"");
+  s.onb=["done","i","0","1","2","3"].includes(String(o.onb))?String(o.onb):(o.consent?"done":"");
   s.favs=[...new Set(arr(o.favs).filter(id=>typeof id==="string"&&FOOD[id]))].slice(0,80);
   s.seen=[...new Set(arr(o.seen).filter(id=>typeof id==="string"&&FOOD[id]))].slice(0,12);
   s.remindLog=!!o.remindLog;
@@ -4722,6 +4753,10 @@ const IC={
  f_jar:'<rect x="6" y="7" width="12" height="14" rx="3"/><path d="M8 3h8v4H8zM9 13h6"/>',
  f_cup:'<path d="M5 8h12v7a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2 2 0 0 1 0 4H17M9 3v2M13 3v2"/>',
  f_plate:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/>',
+ ishare:'<path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M7 10H5v11h14V10h-2"/>',
+ addbox:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
+ dots:'<circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/>',
+ inst:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 7v7M9 11l3 3 3-3"/>',
  share:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>',
  filter:'<path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/>',
  barcode:'<path d="M4 6v12M7 6v12M10 6v12M14 6v12M16 6v12M20 6v12"/><path d="M2 4h3M19 4h3M2 20h3M19 20h3"/>',
@@ -5047,27 +5082,46 @@ async function setLogReminder(on){
   render(); toast(periodic?"기록 알림을 켰습니다":"켰습니다. 이 브라우저는 앱을 닫아 두면 알림을 보내지 못할 수 있어, 앱을 열 때 안내와 배지로 알려 드립니다",{ms:7000});
 }
 /* W-7: 앱 설치 — 크롬이 설치를 허용하면(beforeinstallprompt) '앱 설치하기' 버튼을 보이고,
-   이미 설치한 앱으로 열었는지(standalone)·안드로이드 앱(APK)인지·아이폰인지에 따라 안내를 나눈다 */
-let BIP=null;
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault(); BIP=e; if(S.consent&&(SCR?.name==="set-home"||(!SCR&&S.tab==="plan"))) render()});
-window.addEventListener("appinstalled",()=>{BIP=null; toast("앱을 설치했습니다. 홈 화면의 UC TABLE 아이콘으로 열 수 있습니다"); render()});
+   이미 설치한 앱으로 열었는지(standalone)·안드로이드 앱(APK)인지·아이폰인지에 따라 안내를 나눈다.
+   안내는 실제 설치 창·사파리 공유 버튼을 본뜬 그림에 누를 곳을 표시한다(첫 실행 설치 단계와 '홈 화면에 설치'가 함께 씀) */
+let BIP=null, INSTALLED=false;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault(); BIP=e; if(S.consent&&(SCR?.name==="set-home"||S.onb==="i"||(!SCR&&S.tab==="plan"))) render()});
+window.addEventListener("appinstalled",()=>{BIP=null; INSTALLED=true; toast("앱을 설치했습니다. 홈 화면의 UC TABLE 아이콘으로 열 수 있습니다"); render()});
 const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent||"")||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-function installHTML(){
+/* 카카오톡·네이버·인스타그램 같은 앱 안의 화면(웹뷰)에서는 홈 화면에 설치할 수 없다 */
+const inApp=()=>/; wv\)|KAKAOTALK|NAVER\(inapp|Instagram|FBA[NV]\/|\bLine\/|DaumApps|everytimeApp|BAND\/|Claude/.test(navigator.userAgent||"");
+/* 첫 실행 동의 다음 설치 단계: 휴대폰·태블릿 브라우저에서만(설치한 앱·안드로이드 앱·내려받은 파일·컴퓨터는 건너뜀) */
+const installStep=()=>(isIOS()||/Android/.test(navigator.userAgent||""))&&!isStandalone()&&!window.UCTableAndroid&&location.protocol!=="file:";
+const insShot=x=>`<div class="ins-shot" aria-hidden="true">${x}</div>`;
+const INS_LINES=`<div class="ins-lines"><i></i><i></i><i></i></div>`;
+const insPair=(c1,x1,c2,x2,tail)=>`<div class="ins-pair"><div><p class="ins-cap">${c1}</p>${insShot(x1)}</div><div><p class="ins-cap">${c2}</p>${insShot(x2)}</div></div><p class="hint" style="margin:0">${tail}</p>`;
+function insDlg(lead){pebCss();
+  return `${insShot(`${INS_LINES}<div class="ins-dlg"><div class="ins-app"><span class="dari dari-n"></span><span><b>UC TABLE</b><small>${new URL(SITE).host}</small></span></div><div class="ins-btns"><span>취소</span><span class="ins-on">설치</span></div></div>`)}
+  <p class="hint" style="margin:0">${lead} 이런 창이 뜹니다. <b>설치</b>를 누르면 끝입니다.</p>`}
+const insIOS=()=>insPair("① 아래쪽 공유 버튼",`${INS_LINES}<div class="ins-bar">${ic("back")}${ic("chev")}<span class="ins-on">${ic("ishare")}</span>${ic("book")}${ic("layers")}</div>`,
+  "② 홈 화면에 추가",`<div class="ins-list"><span>복사</span><span>읽기 목록에 추가</span><span class="ins-on">홈 화면에 추가 ${ic("addbox")}</span><span>책갈피 추가</span></div>`,
+  "③ 오른쪽 위 <b>추가</b>를 누르면 홈 화면에 아이콘이 생깁니다. 크롬에서는 공유 버튼이 주소창 오른쪽에 있습니다.");
+const insMenu=()=>insPair("① 오른쪽 위 더보기(⋮)",`<div class="ins-top"><span class="ins-url"></span><span class="ins-on">${ic("dots")}</span></div>${INS_LINES}`,
+  "② 앱 설치",`<div class="ins-list ins-menu"><span>새 탭</span><span>북마크</span><span class="ins-on">앱 설치 ${ic("inst")}</span><span>설정</span></div>`,
+  `③ 설치 창에서 <b>설치</b>를 누르면 홈 화면에 아이콘이 생깁니다. 메뉴에 '앱 설치'가 없으면 '홈 화면에 추가 → 설치'를 누릅니다('바로가기 만들기'는 앱 설치와 다릅니다${sup([78])}).`);
+/* onb: 첫 실행 설치 단계(설치 단추는 아래 막대에 두고, 아이폰은 설치한 앱으로 열어 시작하라고 덧붙인다) */
+function installHTML(onb){
   if(window.UCTableAndroid) return `<div class="card stack info-body"><h2>안드로이드 앱으로 쓰고 있습니다</h2><p>이미 설치한 앱(UC TABLE)입니다. 따로 설치할 것이 없습니다.</p></div>`;
   if(isStandalone()) return `<div class="card stack info-body"><h2>설치한 앱으로 열고 있습니다</h2><p>홈 화면의 UC TABLE 아이콘으로 열면 인터넷이 없어도 쓸 수 있습니다.</p></div>`;
   if(location.protocol==="file:") return `<div class="card stack info-body"><h2>내려받은 파일로 열고 있습니다</h2><p>앱으로 설치하려면 크롬에서 <a href="${SITE}" target="_blank" rel="noopener noreferrer">${SITE.replace("https://","")}</a>를 열고 '앱 설치'를 누르면 됩니다. 지금 기록은 이 파일을 연 브라우저에만 있으니 먼저 백업해서 옮겨야 합니다.</p></div>`;
-  if(isIOS()) return `<div class="card stack info-body"><h2>아이폰·아이패드에 설치하기</h2>
-    <ol style="padding-left:20px;margin:0;display:flex;flex-direction:column;gap:8px">
-      <li>사파리에서 이 주소를 엽니다. 다른 앱 안에서 보고 있다면 사파리로 다시 엽니다.</li>
-      <li>아래쪽 <b>공유</b> 버튼(네모에 위쪽 화살표)을 누릅니다.</li>
-      <li><b>홈 화면에 추가</b> → <b>추가</b>를 누르면 아이콘이 생깁니다.</li></ol></div>`;
-  return `<div class="card stack info-body"><h2>홈 화면에 앱으로 설치하기</h2>
-    ${BIP?`<button class="btn primary full" data-act="installApp">${ic("plus")} 앱 설치하기</button><p class="hint" style="margin:0">설치하면 홈 화면 아이콘으로 열리고, 인터넷이 없어도 쓸 수 있습니다.</p>`:`<ol style="padding-left:20px;margin:0;display:flex;flex-direction:column;gap:8px">
-      <li>크롬에서 이 앱 주소를 엽니다.</li>
-      <li>주소 표시줄 오른쪽 더보기(⋮)를 누르고 <b>앱 설치</b>(또는 <b>홈 화면에 추가 → 설치</b>)를 누릅니다.</li>
-      <li>'바로가기 만들기'는 크롬에서 여는 링크일 뿐 앱 설치와 다릅니다${sup([78])}. 메뉴에 '앱 설치'가 없으면 앱을 한두 번 더 연 뒤 다시 봅니다.</li></ol>`}
-  </div>`;
+  if(INSTALLED) return `<div class="card stack info-body"><h2>앱을 설치했습니다</h2><p>홈 화면의 UC TABLE 아이콘으로 열면 인터넷이 없어도 쓸 수 있습니다.</p></div>`;
+  const ios=isIOS(), br=ios?"사파리":"크롬";
+  if(inApp()){const kakao=/KAKAOTALK/.test(navigator.userAgent||"");
+    const open=!ios?`<a class="btn primary full" href="intent://${SITE.slice(8)}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(SITE)};end">크롬으로 열기</a>`
+      :kakao?`<a class="btn primary full" href="kakaotalk://web/openExternal?url=${encodeURIComponent(SITE)}">사파리로 열기</a>`
+      :`<button class="btn primary full" data-act="copySite">앱 주소 복사</button><p class="hint" style="margin:0">오른쪽 아래 메뉴(···)의 'Safari로 열기'를 누르거나, 복사한 주소를 사파리 주소창에 붙여 넣습니다.</p>`;
+    return `<div class="card stack info-body"><h2>다른 앱 안에서 열려 있습니다</h2><p>카카오톡 같은 앱 안의 화면에서는 설치할 수 없어 ${br}에서 엽니다.</p>${open}</div>
+    <div class="card stack info-body"><h2>${br}에서 이렇게 설치합니다</h2>${ios?insIOS():insDlg("크롬에서 '앱 설치하기'를 누르면")}</div>`}
+  const site=location.href.startsWith(SITE)?"":`<p class="hint" style="margin:0">지금 연 주소에서는 설치되지 않습니다. 앱 주소에서 설치합니다.</p><a class="btn full" href="${SITE}" target="_blank" rel="noopener noreferrer">앱 주소 열기</a>`;
+  return `<div class="card stack info-body"><h2>휴대폰에 앱으로 설치하기</h2><p>홈 화면 아이콘으로 바로 열리고, 인터넷이 없어도 쓸 수 있습니다.</p>
+    ${ios?insIOS():BIP?`${insDlg("아래 '앱 설치하기'를 누르면")}${onb?"":`<button class="btn primary full" data-act="installApp">${ic("inst")} 앱 설치하기</button>`}`:insMenu()}${site}</div>
+  ${ios&&onb?`<p class="ins-note">추가한 뒤에는 이 화면을 닫고 <b>홈 화면의 UC TABLE 아이콘</b>으로 열어 시작합니다. 사파리와 설치한 앱은 기록이 따로 저장됩니다.</p>`:""}`;
 }
 /* 기록이 저장되는 곳: 같은 휴대폰이라도 설치한 앱·크롬·내려받은 파일은 저장 공간이 서로 다르다 */
 function storeWhere(){
@@ -6335,7 +6389,7 @@ function viewWelcome(){
 }
 /* ===== 첫 실행 설정(동의 다음): 키·몸무게 → 알레르기·유당 → 오늘 증상. 백업 불러오기·그냥 시작하기 가능 ===== */
 /* 첫 실행 설정 중인지: 동의 직후 "0"(안내)·"1"~"3"(단계). 예전 사용자와 다른 경로로 동의한 기록은 설정을 건너뛴다 */
-const onbActive=()=>["0","1","2","3"].includes(S.onb);
+const onbActive=()=>["i","0","1","2","3"].includes(S.onb);
 const ONB_COMMON=["dairy","egg","wheat","soy","peanut","shrimp","crab","buckwheat"]; let ONB_MORE=false;
 /* 첫 실행 1단계의 틀린 값은 화면 위 띠 대신 그 칸 아래에 붙이고(aria-invalid·aria-describedby), 단계를 넘기면 지운다 */
 let ONB_ERR={};
@@ -6344,8 +6398,10 @@ const ONB_ERR_FIELD=[["키는","o_height"],["몸무게는","o_weight"],["나이�
 const oErrA=id=>ONB_ERR[id]?` aria-invalid="true" aria-describedby="${id}_err"`:"";
 const oErrM=id=>ONB_ERR[id]?`<span class="f-err" id="${id}_err">${esc(ONB_ERR[id])}</span>`:"";
 function viewOnboard(){
-  const st=S.onb||""; const p=S.profile;
+  const st=S.onb==="i"&&!installStep()?"0":S.onb||""; const p=S.profile;   // 설치 단계에서 멈췄다가 설치한 앱으로 다시 열면 건너뜀
   const steps=n=>`<div class="onb-steps" role="img" aria-label="3단계 중 ${n}단계">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`;
+  if(st==="i") return `${installHTML(true)}
+    <div class="bottom-bar">${INSTALLED?`<button class="btn primary full" data-act="onbGo" data-v="0">다음</button>`:`${BIP?`<button class="btn primary full" data-act="installApp">${ic("inst")} 앱 설치하기</button>`:""}<button class="btn ghost full" data-act="onbGo" data-v="0">나중에 설치하기</button>`}</div>`;
   if(!st||st==="0") return `<div class="card stack info-body">
       <h2>내 정보를 넣고 시작하시겠습니까?</h2>
       <p>키·몸무게, 알레르기, 오늘 증상을 넣으면 열량·단백질 목표와 식단 단계가 내 상황에 맞춰집니다. 나중에 '내 정보'에서 언제든 바꿀 수 있습니다.</p>
@@ -6991,7 +7047,7 @@ document.addEventListener("click",/** @param {TargetEvent<MouseEvent>} e */ e=>{
       closeSheet(); render(); toast(`${f.name} ${g}g을 기록했습니다`); break}
     case "quickSame": quickSame(); break;
     case "term": {const g=GLOSS[v]; if(g) openSheet(`<h2>${esc(g[0])}</h2><p style="margin:8px 0">${esc(g[1])}${sup(g[2])}</p>${closeBtn()}`); break}
-    case "consentGo": {const r=$("#c_req"); if(!r?.checked) break; S.consent={date:today()}; S.onb="0"; render(); window.scrollTo(0,0); break}
+    case "consentGo": {const r=$("#c_req"); if(!r?.checked) break; S.consent={date:today()}; S.onb=installStep()?"i":"0"; render(); window.scrollTo(0,0); break}
     case "onbGo": onbSync(); ONB_ERR={}; S.onb=v||"0"; render(); window.scrollTo(0,0); break;
     case "onbNext": {const w=$("#o_weight")?.value; onbSync(); ONB_ERR={}; if(S.onb==="1"){const e=profErrs(S.profile,w); if(e.length){for(const m of e){const f=ONB_ERR_FIELD.find(([k])=>m.startsWith(k)); if(f) ONB_ERR[f[1]]=profMsg([m])} render(); const first=ONB_ERR_FIELD.map(x=>x[1]).find(id=>ONB_ERR[id]); if(first) $("#"+first)?.focus(); break}} S.onb=v; render(); window.scrollTo(0,0); break}
     case "onbSkip": S.onb="done"; askPersist(); HOWTO_NEXT=true; render(); window.scrollTo(0,0); break;   // 알림 대신 사용 방법 창('내 정보' 안내 포함)
@@ -7028,6 +7084,7 @@ document.addEventListener("click",/** @param {TargetEvent<MouseEvent>} e */ e=>{
     case "restorePaste": openSheet(`<h2>백업 내용 붙여 넣기</h2><p class="hint">'백업 내용 복사'로 보관한 내용을 모두 붙여 넣습니다.</p><textarea id="rsText" style="min-height:140px" aria-label="백업 내용"></textarea><div class="grid2" style="margin-top:8px"><button class="btn" data-act="closeSheet">취소</button><button class="btn primary" data-act="restoreText">불러오기</button></div>`); break;
     case "restoreText": restoreFromText($("#rsText")?.value||""); break;
     case "restorePick": $("#restore")?.click(); break;
+    case "copySite": copyText(SITE,"앱 주소를 복사했습니다. 사파리 주소창에 붙여 넣습니다",`<h2>앱 주소</h2><p class="hint">아래 주소를 길게 눌러 복사합니다.</p><pre class="copybox">${esc(SITE)}</pre>${closeBtn(8)}`); break;
     case "installApp": {const e=BIP; if(!e) break; BIP=null; e.prompt(); e.userChoice?.then(r=>{if(r?.outcome!=="accepted"){toast("설치를 취소했습니다. 나중에 다시 설치할 수 있습니다")} render()}).catch(()=>{}); break}
     case "restoreApply": restoreApply(v); break;
     case "restoreApplyForce": closeSheet(); restoreApply(v,true); break;

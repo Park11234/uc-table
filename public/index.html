@@ -15,7 +15,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-mGBS1nYqmRyr4UXXSHIp7dUOVFt6/ei4UCgKfnSBG4w='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'self'; media-src 'self' blob:; base-uri 'none'; form-action 'none'">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script defer src="app.js?v=607dfa674f"></script>
+<script defer src="app.js?v=b4406be17f"></script>
 </head>
 <body>
 <style>
@@ -488,6 +488,7 @@ label.btn{display:flex;align-items:center;justify-content:center;text-align:cent
 .btn.sm{padding:8px 12px;font-size:0.8125rem;border-radius:12px}
 .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .full{width:100%}
+a.btn.full{display:flex;align-items:center;justify-content:center;text-decoration:none}   /* 링크로 된 넓은 단추(크롬으로 열기 등)도 단추처럼 가운데·밑줄 없이 */
 
 .banner{border-radius:12px;padding:12px 16px;border:1px solid}
 .banner.crit{background:var(--crit-soft);border-color:var(--crit);border-width:2px;color:var(--ink)}
@@ -985,6 +986,36 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-c{text-align:center}
 .peb-steps,.peb-stages{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .peb-steps li{display:flex;align-items:center;gap:12px}
+/* 설치 안내 그림: 실제 설치 창·브라우저 단추를 본떠 누를 곳(.ins-on)을 진하게 */
+.ins-shot{position:relative;height:200px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);overflow:hidden}
+.ins-lines{position:absolute;inset:16px 16px auto;display:flex;flex-direction:column;gap:8px}
+.ins-lines i{display:block;height:8px;border-radius:4px;background:var(--line)}
+.ins-lines i:nth-child(2){width:70%}
+.ins-lines i:nth-child(3){width:85%}
+.ins-top+.ins-lines{top:64px}
+.ins-on{background:var(--fill);color:var(--fill-ink);outline:3px solid var(--accent);outline-offset:3px}
+.ins-dlg{position:absolute;inset:auto 0 0;background:var(--surface);border-radius:12px 12px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -4px 16px rgba(0,0,0,.12)}
+.ins-app{display:flex;align-items:center;gap:12px}
+.ins-app .dari{width:48px;aspect-ratio:400/369;border-radius:12px;background-color:var(--surface-2)}
+.ins-app small{display:block;color:var(--muted);font-size:0.75rem}
+.ins-btns{display:flex;justify-content:flex-end;gap:8px;font-size:0.875rem;font-weight:600}
+.ins-btns span{padding:8px 16px;border-radius:999px}
+.ins-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ins-pair .ins-shot{height:148px}
+.ins-cap{font-size:0.8125rem;font-weight:600;margin:0 0 4px}
+.ins-bar,.ins-top{position:absolute;left:0;right:0;height:48px;background:var(--surface);display:flex;align-items:center;color:var(--muted)}
+.ins-bar{bottom:0;border-top:1px solid var(--line);justify-content:space-around}
+.ins-top{top:0;border-bottom:1px solid var(--line);gap:8px;padding:0 8px}
+.ins-url{flex:1;height:28px;border-radius:999px;background:var(--surface-2)}
+.ins-bar .ic,.ins-top .ic{width:20px;height:20px}
+.ins-bar .ins-on,.ins-top .ins-on{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;outline-offset:2px}
+.ins-list{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:12px 12px 0 0;display:flex;flex-direction:column;font-size:0.75rem}
+.ins-list span{display:flex;justify-content:space-between;align-items:center;gap:4px;padding:8px 12px;border-top:1px solid var(--line)}
+.ins-list .ic{width:16px;height:16px}
+.ins-list .ins-on{font-weight:600;outline:none}
+.ins-menu{top:8px;right:8px;bottom:auto;left:24px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.12);overflow:hidden}
+.ins-menu span:first-child{border-top:0}
+.ins-note{background:var(--surface-2);border-radius:12px;padding:12px 16px;margin:0;font-size:0.875rem;line-height:1.5}
 .peb-num{font-weight:600;color:var(--on-soft)}
 .peb-row{display:flex;justify-content:space-between;gap:4px;background:var(--surface-2);border-radius:12px;padding:12px 8px;margin-bottom:16px}
 .peb-row>span{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
