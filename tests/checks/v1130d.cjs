@@ -1,8 +1,5 @@
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 /* v1.13.0 21차(2026-11-16) 사용자 요청: 기록은 개인 휴대폰에만 저장
    웹 주소로 여는 앱(PWA)·오프라인 파일 모두, 앱 화면이 어떤 서버로도(같은 주소의 서버 포함) 연결을 만들 수 없게 막혀 있는지 본다.
    - 기록을 남긴 뒤 fetch·XMLHttpRequest·sendBeacon·WebSocket·EventSource로 같은 주소와 다른 주소에 기록을 보내 보려 해도 요청이 하나도 나가지 않음

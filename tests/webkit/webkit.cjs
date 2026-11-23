@@ -25,7 +25,7 @@ const F = []; const need = (c, m) => { if (!c) { F.push(m); console.log('  ✗ '
 
   console.log(`== ${NAME}: 첫 실행·홈`);
   await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(400);
-  const skip = await p.$('[data-act=onbSkip]'); if (skip) { await skip.click(); await p.waitForTimeout(300) }
+  const skip = await p.$('[data-act=onbSkip]'); if (skip) { await skip.click(); await p.waitForTimeout(300); await p.evaluate(() => closeSheet()) }   // 29차: 사용 방법 창을 닫고 이어 감
   need(await p.evaluate(() => !!S.consent && S.tab === 'plan' && !!document.querySelector('.tab[data-tab=plan][aria-current], .tab[data-tab=plan].on, .tab[data-tab=plan]') && document.querySelector('#main').innerText.length > 50), '동의 뒤 홈(오늘 식단)이 열림');
 
   console.log('== 빠른 증상 기록');

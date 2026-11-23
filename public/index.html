@@ -15,7 +15,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-mGBS1nYqmRyr4UXXSHIp7dUOVFt6/ei4UCgKfnSBG4w='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'self'; media-src 'self' blob:; base-uri 'none'; form-action 'none'">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script defer src="app.js?v=6c73ec2938"></script>
+<script defer src="app.js?v=607dfa674f"></script>
 </head>
 <body>
 <style>
@@ -368,7 +368,7 @@ body.welcome{padding-block-end:110px}
 body.welcome .bottom-bar{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:592px;padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,transparent,var(--bg) 30%)}
 .foot-note{font-size:0.8125rem;color:var(--muted);text-align:center;margin:8px 8px 0;line-height:1.6}
 .note-card{display:flex;align-items:center;gap:12px;box-shadow:none;border:1px dashed var(--line);background:transparent}
-.gq{line-height:0}.gq-b{position:relative;display:inline-flex;align-items:center;justify-content:center;width:1.25em;height:1.25em;margin-left:1px;border:1px solid currentColor;border-radius:50%;background:none;color:var(--accent);font:700 .75em/1 inherit;padding:0;vertical-align:super;cursor:help}.gq-b::after{content:"";position:absolute;inset:-15px -10px}   /* v1.13.0 28번 용어 풀이 단추(누르는 범위 높이 44px 넘게) */
+.gq{line-height:0}.gq-b{position:relative;display:inline-block;margin-left:0;padding:0 1px;border:0;background:none;color:var(--accent);font-family:inherit;font-size:0.75rem;font-weight:600;line-height:1;vertical-align:super;cursor:help}.gq-b::before{content:"?"}.gq-b::after{content:"";position:absolute;inset:-16px -20px}   /* 28차(사용자 요청): 동그라미 없이 숫자 윗첨자만 한 '?'(누르는 범위는 ::after로 44px 넘게) */
 .term{position:relative;border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:help}.term::after{content:"";position:absolute;inset:-12px -4px}
 .term:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .chip-btn{display:inline-flex;align-items:center;gap:2px;padding-right:8px!important}
@@ -798,8 +798,9 @@ body{-webkit-font-smoothing:antialiased}
 .ridge{background:var(--field);border-radius:12px;padding:16px 16px 16px;margin:2px 0 4px;color:var(--ink)}
 .ridge .r-top{display:flex;align-items:center;gap:8px 8px;justify-content:space-between;flex-wrap:wrap}   /* v1.11.0 R-24: 좁으면 칩이 날짜 아래 줄로 */
 .ridge .r-date{font-size:0.8125rem;color:var(--muted);margin:0;white-space:nowrap}
-.ridge .r-stage{background:var(--surface);border:0;border-radius:999px;min-height:44px;padding:4px 8px 4px 12px;font-size:0.8125rem;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:2px;max-width:100%;text-align:left}   /* 17차: 단계 눈금이 붙어 글자 200%·320px에서 넘치던 것 → 칩 안에서 줄 바꿈 */
-.ridge .r-stage .chev{width:16px;height:16px}
+.ridge .r-stage{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:0 8px;max-width:100%;min-height:44px;padding:0;border:0;border-radius:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-align:left;cursor:pointer}   /* 28차(사용자 요청): 홈 맨 위 '현재 식단 단계: 저잔사식'(누르면 식단 단계 화면) */
+.ridge .r-lab{font-family:var(--body);font-size:1rem;letter-spacing:0}
+.ridge .r-stage .chev{width:20px;height:20px;align-self:center}
 .ridge .r-head{font-family:var(--display);font-size:1.75rem;font-weight:600;letter-spacing:-.035em;line-height:1.25;margin:8px 0 0}
 .ridge .r-sub{font-size:0.9375rem;margin:4px 0 0}
 .ridge .r-chart{display:block;width:100%;height:auto;margin:12px 0 4px;overflow:visible}
@@ -821,11 +822,13 @@ body{-webkit-font-smoothing:antialiased}
 .appbar .logo{color:var(--logo)}
 .appbar .icon-btn{color:var(--band-ink)}
 .appbar .icon-btn:active{background:var(--band-glass)}
+.appbar .bar-btn{min-height:44px;padding:0 12px;border:0;border-radius:999px;background:var(--band-glass);color:var(--band-ink);font-family:inherit;font-size:0.8125rem;font-weight:600;cursor:pointer;flex:0 0 auto}   /* 29차: 홈 오른쪽 위 '사용 방법' */
+.howto .peb-badge .ic{width:22px;height:22px;color:var(--accent)}
 .appbar :focus-visible,.ridge :focus-visible{outline-color:var(--band-ink)}
 .ridge{background:var(--band);color:var(--band-ink);border-radius:0;margin:0 -16px 16px;padding:4px 16px 16px}
 .view>.ridge:first-child{margin-top:-12px}   /* 제목 막대와 틈 없이 잇기(.view 위 여백만큼) */
 .ridge .r-date,.ridge .r-sub,.ridge .r-note{color:var(--band-ink2)}
-.ridge .r-stage{background:var(--band-glass);color:var(--band-ink)}
+.ridge .r-lab{color:var(--band-ink2)}
 .ridge .r-stage .chev{color:var(--band-ink2)}
 .ridge .r-chart .bdot{fill:var(--band-thr);stroke:var(--band-bot);stroke-width:2}   /* 22차: 혈변이 있던 날 */
 .ridge .r-chart .line{stroke:var(--band-line)}
@@ -878,9 +881,6 @@ h1,h2,h3,h4,th{font-weight:600}
 .sdots{display:inline-flex;flex:none;gap:4px;margin-right:8px;vertical-align:1px}
 .sdots i{width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor}
 .sdots i.on{background:currentColor}
-sup.sx{font-size:0.75rem;font-weight:400;line-height:0;vertical-align:super;margin-left:2px;color:var(--muted)}   /* 23차: 식사 이름 옆 윗첨자(먹는 내용) */
-.ridge sup.sx,.glass sup.sx{color:inherit}
-.chip-btn sup.sx{vertical-align:baseline;line-height:inherit;margin-left:4px}.r-stage.chip-btn,.glass.chip-btn{gap:0}   /* 27차(사용자 요청): 단계 단추 안에서는 위로 뜨지 않게 이름과 같은 줄에(화살표 앞 2px를 빼 단추 너비는 그대로) */
 .stn{white-space:nowrap}   /* 단계 눈금과 식사 이름은 함께(눈금만 윗줄에 남지 않게) */
 
 /* ===== 24차(v1.13.0, 2026-11-17): AI 기본 모양 덜기·처음 쓰는 환자(진단 14가지) =====
@@ -889,8 +889,6 @@ sup.sx{font-size:0.75rem;font-weight:400;line-height:0;vertical-align:super;marg
 ::placeholder{color:var(--muted);opacity:1}
 body.pushed .appbar h1{font-size:1rem}
 .sec-title h2,.fgroup :is(h2,h3).fg-h{font-size:1.25rem}
-.gq-b{font-size:0.75rem;font-weight:600;width:1.5em;height:1.5em}
-.gq-b::after{content:"";position:absolute;inset:-15px}
 .chkrow{display:flex;align-items:center;gap:12px;min-height:56px;padding:12px 16px;background:var(--card);border-radius:12px;font-weight:600;cursor:pointer}
 .chkrow input{width:24px;height:24px;margin:0;flex:none;accent-color:var(--fill)}
 .consent-hint{margin:0 4px;text-align:center}
@@ -1005,6 +1003,11 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-up small{font-size:0.75rem;color:var(--muted)}
 .peb-up .pt-to small{font-size:0.8125rem;font-weight:600;color:var(--ok-ink)}
 .peb-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+/* 33차: 숫자 칸 쉼표 경고 창 */
+.warnpop{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}
+.warnpop-box{background:var(--card);color:var(--ink);border-radius:12px;padding:24px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:16px}
+.warnpop-box h2{margin:0;font-size:1.125rem}
+.warnpop-box p{margin:0;line-height:1.55}
 </style>
 
 <div class="wrap">

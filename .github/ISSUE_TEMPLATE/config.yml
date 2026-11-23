@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 보안 문제(비공개)
+    url: https://github.com/Park11234/uc-table/security/advisories/new
+    about: 기록이 밖으로 나가는 문제 같은 보안 문제는 공개 이슈 대신 비공개로 알려 주십시오(SECURITY.md).

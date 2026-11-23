@@ -3,10 +3,7 @@ const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.13.0(2026-11-01) 사용자 요청 번호별 점검:
    2) 평소 배변 횟수를 안 적으면 1회로 계산·고지, 처음 기록 저장 때 한 번 묻기
@@ -113,10 +110,12 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.persist="na"; S.stage
   {const r=await p.evaluate(()=>{const o={}; S.logs[today()]={...BLANK_LOG(),day:3,bloody:1,blood:1}; save(); openWizard(today()); WZ.step=WS().length-1; render();
       const q=document.querySelector('#main .gq-b[data-v=tw]'); o.tw=!!q&&/Truelove-Witts/.test(q.closest('sup').previousSibling?.textContent||""); o.count=document.querySelectorAll('#main .gq-b[data-v=tw]').length;
       q?.click(); o.sheet=document.querySelector('#sheetRoot')?.innerText||""; closeSheet(); SCR=null; render();
-      openScr("set-stage"); o.low=!!document.querySelector('#main .gq-b[data-v=lowres]')||!!document.querySelector('#main .term[data-v=lowres]'); o.inBtn=!!document.querySelector('#main button .gq-b');
+      openScr("set-stage"); o.low=!!document.querySelector('#main .gq-b[data-v=lowres]'); o.inBtn=!!document.querySelector('#main button .gq-b');
+      openScr("set-about"); o.fod=!!document.querySelector('#main .gq-b[data-v=fodmap]');
       SCR=null; render(); return o});
     need(!r.tw&&r.count===0,`22차: 기록 요약에는 Truelove-Witts 칸·풀이가 없음 (${r.count})`);
-    need(r.low&&!r.inBtn,"저잔사식에도 풀이, 단추 안에는 넣지 않음")}
+    need(!r.low&&!r.inBtn,"30차: 식단 단계 화면 저잔사식 옆에 '?' 없음, 단추 안에도 넣지 않음");
+    need(r.fod,"다른 용어(FODMAP) 옆 '?'는 그대로")}
 
   console.log('== 2026-11-01 외부 검토 반영(저녁 거름 우유·간식 배율·첫 실행 안내·끼니 알림·합치기·나트륨)');
   {const r=await p.evaluate(()=>{const o={}; const keep=JSON.parse(JSON.stringify({profile:S.profile,orders:S.orders,remind:S.remind,stageMode:S.stageMode}));

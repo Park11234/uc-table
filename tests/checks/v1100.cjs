@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 /* v1.10.0 점검: 점검 보고서(디자인 1~11, 개발자 1~10·12·13, 사용자 1~6·8·10·12·13)를 고친 것이 그대로인지 화면에서 확인한다.
    홈 입구 하나·끼니 '바꾸기'·걸러 보기 시트·한 줄 목록·시판 제품 접기·음식 정보 요약·대신 이것·확인 날짜·'다음 단계'·
    기록 쪽수(요약 포함)·빠른 기록·피 대조·첫 단계 질문·3일 연속 알림·외식 메뉴 묶음 질문·옛 id 잇기·CSV·바코드 연결·

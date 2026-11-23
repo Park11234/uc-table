@@ -1,8 +1,5 @@
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 // 저장·불러오기 안정성: (1) 풍부한 기록을 저장하고 새로고침해도 '기록을 읽지 못했습니다'가 뜨지 않고 그대로 남는지
 // (2) 올바른 기록은 정리(normalizeState)를 거쳐도 한 글자도 바뀌지 않는지 (3) 백업 파일로 되살려도 같은지
 const path=require('path'), fs=require('fs');

@@ -11,10 +11,7 @@ fs_.writeFileSync=(p,...a)=>{ try{__written.add(path.resolve(String(p)))}catch(e
 // 이 점검이 직접 만든 파일이 아니면 매번 현재 앱으로 새로 만든다(옛 빌드를 검사하는 일 방지)
 const WRAP=n=>{const p=T(n); if(!__written.has(path.resolve(p))) __wfs(p,'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>'+fs_.readFileSync(APP,'utf8')+'</body></html>'); return p};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 const { chromium } = require('playwright'); const fs=require('fs');
 
 // 검증용: 출력한 줄을 모아 두고 끝에서 기대값과 비교한다(v1.5.0)
@@ -38,7 +35,7 @@ fs.writeFileSync(T('pass2.html'),'<!doctype html><html><head><meta charset="utf-
 await p.goto('file://'+WRAP('pass2.html')); await p.waitForTimeout(500);
 // S1 신규 사용자: 동의 화면 → 시작
 out('S1 welcome', await p.evaluate(()=>[!!document.querySelector('#consentGo'), document.querySelector('#consentGo').disabled]));
-await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300);
+await p.click('label:has(#c_req)'); await p.click('#consentGo'); await p.waitForTimeout(500); await p.click('[data-act=onbSkip]'); await p.waitForTimeout(300); await p.evaluate(()=>closeSheet());   /* 29차: 처음 설정 뒤 뜨는 사용 방법 창을 닫고 이어 감 */
 out('S1 home', await p.evaluate(()=>[S.tab, !!document.querySelector('.mrow'), document.querySelectorAll('.mrow').length]));
 // 마법사 전체(실제 클릭)
 await p.click('.ridge [data-act=wizard]'); await p.waitForTimeout(300);

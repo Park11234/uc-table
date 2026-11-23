@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 /* v1.11.0 디자인 적용 뒤 재검토(agent-browser로 처음 쓰는 사람처럼 끝까지 써 봄, R-01~R-24)를 고친 것이 그대로인지 확인한다.
    R-01은 실제 앱처럼 body 여백을 지우지 않은 페이지에서, 나머지는 다른 점검과 같은 페이지에서 본다. */
 const { chromium } = require('playwright'); const fs=require('fs');
@@ -53,7 +50,7 @@ const SEED=()=>{
     need(!r.jargon&&r.plain,'R-03 시작 설정 3단계는 식사 이름과 쉬운 말(23차: 저잔사식(섬유를 줄인 식사)부터)');
     need(r.below,'R-04 보기 설명은 보기 글자 아래 줄');
     await p.evaluate(()=>{const b=document.querySelector('[data-act=onbInit][data-v="2"]'); b.click()}); await p.waitForTimeout(100);
-    await p.click('[data-act=onbDone][data-v=""]'); await p.waitForTimeout(400);
+    await p.click('[data-act=onbDone][data-v=""]'); await p.waitForTimeout(400); await p.evaluate(()=>closeSheet());   /* 29차: 처음 설정 뒤 뜨는 사용 방법 창을 닫고 이어 감 */
     const t=await p.evaluate(()=>document.querySelector('#main').innerText);
     need(!/조건이 바뀌어/.test(t)&&/내 정보에 맞춰/.test(t),'R-05 처음 설정 직후 안내는 \'내 정보에 맞춰…\'');
     await p.context().close()}

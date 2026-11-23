@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 // 날짜를 바꿔 가며 예시 식단 규칙 확인(v1.5.1): 식단은 날짜로 메뉴를 고르므로, 오늘만 보면 특정 날에만 생기는 위반을 놓친다.
 // 1년 동안 13일 간격 28개 날짜 × 단계·체중·나이 조합에서 7일 식단의 하루 나트륨 상한, 칼슘(권장의 85%), 아침 단백질, 빈 끼니를 확인
 // v1.13.0 15차: 열량(7일 평균 90%·하루 최저 70% 이상), 칼슘 7일 평균 93% 이상, 간식 '양 N배'가 실제 배율, 우유 한 컵은 칼슘이 모자란 날만, 하루 2끼의 간식 배율도

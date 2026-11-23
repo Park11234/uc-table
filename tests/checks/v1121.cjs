@@ -3,10 +3,7 @@ const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* 개선점 10개 반영(2026-10-24): 점수 밖 기준으로 활동기일 때 홈 문구(1), 온보딩의 평소 배변 횟수(2)·면역 약(3),
    식단 단계 화면의 ECCO 섬유 단서(5), PBKDF2 60만 회·상한(6), PWA의 CSP(7), 가져오기 값 범위(10) */
@@ -54,7 +51,7 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
     need(m1.meds.join()==="steroid"&&m1.pressed==="true",`칩을 누르면 복용 약에 들어가고 눌린 표시 (${JSON.stringify(m1)})`);
     await p.click('[data-act="onbMedT"][data-v="steroid"]');
     need((await p.evaluate(()=>S.profile.meds.length))===0,'한 번 더 누르면 빠짐');
-    await p.click('[data-act="onbMedT"][data-v="jak"]'); await p.click('[data-act="onbNext"][data-v="3"]'); await p.click('[data-act="onbInit"][data-v="3"]'); await p.click('[data-act="onbDone"][data-v=""]'); await p.waitForTimeout(300);
+    await p.click('[data-act="onbMedT"][data-v="jak"]'); await p.click('[data-act="onbNext"][data-v="3"]'); await p.click('[data-act="onbInit"][data-v="3"]'); await p.click('[data-act="onbDone"][data-v=""]'); await p.waitForTimeout(300); await p.evaluate(()=>closeSheet());   /* 29차: 처음 설정 뒤 뜨는 사용 방법 창을 닫고 이어 감 */
     const f=await p.evaluate(()=>{const q=n=>ruleCheck({name:n,ingr:[],cook:""}).level; const imm=ctx().immunoMeds; S.profile.meds=[]; const none=["생굴","연어 사시미"].map(q); S.profile.meds=["jak"]; const on=["생굴","연어 사시미"].map(q); return {imm,none,on,onb:S.onb}});
     need(f.onb==="done"&&/JAK/.test(f.imm),`설정을 마치면 면역 약이 판정 맥락에 들어감 (${f.imm})`);
     need(f.none.every(x=>x!=="avoid")&&f.on.every(x=>x==="avoid"),`면역 약을 켜면 생굴·연어 사시미가 '피하기'로 (끔 ${f.none} → 켬 ${f.on})`);

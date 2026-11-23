@@ -2,10 +2,7 @@ const path=require('path'), fs=require('fs');
 const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.13.0 26차(2026-11-19) 사용자 요청
    1 앱을 처음 켜면 앱을 설명하는 화면(무엇을 하는 앱인지·할 수 있는 일)이 뜨고, 체크 상자로 확인해야 시작한다

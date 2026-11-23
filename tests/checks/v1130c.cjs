@@ -3,10 +3,7 @@ const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.13.0 18차(2026-11-14) 사용자 요청: 읽기 불편하게 몰아 쓴 문장을 다시 배치
    - 기록 탭 오늘 카드: '식단 단계: … · (판정 까닭)'을 한 줄에 잇지 않고, 식단 단계는 이름표 줄로(22차: 까닭·점수 동그라미는 뺌)

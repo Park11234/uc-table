@@ -1,8 +1,5 @@
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 // 저장 데이터 손상 퍼징: 실제에 가까운 기록을 만든 뒤 항목 하나씩 잘못된 값으로 바꿔
 // normalizeState → 모든 탭·화면·PDF 생성까지 그려 보고, 오류나 NaN·undefined 노출을 찾는다.
 const path=require('path'), fs=require('fs');

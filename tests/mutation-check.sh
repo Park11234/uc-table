@@ -204,7 +204,7 @@ mut={
  'v10_warn_inline.html':rep('${warnRow()}','${warnHTML()}'),  # 내 정보에 경고 목록이 다시 펼쳐짐
  'v10_no_cup.html':rep('if(D&&dayTot().ca<tg.ca*0.9){','if(false){'),  # 칼슘이 모자란 날에도 저녁 우유 한 컵이 없음
  'v10_meal_count.html':rep('const MS=mealSlots(), mealN=','const MS=SLOTS, mealN='),  # 간식 표시가 '끼니 표시'에 섞임(v1.13.0: 두 끼를 고르면 그 끼니만)
- 'v10_swap3.html':rep('\\|[0-3]$/.test(k)&&typeof v==="string"','\\|[0-2]$/.test(k)&&typeof v==="string"'),  # 바꾼 간식이 불러오기 검사에서 지워짐
+ 'v10_swap3.html':rep('\\|[0-4]$/.test(k)&&typeof v==="string"','\\|[0-2]$/.test(k)&&typeof v==="string"'),  # 바꾼 간식이 불러오기 검사에서 지워짐
  # v1.13.0(2026-11-01 사용자 요청 2·5·6·11~13·19·20·28번)
  'v13_usual3.html':rep('const USUAL_BM_ASSUMED=1;','const USUAL_BM_ASSUMED=3;'),  # 평소 횟수를 비우면 다시 3회로 계산
  'v13_no_notice.html':rep('${p2.assumed?` 평소 하루 배변 횟수를 적지 않아 ${p2.base}회를 평소로 보았습니다','${false?` 평소 하루 배변 횟수를 적지 않아 ${p2.base}회를 평소로 보았습니다'),  # 22차: 기록 요약에 1회를 평소로 보았다는 고지 없음
@@ -244,21 +244,36 @@ mut={
  'r20_ragged.html': rep('  return !!last&&last.top<r.top-g.lh/2&&(last.right-g.L)/g.W<0.55}','  return false}'),   # 앞 줄이 짧아져도 묶음(들쭉날쭉한 줄)
  # 22차(2026-11-16): 기록값은 식단 단계에만. 경고·상태 판정·점수가 돌아오거나 음식 경험 문서가 비면 잡아야 함
  'r22_alert_back.html':end('const _sh=stageHintHTML; stageHintHTML=()=>{const l=latestLog(1); const d=dangerSignals(l); return (d.severe.length||d.urgent.length?`<div class="banner crit" role="alert"><strong>병원에 내원하십시오</strong></div>`:"")+_sh()};'),  # 기록값 경고 띠가 돌아옴
- 'r22_ridge_score.html':rep('const val=l=>`배변 ${bmTotal(l)}회 · 혈변 ${+l.bloody||0}회`;','const val=l=>`배변·혈변 점수 ${pro2(l).sum}점`;'),  # 홈 띠가 다시 점수로 말함
+ 'r28_ridge_counts.html':rep('<span class="r-name">${nm}</span>','<span class="r-name">${tl?`배변 ${bmTotal(tl)}회 · 혈변 ${+tl.bloody||0}회`:nm}</span>'),  # 홈 맨 위에 다시 배변·혈변 횟수(28차)
  'r22_graph_score.html':rep('return {d,v:l?bmTotal(l):null,','return {d,v:l?pro2(l).sum:null,'),  # 그래프가 다시 점수를 그림
  'r22_pdf_unrated.html':rep('for(const sl of SLOTS) if(isAte(d,sl)) for(const [id] of ateItems(d,sl)) if(ids.has(id)','for(const sl of SLOTS) if(false) for(const [id] of ateItems(d,sl)) if(ids.has(id)'),  # 평가 없이 먹은 날이 문서에서 빠짐
  'r22_pdf_nosym.html':rep('if(!l) return "기록 없음";','return "기록 없음";'),  # 그날 적은 증상이 문서에서 빠짐
  # 23차(2026-11-16): 식단 단계 이름(저잔사식·지중해식·정상식)과 지중해식 단계 식단
  'r23_medstage_off.html':rep('const medStage=c.stage===2, RED_MAX=2','const medStage=false, RED_MAX=2'),  # 지중해식 단계가 생선·올리브유 메뉴를 먼저 고르지 않음
  'r23_redcap_off.html':rep('      if(medStage&&wk.red>=RED_MAX&&hasRed(a)) return false;','      if(false) return false;'),  # 붉은 고기 주 2번 제한 빠짐
- 'r23_sup_off.html':rep('${STAGES[n].plain.replace(/\\S*·\\S*/g,m=>`<span class="nw">${m}</span>`)}<span class="sr-only">)</span></sup>','<span class="sr-only">)</span></sup>'),  # 식사 이름 옆 윗첨자(먹는 내용)가 빠짐
+ 'r23_sup_off.html':rep('<span class="sr-only">(${STAGES[n].plain})</span>',''),  # 식사 이름 옆 먹는 내용(화면 읽기용 괄호)이 빠짐
  'r23_old_name.html':rep('2:{name:"지중해식",plain:"생선·채소·올리브유 위주 식사"','2:{name:"이행식",plain:"조금씩 늘리는 식사"'),  # 옛 단계 이름이 돌아옴
  # v1.13.0 25차 조약돌 탭(결정 57)
- 'r25_any_meal.html':rep('return mealSlots().every(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))','return SLOTS.some(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))'),  # 한 끼만 먹어도(간식 포함) 조약돌
+ 'r25_any_meal.html':rep('return req.every(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))','return SLOTS.some(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))'),  # 한 끼만 먹어도(간식 포함) 조약돌
  'r25_happy_always.html':rep('<div class="peb-dock"><span class="dari dari-n" role="img" aria-label="수달 달이"></span>','<div class="peb-dock"><span class="dari dari-h" role="img" aria-label="수달 달이"></span>'),  # 평소에도 기뻐하는 달이
  # v1.13.0 27차 첫 화면 달이·홈 단계 단추
  'r27_intro_nodari.html':rep('<div class="intro-dock"><span class="dari dari-n" role="img" aria-label="내다보는 수달 달이"></span>','<div class="intro-dock">'),  # 첫 화면 맨 아래 달이가 빠짐
- 'r27_chip_sup.html':rep('.chip-btn sup.sx{vertical-align:baseline;line-height:inherit;margin-left:4px}','.chip-btn sup.sx{margin-left:4px}'),  # 홈 단계 단추의 먹는 내용이 다시 위로 뜸
+ 'r30_stage_gq_back.html':rep('<span class="sr-only">(${STAGES[n].plain})</span></span>`:"";','<span class="sr-only">(${STAGES[n].plain})</span>${dots?gqBtn(["","lowres","med","normal"][n],STAGES[n].name):""}</span>`:"";'),  # 식단 단계 이름 옆에 다시 '?'(30차)
+ 'r30_lowres_gq_back.html':rep('[/FODMAP/,"fodmap"]]),','[/FODMAP/,"fodmap"],[/저잔사식/,"lowres"]]),'),  # 저잔사식 옆에 다시 '?'(30차)
+ 'r28_gq_circle.html':rep('.gq-b::before{content:"?"}','.gq-b::before{content:"?"}.gq-b{border:1px solid currentColor;border-radius:50%;width:1.5em;height:1.5em}'),  # 용어 '?'가 다시 큰 동그라미(28차)
+ 'r28_day_label.html':rep('{k:"day",t:"낮중 배변",type:"step"}','{k:"day",t:"낮 동안 배변",type:"step"}'),  # 증상 기록 말이 다시 '낮 동안 배변'(28차)
+ # v1.13.0 29차 사용 방법
+ 'r29_howto_once_off.html':rep('if(HOWTO_NEXT&&S.consent&&!onbActive()&&!SCR&&S.tab==="plan"){HOWTO_NEXT=false; openSheet(howtoHTML())}',''),  # 처음 설정 뒤 사용 방법 창이 안 뜸
+ 'r29_howto_btn_off.html':rep('${S.tab==="plan"?\'<button class="bar-btn" data-act="howto">사용 방법</button>\':""}',''),  # 홈 오른쪽 위 '사용 방법' 단추가 빠짐
+ # v1.13.0 33차: 하루 4끼(오후 끼니)·숫자 칸 쉼표 경고·캘린더 줄 접기·실패 알림
+ 'r33_four_off.html':rep('const fourMeals=(p=S.profile)=>!p.skipMeal&&(p.mealsN==="4"||(!p.mealsN&&targets().k>=FOUR_KCAL));','const fourMeals=(p=S.profile)=>false;'),  # 목표 2,000kcal 이상이어도 4끼가 안 됨
+ 'r33_aft_view.html':rep('MEAL_VIEW=[0,1,4,2,3]','MEAL_VIEW=[0,1,2,3,4]'),  # 오후 끼니가 간식 뒤에 보임
+ 'r33_swap4_off.html':rep('\\|[0-4]$/.test(k)&&typeof v==="string"','\\|[0-3]$/.test(k)&&typeof v==="string"'),  # 오후 끼니에서 바꾼 메뉴가 다시 열면 사라짐
+ 'r33_comma_off.html':rep('if(numIn(el)&&txt.includes(",")){e.preventDefault(); commaWarn(el)}','if(false){e.preventDefault(); commaWarn(el)}'),  # 숫자 칸 쉼표 경고 창이 안 뜸
+ 'r33_fold_off.html':rep('out.push(cur); return out.join("\\r\\n ")};','out.push(cur); return l};'),  # 캘린더 파일의 긴 줄을 접지 않음
+ 'r33_encoff_silent.html':rep('catch(e){ok=false; toast("백업 암호화 설정을 지우지 못했습니다. 한 번 더 끄면 됩니다")}','catch(e){ok=false}'),  # 암호화 끄기가 실패해도 알리지 않음
+ 'r33_peb_three.html':rep('const mealSlots=()=>[...oldSlots(),...(fourMeals()?["오후"]:[])];','const mealSlots=()=>oldSlots();'),  # 4끼를 골라도 세 끼만 먹으면 조약돌
+ 'r33_peb_retro.html':rep('const req=d===today()?mealSlots():(S.daySlots?.[d]||oldSlots());','const req=mealSlots();'),  # 끼니 수를 바꾸면 지난 조약돌 수가 달라짐
  'r25_recelebrate.html':rep('if(done>S.peb.seen){S.peb.seen=done; save(); openSheet(pebUpHTML(done,P))}','if(done>S.peb.seen){openSheet(pebUpHTML(done,P))}'),  # 같은 바퀴를 들어올 때마다 축하
 }
 for n,t in mut.items():
@@ -482,13 +497,26 @@ r15_menufoods.html tests/checks/v1130b.cjs
 r20_phrase_off.html tests/checks/phrase.cjs
 r20_ragged.html tests/checks/phrase.cjs
 r22_alert_back.html tests/checks/v1130e.cjs
-r22_ridge_score.html tests/checks/v1130e.cjs
+r28_ridge_counts.html tests/checks/v1130e.cjs
 r22_graph_score.html tests/checks/v1130e.cjs
 r22_pdf_unrated.html tests/checks/v1130e.cjs
 r22_pdf_nosym.html tests/checks/pdf7.cjs
 r22_pdf_nosym.html tests/checks/v1130e.cjs
 r27_intro_nodari.html tests/checks/v1130i.cjs
-r27_chip_sup.html tests/checks/v1130f.cjs"
+r30_stage_gq_back.html tests/checks/v1130f.cjs
+r30_lowres_gq_back.html tests/checks/v1130j.cjs
+r28_gq_circle.html tests/checks/v1130j.cjs
+r28_day_label.html tests/checks/v1130j.cjs
+r29_howto_once_off.html tests/checks/v1130k.cjs
+r29_howto_btn_off.html tests/checks/v1130k.cjs
+r33_four_off.html tests/checks/v1130l.cjs
+r33_aft_view.html tests/checks/v1130l.cjs
+r33_swap4_off.html tests/checks/v1130l.cjs
+r33_comma_off.html tests/checks/v1130l.cjs
+r33_fold_off.html tests/checks/v1130l.cjs
+r33_encoff_silent.html tests/checks/v1130l.cjs
+r33_peb_three.html tests/checks/v1130l.cjs
+r33_peb_retro.html tests/checks/v1130l.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

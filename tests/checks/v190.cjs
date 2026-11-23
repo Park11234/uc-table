@@ -7,10 +7,7 @@ const LIB_JSPDF=path.join(ROOT,'vendor','jspdf.umd.min.js');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 /* v1.9.0 점검: 출시 전 점검 보고서의 지적 사항을 고친 것이 그대로인지
    접근성(초점 유지·시트 초점 가두기·백업 불러오기 키보드·알림 영역·비텍스트 대비·글자 200%·동작 줄이기·뒤로 가기),
    증상 기록 4쪽·평소와 같음, 단계 묻기, 검색 오탐, 백업 합치기, 되돌리기, 글자 PDF, PDF 라이브러리 지연 로딩, 자정, 외부 요청 0건 */

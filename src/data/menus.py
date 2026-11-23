@@ -93,6 +93,15 @@ REC = {
  '만둣국':['r_manduguk'],'메밀온면':['r_soba'],'순한 카레라이스':['r_curry'],'오므라이스':['r_omurice'],'채소 볶음밥':['r_veg_fried_rice'],
  '삼계탕':['r_samgyetang'],'굴국밥':['r_gulgukbap'],'고등어 무조림':['r_mackerel_radish'],
 }
+BEEF_PORK = {'beef', 'pork'}
+
+
+def _clash(a, b):
+    """두 구성 요소에 같은 종류 단백질이 있거나 둘 다 소·돼지고기면 True(한 끼에 겹치지 않게)"""
+    fa, fb = fams(a), fams(b)
+    return bool(fa & fb or (BEEF_PORK & fa and BEEF_PORK & fb))
+
+
 def recs(*names):
     out = []
     for n in names:
@@ -317,6 +326,7 @@ BREAD = [
  ("모닝빵", [("dinner_roll",60)]),
  ("카스텔라", [("castella",50)]),
 ]
+BREAD_COOK = "부드러운 것으로 고르고 버터·잼은 조금만 바릅니다."
 BREAD_EGG = [("스크램블드에그",[("scrambled_egg",80)],"기름을 조금만 두르고 약불에 부드럽게 익힙니다."),("삶은 달걀",[("egg_boiled",50)],"완숙으로 삶습니다."),("계란말이",[("rolled_omelet",60)],"기름을 키친타월로 얇게 바르고 맙니다.")]
 BREAD_DRINK = [("락토프리 우유",[("lf_milk",200)],'dairy'),("우유",[("milk",200)],'dairy'),("두유",[("soy_milk",190)],'soymilk'),
                ("플레인 요거트",[("yogurt_plain_unsw",100)],'dairy'),("그릭요거트",[("greek_yogurt",100)],'dairy')]
@@ -325,6 +335,7 @@ RICE_B_SIDE = [("계란말이",[("rolled_omelet",60)],'egg',"기름을 키친타
                ("조기구이",[("croaker",60)],'fish',"기름을 조금만 두른 팬에 구워 가시를 뺍니다."),("메추리알 장조림",[("jangjorim_quail",40)],'egg',"짜니 조금만 먹습니다."),
                ("소고기 장조림",[("jangjorim_beef",40)],'redmeat',"짜니 조금만 먹습니다."),("대구살찜",[("white_fish",60)],'fish',"찜기에서 쪄 가시를 뺍니다."),
                ("달걀찜",[("egg_steamed",100)],'egg',"달걀에 물을 같은 양 넣어 약불에 찝니다."),("가자미구이",[("flatfish",70)],'fish',"기름을 조금만 두른 팬에 구워 껍질을 뺍니다.")]
+B_RICE = (("흰쌀밥", [("white_rice", 150)]), ("찹쌀밥", [("glutinous_rice", 150)]))   # 아침 밥 150g
 OTHER_B = [
  ("삶은 감자·삶은 달걀·락토프리 우유",       [("potato",150),("egg_boiled",50),("lf_milk",200)], ["감자는 껍질을 벗겨 푹 삶습니다."], ['potato','egg'], 3, []),
  ("삶은 감자·메추리알·두유",                 [("potato",150),("soy_milk",190),("quail_egg",40)], ["감자는 껍질을 벗겨 푹 삶습니다."], ['potato','soymilk'], 3, []),
@@ -426,6 +437,146 @@ def _t(*parts):
     return '·'.join(out)
 
 
+# ---------- 31차(v1.13.0, 2026-11-22): 메뉴 늘리기 ----------
+# 기존 목록(PROT·VEG·SOUP·STAPLE·ONEDISH 등)은 길이와 순서로 기존 메뉴 이름을 만들므로 손대지 않고,
+# 새 구성 요소는 아래 새 목록에만 두고 build() 끝에서 따로 조합해 붙인다(기존 1,174개 이름은 그대로).
+# 대부분 저잔사식 단계에서도 고를 수 있는 재료(흰쌀·흰살생선·살코기·달걀·연두부·껍질 벗겨 익힌 채소)로 만든다.
+N_PROT = [
+ ("광어살찜", [("halibut", 120), ("sesame_oil", 2)], "광어살에 소금을 조금 뿌려 찜기에서 10분 찌고 참기름을 몇 방울 둘러 냅니다. 껍질과 가시는 빼고 먹습니다.", ("fish",)),
+ ("우럭 간장조림", [("rockfish", 120), ("soy_sauce", 5)], "간장과 물을 1대 3으로 섞어 약불에 조립니다. 고춧가루는 넣지 않습니다.", ("fish",)),
+ ("대게살찜", [("snow_crab", 120), ("sesame_oil", 3)], "발라낸 대게살을 찜기에서 5분 데우듯 찌고 참기름을 조금 둘러 냅니다.", ("shell",)),
+ ("새우살 달걀찜", [("shrimp", 60), ("egg_steamed", 120)], "껍질과 내장을 뺀 새우를 잘게 다져 달걀물에 넣고 약불에 찝니다.", ("egg", "shell")),
+ ("닭가슴살 감자조림", [("chicken_breast", 90), ("potato", 80), ("soy_sauce", 5)], "닭가슴살과 껍질 벗긴 감자를 깍둑썰어 간장 물에 무르게 조립니다.", ("chicken", "potato")),
+ ("소고기 안심조림", [("beef_tenderloin", 80), ("soy_sauce", 6)], "기름을 떼어 낸 안심을 얇게 썰어 간장 물에 부드럽게 조립니다.", ("redmeat",)),
+ ("돼지 안심 수육", [("pork_tenderloin", 100)], "안심을 통째로 푹 삶아 얇게 썹니다.", ("redmeat",)),
+ ("오리 살코기 수육", [("duck_lean", 100)], "껍질과 기름을 떼어 내고 푹 삶아 얇게 썹니다.", ("duck",)),
+ ("조기찜", [("croaker", 120)], "손질한 조기를 찜기에서 12분 찌고 가시를 발라 먹습니다.", ("fish",)),
+ ("갈치 간장조림", [("hairtail", 110), ("soy_sauce", 5)], "간장과 물로 맵지 않게 조리고 가시를 발라 먹습니다.", ("fish",)),
+ ("연어 맑은찜", [("salmon", 90)], "연어를 찜기에서 10분 찌고 기름이 많은 껍질은 뺍니다.", ("salmon",)),
+ ("흰살생선 간장조림", [("white_fish", 120), ("soy_sauce", 5), ("sesame_oil", 2)], "간장과 물로 맵지 않게 조리고 참기름을 조금 넣습니다. 껍질과 가시는 뺍니다.", ("fish",)),
+ ("연두부찜", [("silken_tofu", 200), ("soy_sauce", 4), ("sesame_oil", 3)], "연두부를 찜기에서 데우고 간장과 참기름을 조금 끼얹습니다.", ("tofu",)),
+]
+N_VEG = [
+ ("무조림", [("radish", 70), ("soy_sauce", 3), ("sesame_oil", 2)], "무를 도톰하게 썰어 간장 물에 무르게 조리고 참기름을 조금 넣습니다.", "veg"),
+ ("배추찜", [("napa", 70), ("sesame_oil", 2)], "배추 속잎을 찜기에서 무르게 쪄 한입 크기로 썰고 참기름을 조금 넣어 무칩니다.", "veg"),
+ ("애호박찜", [("zucchini", 70), ("sesame_oil", 2)], "껍질을 벗긴 애호박을 반달 모양으로 썰어 찜기에서 무르게 찌고 참기름을 조금 넣어 무칩니다.", "veg"),
+ ("가지볶음", [("eggplant", 60), ("perilla_oil", 3)], "껍질을 벗긴 가지를 들기름을 조금 두르고 물을 넣어 무르게 볶습니다.", "veg"),
+ ("오이나물", [("cucumber", 70), ("sesame_oil", 2)], "껍질과 씨를 뺀 오이를 얇게 썰어 무르게 볶습니다.", "veg"),
+ ("양송이찜", [("button_mushroom", 60), ("sesame_oil", 2)], "양송이를 얇게 썰어 찜기에서 무르게 찌고 참기름을 조금 넣어 무칩니다.", "veg"),
+]
+# (이름, 식품, 조리법, 설명 키, 채소가 든 국인지)
+N_SOUP = [
+ ("두부 맑은국", [("silken_tofu", 100), ("broth", 250)], "맑은 육수에 연두부를 숟가락으로 떠 넣고 한소끔 끓입니다.", "tofu", False),
+ ("애호박 맑은국", [("zucchini", 40), ("broth", 250)], "껍질을 벗긴 애호박을 얇게 썰어 맑은 육수에 무르게 끓입니다.", "veg", True),
+ ("무 맑은국", [("radish", 40), ("broth", 250)], "무를 얇게 썰어 맑은 육수에 무르게 끓입니다.", "veg", True),
+ ("곰탕", [("gomtang", 300)], "기름을 걷어 내고 데웁니다.", "broth", False),
+]
+N_RICE = [("흰쌀밥", [("white_rice", 200)]), ("찹쌀밥", [("glutinous_rice", 180)])]
+N_PORRIDGE = [
+ ("소고기죽", [("rice_porridge", 400), ("beef", 30), ("sesame_oil", 3)], "불린 쌀에 잘게 다진 살코기를 넣고 푹 끓입니다. 참기름은 조금만 넣습니다.", "redmeat"),
+ ("애호박죽", [("rice_porridge", 400), ("zucchini", 30), ("sesame_oil", 3)], "껍질 벗긴 애호박을 잘게 다져 흰죽에 넣고 무르게 끓입니다. 참기름은 조금만 넣습니다.", "veg"),
+ ("달걀죽", [("rice_porridge", 400), ("egg_boiled", 50), ("sesame_oil", 3)], "흰죽이 다 끓으면 달걀을 풀어 넣고 한소끔 더 끓입니다. 참기름은 조금만 넣습니다.", "egg"),
+ ("흰살생선죽", [("rice_porridge", 400), ("white_fish", 50), ("sesame_oil", 3)], "흰살생선을 쪄서 가시를 바르고 흰죽에 풀어 끓입니다. 참기름은 조금만 넣습니다.", "fish"),
+ ("감자죽", [("rice_porridge", 400), ("potato", 50), ("sesame_oil", 3)], "껍질 벗긴 감자를 잘게 썰어 흰죽에 넣고 무르게 끓입니다. 참기름은 조금만 넣습니다.", "potato"),
+]
+N_BREAD_SIDE = [("달걀찜", [("egg_steamed", 120)], "달걀에 물을 같은 양 넣어 약불에 찝니다.", "egg"),
+                ("삶은 메추리알", [("quail_egg", 50)], "메추리알을 완숙으로 삶아 껍질을 벗깁니다.", "egg")]
+N_DRINK = [("저지방 우유", [("lowfat_milk", 200)], "dairy"), ("칼슘강화 우유", [("calcium_milk", 200)], "dairy")]
+N_SNACK = [("귤 한 개", [("mandarin", 100)], "fruit")]   # "멜론 한 조각"은 앱 TPL에 이미 있어 넣지 않음
+# 간식 짝: 과일 + 우유·검은콩두유(기존 SNACK_PAIR에 없는 짝). 저지방·칼슘강화 우유는 열량이 적어 간식으로 하루 열량을 채우기 어려워 아침에만 쓴다
+N_SNACK_PAIR = [("우유", [("milk", 200)], "dairy"), ("검은콩두유", [("black_soy_milk", 190)], "soymilk")]
+
+
+def _merge(items):
+    """31차: 양념·육수가 두 구성 요소에 함께 들면 한 줄로 합친다(같은 식품을 두 번 넣지 않음). 다른 식품이 겹치면 None"""
+    out = {}
+    for i, g in items:
+        if i in out:
+            if i not in ('soy_sauce', 'sesame_oil', 'perilla_oil', 'olive_oil', 'broth'): return None
+            out[i] += g
+        else:
+            out[i] = g
+    return [(i, g) for i, g in out.items()]
+
+
+def _adder(lst):
+    """lst 끝에 메뉴를 붙이는 함수를 돌려준다. 이미 있는 이름이거나 양념 말고 같은 식품이 겹치면 붙이지 않는다"""
+    seen = {m['title'] for m in lst}
+
+    def add(t, items, cook, keys, hi=3, rn=()):
+        items = _merge(items)
+        if t in seen or items is None: return
+        lst.append(_menu(t, items, cook, keys, hi, rec=recs(*rn))); seen.add(t)
+    add.seen = seen
+    return add
+
+
+def _more(L, D, B, S):
+    """31차: 새 구성 요소의 조합을 각 끼니 목록 끝에 붙인다(규칙은 위 build()와 같다)."""
+    soft_cook = dict(SOFT_COOK)
+    for lane, out, sh in (('L', L, 0), ('D', D, 1)):
+        add = _adder(out)
+        for i, (pn, pit, pcook, pkeys) in enumerate(N_PROT):
+            stn, stit = N_RICE[(i + sh) % 2]
+            vn, vit, vcook, vkey = N_VEG[(i * 2 + sh * 3) % len(N_VEG)]
+            add(_t(stn, pn, vn), pit + stit + vit, [f"{pn}: {pcook}", f"{vn}: {vcook}"], list(pkeys) + [vkey])
+            for k in range(len(N_SOUP)):
+                sn, sit, scook, skey, sveg = N_SOUP[(i + k + sh * 2) % len(N_SOUP)]
+                if _clash(sit, pit): continue
+                if sn == "곰탕" and (BEEF_PORK & fams(pit) or 'duck' in pkeys): continue
+                break
+            items = pit + stit + sit; keys = list(pkeys) + ['soup'] + (['veg'] if sveg else []); kn = ''
+            if not sveg and (i + sh) % 2 == 0:
+                kn, kit = KIMCHI[(i + sh) % len(KIMCHI)]; items = items + kit; keys.append('kimchi')
+            add(_t(stn, pn, sn, kn), items, [f"{pn}: {pcook}", f"{sn}: {scook}"], keys)
+        # 기존 단백질 반찬 + 새 채소 반찬(저잔사식에서도 맞는 단백질만, 끼니마다 다른 짝)
+        n = 0
+        for pi, (pn, pit, pcook, pkey, pgrp) in enumerate(PROT[:24]):
+            vn, vit, vcook, vkey = N_VEG[(pi + sh * 2) % len(N_VEG)]
+            if any(i == x for i, _ in vit for x, _ in pit): continue
+            stn, stit = N_RICE[(pi + sh) % 2]
+            t = _t(stn, pn, vn)
+            if t in add.seen: continue
+            add(t, pit + stit + vit, [f"{pn}: {pcook}", f"{vn}: {vcook}"], [pkey, vkey], rn=(pn,))
+            n += 1
+            # 저녁은 6개: 8개면 날짜별 식단 점검(plan_dates)에서 열량이 큰 사람의 몇몇 날이 목표의 70%에 못 미침(메뉴 수로 날짜별 고르는 자리가 바뀜)
+            if n >= (8 if lane == 'L' else 6): break
+    # 아침: 새 죽 + 부드러운 반찬, 빵 + 새 반찬·우유, 흰쌀밥 + 새 맑은국 + 반찬
+    addB = _adder(B)
+    for pi, (pn, pit, pcook, pkey) in enumerate(N_PORRIDGE):
+        n = 0
+        for k in range(len(SOFT)):
+            sn, sit, sgrp, skey = SOFT[(pi * 2 + k) % len(SOFT)]
+            if fams(sit) & fams(pit): continue
+            if pkey == 'veg' and any(i in ('zucchini',) for i, _ in sit): continue
+            # 단백질이 적은 죽(애호박죽·감자죽)은 단백질 10g 넘는 반찬과만 짝짓는다(아침 단백질 8g 이상)
+            if pkey in ('veg', 'potato') and sn in ('연두부', '소고기 장조림', '메추리알 장조림', '게살', '두부조림'): continue
+            addB(_t(pn, sn), pit + sit, [f"{pn}: {pcook}", f"{sn}: {soft_cook[sn]}"], ['porridge', pkey, skey], 2, rn=(sn,))
+            n += 1
+            if n >= 3: break
+    for bi, (bn, bit) in enumerate(BREAD):
+        for ei, (en, eit, ecook, ekey) in enumerate(N_BREAD_SIDE):
+            dn, dit, dkey = (N_DRINK + BREAD_DRINK[:2])[(bi * 2 + ei) % 4]
+            addB(_t(bn, en, dn), bit + eit + dit, [f"{bn}: {BREAD_COOK}", f"{en}: {ecook}"], ['bread', ekey, dkey], 3)
+    for si, (sn, sit, scook, skey, sveg) in enumerate(N_SOUP[:3]):
+        n = 0
+        for k in range(len(RICE_B_SIDE)):
+            dn, dit, dkey, dcook = RICE_B_SIDE[(si * 3 + k) % len(RICE_B_SIDE)]
+            if fams(dit) & fams(sit) or '장조림' in dn: continue
+            stn, stit = B_RICE[(si + k) % 2]
+            addB(_t(stn, sn, dn), stit + sit + dit, [f"{sn}: {scook}", f"{dn}: {dcook}"], [dkey, 'soup'] + (['veg'] if sveg else []), 3, rn=(dn,))
+            n += 1
+            if n >= 2: break
+    # 간식: 과일 한 가지 + 우유·검은콩두유, 새 단품
+    addS = _adder(S)
+    fruits = [x for x in SNACK if x[2] == 'fruit' and len(x[1]) == 1]
+    for dn, dit, dkey in N_SNACK_PAIR:
+        for fn, fit, fkey in fruits:
+            addS(_t(fn, dn), fit + dit, [], [fkey, dkey])
+    for t, it, key in N_SNACK:
+        addS(t, it, [], [key])
+
+
 def build():
     L, D = [], []
     # 점심·저녁: 밥 + 단백질 + (채소 한 가지 | 국 [+ 물김치류])
@@ -446,7 +597,7 @@ def build():
                 else:
                     for _ in range(len(SOUP)):
                         sn, sit, scook, sgrp, sveg = SOUP[si % len(SOUP)]; si += 1
-                        if fams(sit) & fams(pit) or ({'beef','pork'} & fams(sit) and {'beef','pork'} & fams(pit)):
+                        if _clash(sit, pit):
                             continue
                         break
                     items = pit + stit + sit
@@ -484,7 +635,7 @@ def build():
             added = 0
             for k in range(len(SOUP)):
                 sn, sit, scook, sgrp, sveg = SOUP[(pi * 4 + k * 2 + lo) % len(SOUP)]
-                if fams(sit) & fams(pit) or ({'beef', 'pork'} & fams(sit) and {'beef', 'pork'} & fams(pit)):
+                if _clash(sit, pit):
                     continue
                 stn, stit, stcook = STAPLE[(pi + k * 3 + lo) % len(STAPLE)]
                 gkey = 'grain' if stn in GRAIN_NOTE else None
@@ -513,13 +664,13 @@ def build():
         for k in range(5):
             en, eit, ecook = BREAD_EGG[(bi + k) % len(BREAD_EGG)]
             dn, dit, dkey = BREAD_DRINK[(bi * 2 + k) % len(BREAD_DRINK)]
-            B.append(_menu(_t(bn, en, dn), bit + eit + dit, [f"{bn}: 부드러운 것으로 고르고 버터·잼은 조금만 바릅니다.", f"{en}: {ecook}"], ['bread', 'egg', dkey], 3, rec=recs(en)))
+            B.append(_menu(_t(bn, en, dn), bit + eit + dit, [f"{bn}: {BREAD_COOK}", f"{en}: {ecook}"], ['bread', 'egg', dkey], 3, rec=recs(en)))
     for k in range(24):
         sn = RICE_B_SOUP[k % len(RICE_B_SOUP)]; s = soups[sn]
         q = k * 3
         while fams(RICE_B_SIDE[q % len(RICE_B_SIDE)][1]) & fams(s[1]): q += 1
         dn, dit, dkey, dcook = RICE_B_SIDE[q % len(RICE_B_SIDE)]
-        stn, stit = ("흰쌀밥", [("white_rice", 150)]) if k % 4 else ("찹쌀밥", [("glutinous_rice", 150)])
+        stn, stit = B_RICE[0 if k % 4 else 1]
         t = _t(stn, sn, dn)
         if any(x['title'] == t for x in B): continue
         B.append(_menu(t, stit + s[1] + dit, [f"{sn}: {s[2]}", f"{dn}: {dcook}"], [dkey, 'soup'], 3, rec=recs(sn, dn)))
@@ -538,8 +689,8 @@ def build():
             for dn, dit, dkey in BREAD_DRINK:
                 t = _t(bn, en, dn)
                 if t in seenB: continue
-                B.append(_menu(t, bit + eit + dit, [f"{bn}: 부드러운 것으로 고르고 버터·잼은 조금만 바릅니다.", f"{en}: {ecook}"], ['bread', 'egg', dkey], 3, rec=recs(en))); seenB.add(t)
-    for stn, stit in (("흰쌀밥", [("white_rice", 150)]), ("찹쌀밥", [("glutinous_rice", 150)])):
+                B.append(_menu(t, bit + eit + dit, [f"{bn}: {BREAD_COOK}", f"{en}: {ecook}"], ['bread', 'egg', dkey], 3, rec=recs(en))); seenB.add(t)
+    for stn, stit in B_RICE:
         for sn in RICE_B_SOUP:
             s0 = soups[sn]
             for dn, dit, dkey, dcook in RICE_B_SIDE:
@@ -563,6 +714,7 @@ def build():
             t = _t(fn, dn)
             if t in seenS: continue
             S.append(_menu(t, fit + dit, [], [fkey, dkey], 3)); seenS.add(t)
+    _more(L, D, B, S)   # 31차: 새 메뉴는 기존 메뉴 뒤에만 붙인다
     for lst in (L, D, B, S):
         ts = [m['title'] for m in lst]
         assert len(ts) == len(set(ts)), [t for t in ts if ts.count(t) > 1][:5]

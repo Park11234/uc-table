@@ -3,10 +3,7 @@ const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* 검토 13건 반영(2026-10-25, 5차): 직접 고른 단계와 활동기 기록, 점수 0점인데 관해가 아닌 까닭, TW 칸 이름표, 몸무게 확인·범위, 키·나이 범위,
    지난 기록 화면 이스케이프, 백업 비밀번호 확인, 불러오기 전 기록(IndexedDB), 경고 다시 읽힘, 의심 후보 통계 검정, 3일 연속 알림 기준, 먹은 기록 CSV 속도,
@@ -168,7 +165,7 @@ const SEED=()=>{ S.consent={date:today()}; S.onb="done"; S.stageMode="auto"; sav
     need(!r.flexHome.length&&!r.flexWz.length,`flex·grid 바로 안에 떨어진 글자 묶음 없음 (${[...r.flexHome,...r.flexWz].join(',')})`);
     need(r.tail==="않는 중",`보기 단추 마지막 두 낱말을 함께 묶음 ('${r.tail}')`);
     need(r.paren.includes(")이"),`닫는 괄호와 조사를 함께 묶음 (${r.paren})`);
-    need(r.glossWord==="성분(FODMAP?)이",`용어 '?'가 붙은 낱말은 한 덩어리 ('${r.glossWord}')`);
+    need(r.glossWord==="성분(FODMAP)이",`용어 '?'가 붙은 낱말은 한 덩어리(28차부터 '?' 글자는 화면에만 그려 글에는 없음) ('${r.glossWord}')`);
     need(r.track>=-0.01,`제목 안 작은 글씨 자간 ${r.track?.toFixed(3)}em (제목 자간을 물려받지 않음)`);
     need(r.small>=12,`따로 크기를 안 정한 작은 글씨도 12px 이상 (${r.small})`);
     await p.context().close()}

@@ -2,10 +2,7 @@ const path=require('path'), fs=require('fs');
 const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.13.0 22차(2026-11-16) 사용자 요청: 기록값은 식단 관리에만 쓴다
    - 기록값에 따른 위험 경고·내원 권고, 고정된 내원 안내를 모두 뺌(아주 나쁜 기록·체중이 크게 준 기록을 넣어도 경고가 없음)
@@ -69,7 +66,7 @@ const SEED=()=>{ const t=today(); S.consent={date:addDays(t,-60)}; S.onb="done";
         chartHint:document.querySelector('#logChart')?.closest('.card')?.innerText||"", suspects:/먹은 뒤 증상이 나빴던/.test(document.querySelector('#main').innerText),
         tile:[...tile,...[...document.querySelectorAll('[data-act="openScr"][data-v="pdf"]')].map(e=>e.querySelector('b')?.textContent.trim()||e.textContent.trim())]}});
     need(r.stage===1,`아주 나쁜 기록이면 식단 단계는 가장 부드러운 단계 (${r.stage})`);
-    need(r.head.includes(`배변 ${r.total}회`)&&r.head.includes(`혈변 ${r.bloody}회`),`홈 상태 띠는 적은 값 그대로 ('${r.head}')`);
+    need(/^현재 식단 단계: (저잔사식|지중해식|정상식)/.test(r.head)&&!/배변 \d+회|혈변 \d+회/.test(r.head),`28차: 홈 맨 위는 지금 식단 단계, 배변·혈변 횟수는 없음 ('${r.head}')`);
     need(/하루 배변 횟수/.test(r.aria)&&r.aria.includes(`${r.total}회`)&&!r.band,`2주 그래프는 하루 배변 횟수, 기준 띠 없음 ('${r.aria.slice(0,80)}')`);
     need(r.bdots>=4,`혈변이 있던 날은 그래프에 점으로 (${r.bdots}개)`);
     need(r.today.includes(`배변 ${r.total}회`)&&!r.score&&!r.chip,`기록 탭 오늘 카드·목록에 점수 없음 ('${r.today}', 점수 ${r.score}, 목록 숫자 ${r.chip})`);

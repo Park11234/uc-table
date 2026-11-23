@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 /* v1.12.0 점검: v1.11.0 전체 코드 검토(C-01~C-19)에서 고친 것이 그대로인지 확인한다. */
 const { chromium } = require('playwright'); const fs=require('fs');
 const F=[]; const need=(c,m)=>{if(!c){F.push(m); console.log('  ✗ '+m)} else console.log('  ✓ '+m)};
@@ -95,7 +92,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
         const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage,bl:document.querySelector('.ridge svg text.bl')?.textContent||""}};
       return {six:one(6),three:one(3)}});
     need(r.six.stage===2&&r.six.head!=="편안한 하루입니다"&&!/관해 범위 안|관해 기준에 맞/.test(r.six.sub),`C-06 하루 6회: 편안한 하루·관해라고 하지 않음 (${r.six.head} · ${r.six.sub})`);
-    need(r.three.stage===3&&r.three.head==="오늘 배변 3회 · 혈변 0회"&&!/관해|편안/.test(r.three.sub),`C-06 하루 3회·증상 없음: 단계는 정상식, 띠에는 적은 값만 (${r.three.head} · ${r.three.sub})`);
+    need(r.three.stage===3&&r.three.head==="현재 식단 단계: 정상식"&&!/관해|편안|배변 \d|혈변 \d/.test(r.three.sub),`C-06 하루 3회·증상 없음: 단계는 정상식, 띠에는 지금 식단 단계만(28차) (${r.three.head} · ${r.three.sub})`);
     need(!/관해|점수/.test(r.six.bl),`C-06 그래프에 관해·점수 글자 없음 (${r.six.bl})`);
     await p.context().close()}
 

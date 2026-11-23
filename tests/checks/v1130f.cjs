@@ -2,10 +2,7 @@ const path=require('path'), fs=require('fs');
 const ROOT=path.join(__dirname,'..','..');
 const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.13.0 23차(2026-11-16) 사용자 요청: 식단 단계를 저잔사식·지중해식·정상식으로
    - 단계 이름은 저잔사식·지중해식·정상식, 이름 옆 윗첨자로 먹는 내용(섬유를 줄인 식사·생선·채소·올리브유 위주 식사·골고루 먹는 식사).
@@ -28,25 +25,24 @@ const SEED=()=>{ const t=today(); S.consent={date:addDays(t,-30)}; S.onb="done";
   const ready=()=>p.waitForFunction(()=>typeof render==="function"&&!!document.querySelector('#main').firstChild,null,{timeout:20000});
   await p.goto('file://'+page); await ready(); await p.evaluate(SEED); await p.reload(); await ready();
 
-  console.log('== 단계 이름과 윗첨자');
+  console.log("== 단계 이름(28차: 먹는 내용 글자는 띄우지 않음, 30차: 이름 옆 '?'도 없음)");
   const names=await p.evaluate(()=>[1,2,3].map(n=>[STAGES[n].name,STAGES[n].plain]));
   need(JSON.stringify(names)===JSON.stringify([WANT[1],WANT[2],WANT[3]]),`세 단계 이름 (${JSON.stringify(names)})`);
   for(const st of [1,2,3]){
     const r=await p.evaluate(st=>{S.stageMode=String(st); save(); const out={};
-      const lab=el=>{if(!el) return null; const sx=el.querySelector('sup.sx'); const c=el.cloneNode(true); c.querySelectorAll('.sr-only,sup,.sdots,svg').forEach(x=>x.remove());
-        const fs=sx?parseFloat(getComputedStyle(sx).fontSize):0, pfs=parseFloat(getComputedStyle(el).fontSize);
-        return {main:c.textContent.replace(/\s+/g," ").trim(), sx:sx?sx.textContent.replace(/[()]/g,"").trim():"", sr:sx?[...sx.querySelectorAll('.sr-only')].map(x=>x.textContent).join(""):"", small:sx?fs<pfs:false,
-          up:sx?sx.getBoundingClientRect().top<(el.querySelector('.stn')||el).getBoundingClientRect().top+2:false, same:sx?Math.abs(sx.getBoundingClientRect().bottom-(el.querySelector('.stn')||el).getBoundingClientRect().bottom)<=3:false, gq:!!el.querySelector('.gq'), aria:el.getAttribute('aria-label')||""}};
-      SCR=null; S.tab="plan"; S.selDay=0; render(); out.home=lab(document.querySelector('.ridge .r-stage'));
+      const lab=el=>{if(!el) return null; const c=el.cloneNode(true); c.querySelectorAll('.sr-only,sup,.sdots,svg').forEach(x=>x.remove()); const q=el.querySelector('.gq-b');
+        return {main:c.textContent.replace(/\s+/g," ").trim(), sr:[...el.querySelectorAll('.sr-only')].map(x=>x.textContent).join(""), vis:!!el.querySelector('sup.sx'), gq:q?q.dataset.v:"", aria:el.getAttribute('aria-label')||""}};
+      SCR=null; S.tab="plan"; S.selDay=0; render(); out.home=lab(document.querySelector('.ridge .r-head .r-stage')); out.chip=!!document.querySelector('.ridge .r-top button');
       S.logs[today()]={...BLANK_LOG(),day:1}; S.tab="log"; render(); out.log=lab([...document.querySelectorAll('#main .today-card .kv')].find(k=>k.querySelector('span')?.textContent==="식단 단계")?.querySelector('b'));
       S.tab="me"; render(); out.me=lab(document.querySelector('#main .profile small'));
       openScr("set-stage"); out.set=[...document.querySelectorAll('#main [data-act=stageMode]')].filter(x=>x.dataset.v!=="auto").map(x=>lab(x.querySelector('b')));
       delete S.logs[today()]; save(); SCR=null; return out},st);
     const [nm,pl]=WANT[st];
-    for(const [k,v] of [["홈 띠",r.home],["기록 탭",r.log],["내 정보",r.me]]){ const chip=k==="홈 띠";   /* 27차(사용자 요청): 홈 단계 단추 안에서는 위로 뜨지 않고 이름과 같은 줄 */
-      need(v&&v.main.startsWith(nm)&&v.sx===pl&&v.sr==="()"&&v.small&&(chip?v.same:v.up)&&!v.gq,`${st}단계 ${k}: '${nm}' + ${chip?"같은 줄":"윗첨자"} '${pl}' (${JSON.stringify(v)})`) }
-    need(/식단 단계/.test(r.home?.aria||"")&&(r.home?.aria||"").includes(`${nm}(${pl})`),`${st}단계 홈 띠 단추를 읽으면 '${nm}(${pl})' (${r.home?.aria})`);
-    if(st===1) need(r.set.length===3&&r.set.every((v,i)=>v.main.startsWith(WANT[i+1][0])&&v.sx===WANT[i+1][1]),`식단 단계 화면 세 줄 (${JSON.stringify(r.set.map(v=>[v.main,v.sx]))})`);
+    need(r.home&&r.home.main===`현재 식단 단계: ${nm}`&&r.home.sr===`(${pl})`&&!r.home.gq&&!r.chip,`${st}단계 홈 맨 위 '현재 식단 단계: ${nm}', 오른쪽 위 단추 없음 (${JSON.stringify(r.home)}, ${r.chip})`);
+    need(/식단 단계/.test(r.home?.aria||"")&&(r.home?.aria||"").includes(`${nm}(${pl})`),`${st}단계 홈 단계 단추를 읽으면 '${nm}(${pl})' (${r.home?.aria})`);
+    need(r.log&&r.log.main.startsWith(nm)&&r.log.sr===`(${pl})`&&!r.log.vis&&!r.log.gq,`${st}단계 기록 탭: '${nm}'만, 옆에 '?' 없음(30차), 먹는 내용은 화면 읽기용으로만 (${JSON.stringify(r.log)})`);
+    need(r.me&&r.me.main.startsWith(nm)&&r.me.sr===`(${pl})`&&!r.me.vis&&!r.me.gq,`${st}단계 내 정보(단추 안): 이름만 (${JSON.stringify(r.me)})`);
+    if(st===1) need(r.set.length===3&&r.set.every((v,i)=>v.main.startsWith(WANT[i+1][0])&&!v.vis&&!v.gq&&v.sr===`(${WANT[i+1][1]})`),`식단 단계 화면 세 줄은 이름만(단추 안) (${JSON.stringify(r.set.map(v=>[v.main,v.sr]))})`);
   }
 
   console.log('== 음식 판정 이유의 단계 이름');

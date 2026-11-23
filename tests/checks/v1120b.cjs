@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
 // 공통 안전장치: 어느 페이지에서든 잡히지 않은 오류(pageerror)가 나면 이 점검을 실패로 끝낸다
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* v1.12.0 검토 후속 수정: 검토 보고서 항목을 고친 뒤 그대로 유지되는지 확인한다. 항목 번호는 보고서의 번호. */
 const { chromium } = require('playwright'); const fs=require('fs');
@@ -181,7 +178,7 @@ fs.writeFileSync(page,'<!doctype html><html lang="ko"><head><meta charset="utf-8
   {const p=await open();
     const r=await p.evaluate(()=>{S.stageMode="auto"; const t=today(); const one=well=>{S.logs={}; S.logs[t]={...BLANK_LOG(),day:1,night:0,well};   /* v1.13.0 2번: 평소 1회 기준의 관해 */ save(); S.tab="plan"; SCR=null; render(); const x=ridgeText(); return {head:x.head,sub:x.sub,stage:currentStage().stage}};
       return {good:one(0),worst:one(4),poor:one(2)}});
-    need(r.good.head==="오늘 배변 1회 · 혈변 0회"&&r.good.stage===3,`몸 상태 아주 좋음: 적은 값 그대로 (${r.good.head})`);
+    need(r.good.head==="현재 식단 단계: 정상식"&&r.good.stage===3,`몸 상태 아주 좋음: 판정 말 없이 지금 식단 단계만(28차) (${r.good.head})`);
     need(r.worst.head!=="편안한 하루입니다"&&r.poor.head!=="편안한 하루입니다",`몸 상태 최악·나쁨: 편안한 하루라고 하지 않음 (${r.worst.head} / ${r.poor.head})`);
     need(r.worst.stage===3&&!/관해/.test(r.worst.sub),`식단 단계 판정은 그대로, 관해라는 말은 없음 (${r.worst.stage}, ${r.worst.sub})`);
     await p.context().close()}

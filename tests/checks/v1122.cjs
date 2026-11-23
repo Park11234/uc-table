@@ -4,10 +4,7 @@ const APP=process.env.APP_HTML||path.join(ROOT,'src','app','index.html');
 const OFFLINE=process.env.OFFLINE_FILE||path.join(ROOT,'dist','uc-table-offline.html');
 const TMP=process.env.TEST_TMP||path.join(ROOT,'.test-out');
 const T=n=>{fs_.mkdirSync(path.dirname(path.join(TMP,n)),{recursive:true});return path.join(TMP,n)};
-{const __pw=require('playwright'); const __ch=__pw.chromium; if(!__ch.__guarded){ const __launch=__ch.launch.bind(__ch); __ch.__guarded=true;
-  __ch.launch=async(...a)=>{const b=await __launch(...a); const hook=p=>p.on('pageerror',e=>{console.error('PAGEERROR '+e.message); process.exitCode=1});
-    const np=b.newPage.bind(b); b.newPage=async(...x)=>{const p=await np(...x); hook(p); return p};
-    const nc=b.newContext.bind(b); b.newContext=async(...x)=>{const c=await nc(...x); c.on('page',hook); return c}; return b} }}
+require('../lib/guard.cjs');
 
 /* 재점검 반영(2026-10-24, 4차): 기존 코드 점검에서 찾은 결함(활동기 까닭 문구·평소 배변 횟수 범위·미래 날짜·안 보이던 오류 안내),
    맥박 입력 제거와 Truelove-Witts 중증의 빨간 경고, 증상 기록 체온 범위, 옛 31만 회 열쇠 안내, 오프라인 단일 파일의 CSP,

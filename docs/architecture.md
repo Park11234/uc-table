@@ -7,7 +7,7 @@
                ├─ 상태 S  … localStorage("uc-table.v1")에만 저장, 서버 없음(자동 보관본 7일·암호화 열쇠는 IndexedDB)
                ├─ 음식 DB … FOODS <!--n:foods-->1,771<!--/n-->종(일반 <!--n:general-->538<!--/n-->종 + 시판 제품 <!--n:prod-->1,233<!--/n-->종, 시판 표시는 데이터의 PROD 목록) + 식약처·국가표준식품성분표·제품 표시 영양값(MFDS·MICRO) + 별명/아이콘/분량 표
                ├─ 판정    … foodStatus(음식, 사용자 맥락) → ok / caution / later / avoid / ban + 이유
-               ├─ 식단    … samplePlan() → 끼니 메뉴 <!--n:menus-->1,174<!--/n-->개 중 조건을 통과한 것으로 7일, 양 조절
+               ├─ 식단    … samplePlan() → 끼니 메뉴 <!--n:menus-->1,286<!--/n-->개 중 조건을 통과한 것으로 7일, 양 조절
                ├─ 궁금한 점 … QA <!--n:qa-->51<!--/n-->문항(근거 원문 인용 <!--n:qaev-->172<!--/n-->건) → 음식 검색·음식 정보와 연결
                └─ 화면    … render() → renderInner() → viewOnboard(첫 실행) · viewPlan·viewLog·viewPebble·viewFood·viewMe(탭 5개, 조약돌은 v1.13.0 25차)
                              + 하위 화면 SCR(nutri 영양·report 보고서·asks 물어볼 것·set-* 설정·meal 끼니 …)
@@ -122,7 +122,7 @@
 
 `samplePlan()`은 7일 식단을 만듭니다(v1.7.0부터 앱의 유일한 식단 방식).
 
-1. 메뉴 <!--n:menus-->1,174<!--/n-->개(생성 + 직접 쓴 메뉴 + 내가 만든 메뉴) 중 모든 식품이 그날 판정을 통과한 것만 씀(저잔사식은 채소 반찬 한 끼 1가지)
+1. 메뉴 <!--n:menus-->1,286<!--/n-->개(생성 + 직접 쓴 메뉴 + 내가 만든 메뉴) 중 모든 식품이 그날 판정을 통과한 것만 씀(저잔사식은 채소 반찬 한 끼 1가지)
 2. 날짜마다 목록의 다른 위치에서 시작해, 한 주에 같은 메뉴·같은 점심·저녁 주재료를 먼저 건너뜀
 3. 끼니 평가가 '좋음'인 식품이 든 메뉴를 먼저, '나쁨'인 식품은 뺌. 관해기에는 지중해식 메뉴를 먼저. v1.13.0부터 이 순서로 조건을 통과한 후보 몇 개(`PICK_W`)를 보고, 그날 남은 끼니 수로 나눈 칼슘(관해기에는 식이섬유도) 부족을 가장 많이 채우는 것을 고름(결정 43)
 4. 아침 단백질은 하루 목표의 20%(적어도 12 g) 이상, 나트륨은 끼니와 하루 누적으로 상한 안
@@ -168,7 +168,7 @@ src/data/spec11.py       v1.10.0 흔한 외식 메뉴 41종(식약처 음식 DB�
 src/brand/uc-table-sans.woff2  v1.11.0 앱 글꼴(tools/font_subset.py가 Pretendard 1.3.9를 앱 글자+KS X 1001 한글로 줄이고 이름을 바꿈, OFL 고지 Pretendard-OFL.txt)
 src/data/added.json      v1.10.0 음식마다 확인 날짜(그 음식을 넣은 날). tools/added_dates.py가 관리, 날짜가 없으면 생성이 멈춤
 src/data/templates.py    판정 설명 문장 템플릿(근거 번호 포함)
-src/data/menus.py        끼니 메뉴 <!--n:menus-->1,174<!--/n-->개(구성 요소 조합, 레시피 연결, 지중해식 메뉴)
+src/data/menus.py        끼니 메뉴 <!--n:menus-->1,286<!--/n-->개(구성 요소 조합, 레시피 연결, 지중해식 메뉴)
 src/data/qa.py           궁금한 점 <!--n:qa-->51<!--/n-->문항과 근거 원문 인용 <!--n:qaev-->172<!--/n-->건(data/sources/*.txt와 글자 대조)
 src/data/fodmap_serv.py  FODMAP 1회량 79종(낮음·중간·높음, 성분, 근거, 확인 날짜)(v1.8.0)
 src/brand/logo-mono.svg  UC TABLE 로고(tools/brand.cjs가 그림. 같은 스크립트가 src/brand/app-icon의 아이콘 PNG를 public/에 넣음)(v1.8.0, 아이콘은 v1.13.0 25차부터 수달 그림 E1)

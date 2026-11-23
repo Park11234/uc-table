@@ -8,6 +8,7 @@ UC 식단 관리 도우미
 
 **궤양성 대장염 환자가 "오늘 이거 먹어도 되나?"를 근거와 함께 바로 확인하는 모바일 웹앱**
 
+[![test](https://github.com/Park11234/uc-table/actions/workflows/test.yml/badge.svg)](https://github.com/Park11234/uc-table/actions/workflows/test.yml)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![AI assisted](https://img.shields.io/badge/built%20with-Claude-8A63D2)
 
@@ -34,7 +35,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 | 음식 판정 | 끼니 메뉴 | 궁금한 점 | 근거 자료 | 자동 점검 | 저장 데이터 손상 퍼징 | 접근성(WCAG 2.2 AA) | 외부 요청 |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| <!--n:foods-->1,771<!--/n-->종 | <!--n:menus-->1,174<!--/n-->개 | <!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->172<!--/n-->건 | <!--n:refs-->93<!--/n-->건 | Playwright <!--n:pw-->79<!--/n-->개 + 파이썬 <!--n:pytests-->120<!--/n-->개 | 1,382가지 → 오류 0 | 위반 0 | 0건(오프라인 빌드) |
+| <!--n:foods-->1,771<!--/n-->종 | <!--n:menus-->1,286<!--/n-->개 | <!--n:qa-->51<!--/n-->문항 · 원문 인용 <!--n:qaev-->172<!--/n-->건 | <!--n:refs-->93<!--/n-->건 | Playwright <!--n:pw-->82<!--/n-->개 + 파이썬 <!--n:pytests-->120<!--/n-->개 | 1,382가지 → 오류 0 | 위반 0 | 0건(오프라인 빌드) |
 
 기술 스택: Vanilla JS(HTML 한 파일, 프레임워크 없음) · localStorage·IndexedDB · Service Worker(PWA) · Web Crypto(백업 암호화) · html2canvas + jsPDF · Python(음식 데이터 파이프라인) · Playwright · axe-core · ESLint · TypeScript(checkJs, 타입 검사만) · GitHub Actions / Pages
 
@@ -63,18 +64,18 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 |---|---|
 | 증상 기록 | 질문 4쪽과 요약 1쪽으로 기록. 바쁠 때는 빠른 기록(세 가지)이나 '평소와 같음' 한 번으로 저장하고 14일 배변 횟수 추이를 봄 |
 | 단계 판정 | 아래 기준표에 따라 식단 단계를 자동으로 고름(직접 고정도 가능) |
-| 식단 | 끼니 메뉴 <!--n:menus-->1,174<!--/n-->개에서 단계·알레르기·지시 사항에 맞는 7일 식단을 짜고 체중에 맞춰 양을 조절 |
+| 식단 | 끼니 메뉴 <!--n:menus-->1,286<!--/n-->개에서 단계·알레르기·지시 사항에 맞는 7일 식단을 짜고 체중에 맞춰 양을 조절 |
 | 음식 찾아보기 | <!--n:foods-->1,771<!--/n-->종을 이름·초성으로 찾고 지금 먹어도 되는지와 그 이유, 대신 먹을 음식을 보여 줌 |
 | 궁금한 점 | <!--n:qa-->51<!--/n-->문항의 답에 학회·병원·국제 지침의 원문 문장을 붙임 |
 | 외식·편의점 판정 | 메뉴 이름·재료나 포장 표시를 적으면 규칙으로 판정. 바코드는 한 번 연결해 두면 바로 찾음 |
-| 홈 | 오늘 적은 값과 2주 배변 횟수 그래프, 오늘 끼니, 오늘 할 일을 한 화면에 |
+| 홈 | 지금 식단 단계와 2주 배변 횟수 그래프, 오늘 끼니, 오늘 할 일을 한 화면에 |
 | 영양·목표·보고서 | 먹은 음식과 수분을 열량·단백질 목표와 비교하고 7일·30일 보고서를 만듦 |
 | 먹은 음식 추가 | 자주 먹은 음식·즐겨찾기를 먼저 보이고 무게 기준과 FODMAP 1회량을 함께 표시 |
 | 장보기·알림 | 7일 식단의 장보기 목록과 휴대폰 캘린더 알림 파일(.ics) |
 | 음식 다시 먹어 보기 | 주의 음식을 3일에 걸쳐 조금씩 다시 시도하며 기록 |
 | 조약돌 · 수달 달이 | 하루 끼니를 다 먹은 날마다 조약돌 1개. 30개가 한 바퀴 |
 | 건강 관리 점검 · 음식 경험 PDF | 예방접종·검진 확인 목록과 평가한 음식·그날 증상을 옮긴 PDF |
-| 첫 실행 설정 · 기록 보호 | 첫 화면에서 앱 설명과 확인 사항을 보고 체크해 시작, 이어서 3단계 설정. 두 창에서 열 때 덮어쓰기 방지 |
+| 첫 실행 설정 · 기록 보호 | 첫 화면에서 앱 설명과 확인 사항을 보고 체크해 시작, 이어서 3단계 설정과 사용 방법 안내(홈 오른쪽 위 '사용 방법'으로 다시 봄). 두 창에서 열 때 덮어쓰기 방지 |
 | 백업·내보내기 | 백업 파일(비밀번호 암호화 선택)·CSV·PC 자동 백업 폴더 |
 | 검사 수치·약 메모 | CRP 등 수치와 약을 바꾼 날을 메모로만 저장(해석하지 않음) |
 | PC·아이폰 | PC는 휴대폰과 같은 화면을 가운데에, 아이폰은 입력칸 확대 방지와 공유로 저장 |
@@ -109,7 +110,7 @@ AI를 쓰지 않습니다. 판정·식단·검색·질문 답은 모두 앱 안�
 
 - 기록은 연 주소(또는 파일)마다 따로 저장됩니다. 옮길 때는 **내 정보 → 데이터 백업 → 백업 파일 저장**으로 파일을 만든 뒤, 새 곳의 같은 화면에서 **백업 파일 불러오기**를 누르십시오.
 - 파일 링크는 main에 올릴 때마다 `release` 워크플로가 최신 파일로 바꿔 붙입니다.
-- 오프라인에서도 모든 기능이 같습니다. 끼니 메뉴 <!--n:menus-->1,174<!--/n-->개에서 그날 단계·알레르기·의료진 지시·주의 음식에 맞는 것만 골라 7일 식단을 만들고 궁금한 점 <!--n:qa-->51<!--/n-->문항과 근거 원문도 파일 안에 들어 있습니다.
+- 오프라인에서도 모든 기능이 같습니다. 끼니 메뉴 <!--n:menus-->1,286<!--/n-->개에서 그날 단계·알레르기·의료진 지시·주의 음식에 맞는 것만 골라 7일 식단을 만들고 궁금한 점 <!--n:qa-->51<!--/n-->문항과 근거 원문도 파일 안에 들어 있습니다.
 
 ## 실행과 개발
 
@@ -150,8 +151,8 @@ npm ci && npx playwright install --with-deps chromium   # package-lock.json 그�
 npm run lint                     # ESLint (경고 0)
 npm run typecheck                # TypeScript checkJs 타입 검사 (오류 0, types/globals.d.ts)
 npm run test:py                  # 데이터 생성 코드 단위 점검 <!--n:pytests-->120<!--/n-->개(파이썬 표준 라이브러리만)
-npm test                         # Playwright 점검 <!--n:pw-->79<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
-npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->216<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
+npm test                         # Playwright 점검 <!--n:pw-->82<!--/n-->개(화면 비교는 node tests/visual/visual.cjs, WebKit은 tests/webkit)
+npm run test:mutation            # 일부러 망가뜨린 앱 <!--n:mutants-->229<!--/n-->개를 점검이 잡는지(CI는 매주 한 번, 출시 전에는 손으로 한 번)
 node tools/doc_numbers.cjs       # 문서에 적은 숫자(음식 수·문항·점검 수)가 지금 빌드와 같은지(--fix로 고침)
 python3 tools/stale_check.py     # 확인한 지 1년 넘은 근거
 python3 tools/link_check.py      # 참고문헌·레시피 링크 형식(--online은 실제로 열어 봄)
@@ -192,7 +193,7 @@ python3 tools/stale_check.py --soon 90   # 근거 확인일 기한 90일 전 미
 한글 IME 조합 입력, 키보드가 올라온 좁은 화면, 320 px, 큰 글자, 다크 모드,
 사용자 입력의 HTML 주입, 접근성(axe-core, WCAG 2.2 AA)을 Playwright로 확인하고 ESLint 경고 0·TypeScript 타입 오류 0을 유지합니다.
 모든 화면의 버튼을 2단계까지 눌러 보고 검색칸마다 이상한 검색어를 넣는 누름·검색 퍼징(누름 약 2,600회)과 주요 화면 10개를 기준 화면과 픽셀로 비교하는 화면 비교 점검도 돌립니다. 아이폰 사파리와 같은 엔진(WebKit)의 주요 흐름 점검은 CI에서 돌립니다. 디자인을 바꾼 뒤에는 agent-browser로 처음 쓰는 사람처럼 끝까지 써 보며 찾은 24건을 고쳤습니다. 이어서 그 판 전체를 다른 검토자가 다시 읽어 판정·백업·초기화·검색 등 20건을 고쳤습니다.
-앱을 일부러 <!--n:mutants-->216<!--/n-->가지 방식으로 망가뜨린 뒤 해당 점검 <!--n:pairs-->221<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다. 망가뜨리는 방식에는 일반 햄이 다시 '피하기'로 바뀜, 나트륨·지방 규칙 삭제, 다른 창의 기록 덮어쓰기, 뒤로 가기가 앱 밖으로 넘어감 등이 있습니다. 전체 목록은 [점검 체계](docs/testing.md)에 있습니다.
+앱을 일부러 <!--n:mutants-->229<!--/n-->가지 방식으로 망가뜨린 뒤 해당 점검 <!--n:pairs-->234<!--/n-->쌍이 실제로 실패하는지도 매주 확인합니다. 망가뜨리는 방식에는 일반 햄이 다시 '피하기'로 바뀜, 나트륨·지방 규칙 삭제, 다른 창의 기록 덮어쓰기, 뒤로 가기가 앱 밖으로 넘어감 등이 있습니다. 전체 목록은 [점검 체계](docs/testing.md)에 있습니다.
 
 ### 기록 보관
 
@@ -238,7 +239,7 @@ flowchart LR
 AI 답은 매번 달라 규칙으로 다시 검사해야 했고 그 검사를 통과해도 설명 문장까지 검증할 수는 없었기 때문입니다.
 대신 그 자리를 확인할 수 있는 자료로 채웠습니다.
 
-- 끼니 메뉴 <!--n:menus-->1,174<!--/n-->개는 이미 근거를 확인한 재료와 조합 규칙(단계별 채소 수·분량, 짠 식품 상한, 같은 날 주재료 겹침 방지)으로만 만듭니다.
+- 끼니 메뉴 <!--n:menus-->1,286<!--/n-->개는 이미 근거를 확인한 재료와 조합 규칙(단계별 채소 수·분량, 짠 식품 상한, 같은 날 주재료 겹침 방지)으로만 만듭니다.
 - 궁금한 점 <!--n:qa-->51<!--/n-->문항에는 답의 근거 문장 <!--n:qaev-->172<!--/n-->건을 원문 그대로 실었습니다. 인용이 원문 파일에 글자 그대로 있는지는 단위 점검이 확인합니다(PDF에서 공백·줄바꿈만 무시). 해외 지침 4편은 원문 페이지에서 다시 대조했습니다.
 - 시판 과자·라면·마트 제품은 공식 포장 표시·식약처 DB·열량 계산이 서로 맞는 제품만 넣었습니다. 그 뒤에 더한 시판 제품 1,059종은 판매처 한 곳의 포장 표시·상품정보 고시를 그대로 옮기고 출처를 밝혔습니다(사용자 요청). 외식 프랜차이즈 메뉴는 넣지 않았습니다.
 
@@ -261,7 +262,7 @@ src/app/      앱 코드 한 파일(app.src.html)과 빌드 결과(index.html)
 src/brand/    UC TABLE 로고 SVG(tools/brand.cjs가 만듦), 앱 아이콘(app-icon, 수달 그림 E1), 조약돌 탭 그림(dari, 달이 3장·조약돌 5색 WebP), 앱 글꼴 uc-table-sans.woff2와 OFL 고지
 src/data/     음식 정의(spec1~11) · 시판 제품 기록(cj10·brand10·label10) · 영양식 표시값(spec8 LABEL) · 끼니 메뉴(menus.py) · 궁금한 점(qa.py) · 설명 템플릿 · 생성·빌드 스크립트
 public/       GitHub Pages로 여는 오프라인 PWA
-tests/        Playwright 점검 <!--n:pw-->79<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->52<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
+tests/        Playwright 점검 <!--n:pw-->82<!--/n-->개 (regression <!--n:reg-->27<!--/n--> · checks <!--n:chk-->55<!--/n-->) · 화면 비교(visual) · WebKit(webkit, CI) · 파이썬 단위 점검(tests/python) · 돌연변이 점검
 tools/        오프라인 빌드 · 근거 표 동기화 · 근거 확인일·링크·말투·문서 숫자 점검 · 로고·아이콘(brand.cjs) · 앱 글꼴(font_subset.py) · 스크린샷 · 린트용 추출 스크립트
 docs/         구조 · 설계 결정 · 점검 · AI 활용 · 데이터 출처 · 근거 목록 · 출시 준비(release.md)
 vendor/       함께 넣는 오픈소스(html2canvas, jsPDF, @zxing/library)와 라이선스(앱 '앱 정보'에도 전문)
@@ -311,11 +312,11 @@ The app reads the symptom log (stool frequency compared with the usual count, bl
 <!--n:foods-->1,771<!--/n--> foods, including <!--n:prod-->1,233<!--/n--> packaged products and 41 common restaurant dishes, are judged by fixed rules, and each judgment links to one of <!--n:refs-->93<!--/n--> cited guidelines, papers, and product sources.
 Nutrition values come from the Korean MFDS food database through a reproducible pipeline, and CI checks that the app build is byte-identical.
 The app is a single HTML file with no framework. Records stay on the device (localStorage plus a 7-day IndexedDB snapshot), the screens block every network connection, and backups can be encrypted with a password (PBKDF2-SHA256 with 310,000 iterations, then AES-GCM 256).
-No AI runs inside the app. Meal plans come from <!--n:menus-->1,174<!--/n--> meal templates built from reviewed components, and the <!--n:qa-->51<!--/n--> Q&A entries quote <!--n:qaev-->172<!--/n--> evidence passages that a unit test checks word for word against the source texts.
+No AI runs inside the app. Meal plans come from <!--n:menus-->1,286<!--/n--> meal templates built from reviewed components, and the <!--n:qa-->51<!--/n--> Q&A entries quote <!--n:qaev-->172<!--/n--> evidence passages that a unit test checks word for word against the source texts.
 A pebble tab adds one pebble for each day on which every planned meal is marked as eaten, and a per-food PDF lists each rated food with the dates eaten, the user's rating and notes, and that day's logged symptoms.
 
-Testing: <!--n:pw-->79<!--/n--> Playwright suites and <!--n:pytests-->120<!--/n--> Python unit tests. The Playwright suites cover state-corruption fuzzing (1,373 cases, 0 failures), click and search fuzzing (about 2,600 taps), axe-core WCAG 2.2 AA (0 violations) with 44 px touch targets, Korean IME input, and PWA update delivery.
-Separate scripts compare 10 main screens with reference images pixel by pixel, and CI runs the main flows in WebKit. A documentation-number check keeps the figures in this README current, and a weekly job confirms that the tests fail on <!--n:mutants-->216<!--/n--> deliberately broken builds.
+Testing: <!--n:pw-->82<!--/n--> Playwright suites and <!--n:pytests-->120<!--/n--> Python unit tests. The Playwright suites cover state-corruption fuzzing (1,373 cases, 0 failures), click and search fuzzing (about 2,600 taps), axe-core WCAG 2.2 AA (0 violations) with 44 px touch targets, Korean IME input, and PWA update delivery.
+Separate scripts compare 10 main screens with reference images pixel by pixel, and CI runs the main flows in WebKit. A documentation-number check keeps the figures in this README current, and a weekly job confirms that the tests fail on <!--n:mutants-->229<!--/n--> deliberately broken builds.
 The app was built with Claude; see [docs/ai-workflow.md](docs/ai-workflow.md). Release history is in [CHANGELOG.md](CHANGELOG.md).
 
 ## 라이선스
