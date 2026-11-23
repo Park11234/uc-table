@@ -2,8 +2,11 @@
 
 <img src="public/icon-192.png" width="96" alt="UC TABLE 앱 아이콘">
 
-# <img src="src/brand/logo.svg" height="10" alt="UC TABLE">
-
+<p align="center">
+  <a href="https://park11234.github.io/uc-table/">
+    <img src="docs/app-qr.png" alt="UC TABLE 앱 열기 QR 코드" width="160">
+  </a>
+</p>
 UC 식단 관리 도우미
 
 **궤양성 대장염 환자가 "오늘 이거 먹어도 되나?"를 근거와 함께 바로 확인하는 모바일 웹앱**
