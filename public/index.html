@@ -15,7 +15,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-mGBS1nYqmRyr4UXXSHIp7dUOVFt6/ei4UCgKfnSBG4w='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'none'; manifest-src 'self'; worker-src 'self'; media-src 'self' blob:; base-uri 'none'; form-action 'none'">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/uc-table-sans.woff2" as="font" type="font/woff2" crossorigin>
-<script defer src="app.js?v=b4406be17f"></script>
+<script defer src="app.js?v=4de9f97c9c"></script>
 </head>
 <body>
 <style>
@@ -944,7 +944,7 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-lap .icon-btn{width:44px;height:44px;background:var(--surface)}
 .peb-lap .icon-btn:disabled{opacity:.45}
 .peb-cnt{margin-left:8px;padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--on-soft);font-size:0.8125rem;font-weight:600}
-.peb-river{position:relative;width:100%;aspect-ratio:390/275}
+.peb-river{position:relative;width:100%;aspect-ratio:390/315}
 .peb-river>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .peb-river .peb-rv{fill:none;stroke:var(--peb-river);stroke-width:24;stroke-linecap:round;stroke-linejoin:round}
 .peb-river .peb-rv.pt-on{stroke:var(--peb-on)}
@@ -960,8 +960,10 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-dots{position:relative;display:flex;gap:4px;font-style:normal}
 .peb-dots i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--accent);background:var(--surface)}
 .peb-dots i.pt-eat{background:var(--accent)}
-.peb-lb{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.75rem;line-height:1.2;font-weight:600;color:var(--on-soft)}
+.peb-lb{position:absolute;top:calc(122% + 2px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:0.75rem;line-height:1;font-weight:600;color:var(--on-soft)}   /* 37차: 둘레(위 ::before, 아래로 22%) 바로 밑. 둘레는 화면 너비를 따라 커지므로 같은 %로 따라간다 */
 .peb-lb.pt-nx{color:var(--ok-ink)}
+.pt-er .peb-lb{transform:translateX(calc(-100% + 12px))}   /* 37차: 강이 굽는 줄 끝 칸은 글씨를 안쪽으로 비켜 굽은 강 가운데 점선을 피한다 */
+.pt-el .peb-lb{transform:translateX(-12px)}
 .peb-spk{position:absolute;left:-14%;top:-30%;width:28%;fill:#FFD97A;stroke:#B88200;stroke-width:.8}
 .peb-next .peb-spk{left:36%;top:22%}
 .peb-dock{margin:auto -16px -112px;display:flex;flex-direction:column;align-items:center}
@@ -983,9 +985,25 @@ body.welcome{padding-block-end:max(110px,calc(var(--bbh,0px) + 16px))}
 .peb-art .dari-w{width:150px;aspect-ratio:380/419}
 .peb-art .dari-h{width:200px;aspect-ratio:440/376}
 .peb-art .dari-n{width:120px;aspect-ratio:400/369}
+.peb-art .dari-c{width:168px}
 .peb-c{text-align:center}
 .peb-steps,.peb-stages{list-style:none;margin:16px 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .peb-steps li{display:flex;align-items:center;gap:12px}
+/* 분류 변경(음식 정보) */
+.mv-box{display:flex;flex-direction:column;gap:8px;margin:12px 0;padding:12px;border-radius:12px;background:var(--surface-2)}
+.mv-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:0.875rem;font-weight:600;margin:0}
+.mv-h .hint{font-weight:400;margin:0}
+.mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mv-grid button{min-height:52px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px}
+.mv-grid .pill{background:none;padding:0}
+.mv-grid .pill.ban{color:var(--ban-bg)}
+.mv-grid small{font-size:0.75rem;color:var(--muted)}
+.mv-grid button[aria-pressed="true"]{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+.mv-reset{border:0;background:none;color:var(--accent-deep);font-weight:600;font-size:0.875rem;min-height:44px;padding:0 8px}
+.mine-tag{display:inline-flex;align-items:center;font-size:0.75rem;font-weight:600;color:var(--accent-deep);border:1px solid var(--accent);border-radius:999px;padding:2px 8px;margin-left:4px;vertical-align:middle}
+.app-line{font-size:0.8125rem;color:var(--muted);margin:4px 0 0}
+.mine-m{font-weight:600;color:var(--accent-deep)}
+.mv-box .btn:not(.primary){background:var(--surface)}
 /* 설치 안내 그림: 실제 설치 창·브라우저 단추를 본떠 누를 곳(.ins-on)을 진하게 */
 .ins-shot{position:relative;height:200px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);overflow:hidden}
 .ins-lines{position:absolute;inset:16px 16px auto;display:flex;flex-direction:column;gap:8px}

@@ -172,7 +172,7 @@ src/data/menus.py        끼니 메뉴 <!--n:menus-->1,286<!--/n-->개(구성 �
 src/data/qa.py           궁금한 점 <!--n:qa-->51<!--/n-->문항과 근거 원문 인용 <!--n:qaev-->172<!--/n-->건(data/sources/*.txt와 글자 대조)
 src/data/fodmap_serv.py  FODMAP 1회량 79종(낮음·중간·높음, 성분, 근거, 확인 날짜)(v1.8.0)
 src/brand/logo-mono.svg  UC TABLE 로고(tools/brand.cjs가 그림. 같은 스크립트가 src/brand/app-icon의 아이콘 PNG를 public/에 넣음)(v1.8.0, 아이콘은 v1.13.0 25차부터 수달 그림 E1)
-src/brand/dari/          조약돌 탭 그림: 수달 달이 3장(상반신·기뻐함·손 흔듦)과 조약돌 5색 WebP. build_app.py가 data URL로 앱 안에 넣음(서버 연결 없음)(v1.13.0 25차)
+src/brand/dari/          조약돌 탭 그림: 수달 달이 4장(상반신·기뻐함·손 흔듦·울음)과 조약돌 5색 WebP. build_app.py가 data URL로 앱 안에 넣음(서버 연결 없음)(v1.13.0 25차)
         │
         ├─ generate_dataset.py  식약처 CSV에서 행을 찾아 영양값을 붙임(영양식·시판 제품은 LABEL을 100ml·100g당으로,
         │                       원재료 49종과 밥·죽은 data/rda의 국가표준식품성분 DB 10.4 행으로 덮어씀.

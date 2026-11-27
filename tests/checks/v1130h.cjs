@@ -114,7 +114,7 @@ let b;
     // 7 그림: 앱 안의 그림이고 실제로 그려짐, 서버 요청 없음
     const img=await p.evaluate(async()=>{const urls=Object.values(DARI); const ok=await Promise.all(urls.map(u=>new Promise(r=>{const i=new Image(); i.onload=()=>r(i.naturalWidth>0); i.onerror=()=>r(false); i.src=u})));
       const bg=getComputedStyle(document.querySelector('.dari-n')).backgroundImage; return {n:urls.length, data:urls.every(u=>u.startsWith('data:image/webp;base64,')), ok:ok.every(Boolean), bg:/^url\("?data:image\/webp/.test(bg)}});
-    need(img.n===8&&img.data&&img.ok&&img.bg,`7 달이 3장·조약돌 5색이 앱 안에 있고 그려짐 (${JSON.stringify(img)})`);
+    need(img.n===9&&img.data&&img.ok&&img.bg,`7 달이 4장(36차에 우는 달이)·조약돌 5색이 앱 안에 있고 그려짐 (${JSON.stringify(img)})`);
     need(nets.length===0,`7 서버 요청 없음 (${nets.length}건)`);
     await ctx.close();
   }

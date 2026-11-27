@@ -10,6 +10,7 @@
   - 궁금한 점의 근거 원문(qa.py의 E(...) 안) — 원문 글자 그대로 대조하는 인용과 위치
   - '필요·주요·중요·마요(마요네즈 별명)'처럼 '요'로 끝나는 낱말
   - 판매처·식약처 자료를 그대로 옮긴 생성 파일(src/data/cj10.py·brand10.py: 상품 이름·원재료명 원문, v1.9.0)
+  - 사용자가 글자 그대로 정한 문구(USER_OK: 조약돌 탭 '달이가 슬퍼해요!')
 
   python3 tools/tone_check.py      # 남은 해요체가 있으면 위치를 보이고 종료 코드 1
 """
@@ -18,6 +19,7 @@ import ast, os, re, sys, glob
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORDS = {'필요', '주요', '중요', '마요', '불필요', '개요'}
 TOK = re.compile(r'[가-힣]*요(?![가-힣])')
+USER_OK = {'슬퍼해요'}   # 사용자가 정한 문구 그대로(조약돌 탭 '달이가 슬퍼해요!')
 RAW = {'cj10.py', 'brand10.py', 'label10.py'}   # 자료 원문을 옮긴 생성 파일(상품 이름 '참치마요' 등)
 
 
@@ -46,7 +48,7 @@ def find(files=None):
         s = open(fn, encoding='utf-8').read()
         prot = spans_app(s) if fn.endswith('.html') else spans_qa(s) if fn.endswith('qa.py') else []
         for m in TOK.finditer(s):
-            if m.group(0) in WORDS or any(a <= m.start() < b for a, b in prot):
+            if m.group(0) in WORDS or m.group(0) in USER_OK or any(a <= m.start() < b for a, b in prot):
                 continue
             ln = s.count('\n', 0, m.start()) + 1
             found.append((os.path.relpath(fn, ROOT), ln, m.group(0), s[max(0, m.start() - 30):m.end() + 3].replace('\n', ' ')))

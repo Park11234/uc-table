@@ -255,7 +255,7 @@ mut={
  'r23_old_name.html':rep('2:{name:"지중해식",plain:"생선·채소·올리브유 위주 식사"','2:{name:"이행식",plain:"조금씩 늘리는 식사"'),  # 옛 단계 이름이 돌아옴
  # v1.13.0 25차 조약돌 탭(결정 57)
  'r25_any_meal.html':rep('return req.every(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))','return SLOTS.some(s=>a.includes(s)||(rated?rated.has(d+"|"+s):isRated(d,s)))'),  # 한 끼만 먹어도(간식 포함) 조약돌
- 'r25_happy_always.html':rep('<div class="peb-dock"><span class="dari dari-n" role="img" aria-label="수달 달이"></span>','<div class="peb-dock"><span class="dari dari-h" role="img" aria-label="수달 달이"></span>'),  # 평소에도 기뻐하는 달이
+ 'r25_happy_always.html':rep('<div class="peb-dock"><span class="dari dari-n${sad?','<div class="peb-dock"><span class="dari dari-h${sad?'),  # 평소에도 기뻐하는 달이
  # v1.13.0 27차 첫 화면 달이·홈 단계 단추
  'r27_intro_nodari.html':rep('<div class="intro-dock"><span class="dari dari-n" role="img" aria-label="내다보는 수달 달이"></span>','<div class="intro-dock">'),  # 첫 화면 맨 아래 달이가 빠짐
  'r30_stage_gq_back.html':rep('<span class="sr-only">(${STAGES[n].plain})</span></span>`:"";','<span class="sr-only">(${STAGES[n].plain})</span>${dots?gqBtn(["","lowres","med","normal"][n],STAGES[n].name):""}</span>`:"";'),  # 식단 단계 이름 옆에 다시 '?'(30차)
@@ -283,8 +283,32 @@ mut={
  'r34_intent_off.html':rep('#Intent;scheme=https;package=com.android.chrome;','#Intent;scheme=https;'),  # '크롬으로 열기'가 크롬을 지정하지 않음
  'r34_kakao_ios_off.html':rep('href="kakaotalk://web/openExternal?url=${encodeURIComponent(SITE)}"','href="${SITE}"'),  # 아이폰 카카오톡에서 사파리로 열지 못함
  'r34_ios_note_off.html':rep('${ios&&onb?`<p class="ins-note">','${false?`<p class="ins-note">'),  # 아이폰에 설치한 앱으로 열어 시작하라는 안내가 없음
+ 'r35_override_off.html':rep('return mine?{...out,level:mine,','return false?{...out,level:mine,'),  # 직접 옮긴 분류를 무시함
+ 'r35_ctx_off.html':rep('trig:S.triggers, myLv:S.myLv||{},','trig:S.triggers,'),  # 판정 조건에 직접 옮긴 분류가 빠짐
+ 'r35_plansig_off.html':rep('S.stageMode,S.myLv])}','S.stageMode])}'),  # 분류를 옮겨도 7일 식단을 다시 짜지 않음
+ 'r35_tag_off.html':rep("${s.mine?'<span class=\"mine-tag\">직접 옮김</span>':\"\"}",''),  # 음식 정보에 '직접 옮김'이 없음
+ 'r35_appline_off.html':rep('${s.mine?`<p class="app-line">','${false?`<p class="app-line">'),  # 옮긴 음식에 앱 판정이 안 보임
+ 'r35_reset_off.html':rep('if(!v||v===app.level) delete S.myLv[id]; else S.myLv[id]=v;','if(!v||v===app.level){} else S.myLv[id]=v;'),  # 앱 판정대로 되돌리지 못함
+ 'r35_ask_off.html':rep('&&allergyBan(app)&&!a.dataset.ok){MV_ASK={id,v};','&&false&&!a.dataset.ok){MV_ASK={id,v};'),  # 알레르기 음식을 묻지 않고 옮김
+ 'r35_filter_off.html':rep('(lvf==="mine"?!!s.mine:','(lvf==="mine"?true:'),  # '직접 옮긴 음식' 걸러 보기가 모든 음식을 보임
+ 'r35_norm_off.html':rep('s.myLv={}; for(const [k,v] of Object.entries(obj(o.myLv)||{}))','s.myLv={}; for(const [k,v] of Object.entries({}))'),  # 다시 열면 옮긴 분류가 사라짐
+ 'r35_merge_off.html':rep('for(const [k,v] of Object.entries(B.myLv||{})) if(!(k in m.myLv)) m.myLv[k]=v;',''),  # 백업을 합칠 때 옮긴 분류를 버림
+ 'r35_list_tag_off.html':rep("${s.mine?'<b class=\"mine-m\">직접 옮김</b> · ':\"\"}",''),  # 목록 줄에 '직접 옮김'이 없음
+ 'r36_days4.html':rep('const PEB_SAD_DAYS=3;','const PEB_SAD_DAYS=4;'),  # 사흘째에 슬퍼하지 않음
+ 'r36_skip_off.html':rep('for(const m of [S.ate||{},S.skips||{}])','for(const m of [S.ate||{}])'),  # '안 먹음'을 눌러도 슬퍼함
+ 'r36_rate_off.html':rep('for(const r of S.ratings) if(r.date<=t&&r.date>last) last=r.date;',''),  # 끼니를 평가해도 슬퍼함
+ 'r36_start_off.html':rep('mealCheckLast()||S.consent?.date||today()','mealCheckLast()||today()'),  # 한 번도 안 누르면 슬퍼하지 않음
+ 'r36_dock_off.html':rep('dari-n${sad?" dari-c":""}','dari-n'),  # 조약돌 탭 달이가 울지 않음
+ 'r36_tap_off.html':rep('PEB_TAP=S.tab==="peb";',''),  # 조약돌 탭을 눌러도 창이 안 뜸
+ 'r36_loop.html':rep('if(PEB_TAP){PEB_TAP=false; const n=pebSadDays();','if(true){PEB_TAP=false; const n=pebSadDays();'),  # 창을 닫아도 다시 그릴 때마다 또 뜸
+ 'r36_img_off.html':rep('.dari-c{background-image:url(${DARI.c})}',''),  # 우는 달이 그림이 빠짐
+ 'r36_go_off.html':rep('case "pebSadGo": closeSheet(); SCR=null; S.tab="plan";','case "pebSadGo": closeSheet(); SCR=null;'),  # '오늘 끼니 표시하기'가 홈으로 가지 않음
+ 'r37_lb_fixed.html':rep('.peb-lb{position:absolute;top:calc(122% + 2px);','.peb-lb{position:absolute;top:calc(100% + 6px);'),  # 칸 글씨가 둘레를 따라가지 않아 넓은 화면에서 점선과 겹침
+ 'r37_rows.html':rep('PEB_Y=[30,94,158,222,286]','PEB_Y=[30,84,138,192,246]'),  # 줄 사이가 좁아 19번째 칸 글씨가 '30 · k단계' 둘레에 닿음
+ 'r37_end_off.html':rep('end=c===5&&r<4?(r%2?" pt-el":" pt-er"):""','end=""'),  # 줄 끝 칸 글씨가 굽은 강 점선에 닿음
+ 'r37_lh.html':rep('line-height:1;font-weight:600;color:var(--on-soft)}','line-height:1.2;font-weight:600;color:var(--on-soft)}'),  # 좁은 화면에서 칸 글씨가 아래 칸 둘레에 닿음
  'r33_peb_retro.html':rep('const req=d===today()?mealSlots():(S.daySlots?.[d]||oldSlots());','const req=mealSlots();'),  # 끼니 수를 바꾸면 지난 조약돌 수가 달라짐
- 'r25_recelebrate.html':rep('if(done>S.peb.seen){S.peb.seen=done; save(); openSheet(pebUpHTML(done,P))}','if(done>S.peb.seen){openSheet(pebUpHTML(done,P))}'),  # 같은 바퀴를 들어올 때마다 축하
+ 'r25_recelebrate.html':rep('if(done>S.peb.seen){S.peb.seen=done; save(); openSheet(pebUpHTML(done,P)); return}','if(done>S.peb.seen){openSheet(pebUpHTML(done,P)); return}'),  # 같은 바퀴를 들어올 때마다 축하
 }
 for n,t in mut.items():
     assert t!=s, n
@@ -536,7 +560,31 @@ r34_norm_off.html tests/checks/v1130m.cjs
 r34_inapp_off.html tests/checks/v1130m.cjs
 r34_intent_off.html tests/checks/v1130m.cjs
 r34_kakao_ios_off.html tests/checks/v1130m.cjs
-r34_ios_note_off.html tests/checks/v1130m.cjs"
+r34_ios_note_off.html tests/checks/v1130m.cjs
+r35_override_off.html tests/checks/v1130n.cjs
+r35_ctx_off.html tests/checks/v1130n.cjs
+r35_plansig_off.html tests/checks/v1130n.cjs
+r35_tag_off.html tests/checks/v1130n.cjs
+r35_appline_off.html tests/checks/v1130n.cjs
+r35_reset_off.html tests/checks/v1130n.cjs
+r35_ask_off.html tests/checks/v1130n.cjs
+r35_filter_off.html tests/checks/v1130n.cjs
+r35_norm_off.html tests/checks/v1130n.cjs
+r35_merge_off.html tests/checks/v1130n.cjs
+r35_list_tag_off.html tests/checks/v1130n.cjs
+r36_days4.html tests/checks/v1130o.cjs
+r36_skip_off.html tests/checks/v1130o.cjs
+r36_rate_off.html tests/checks/v1130o.cjs
+r36_start_off.html tests/checks/v1130o.cjs
+r36_dock_off.html tests/checks/v1130o.cjs
+r36_tap_off.html tests/checks/v1130o.cjs
+r36_loop.html tests/checks/v1130o.cjs
+r36_img_off.html tests/checks/v1130o.cjs
+r36_go_off.html tests/checks/v1130o.cjs
+r37_lb_fixed.html tests/checks/v1130p.cjs
+r37_rows.html tests/checks/v1130p.cjs
+r37_end_off.html tests/checks/v1130p.cjs
+r37_lh.html tests/checks/v1130p.cjs"
 # 화면 비교는 기준 화면을 만든 환경과 글꼴이 같을 때만 비교하므로(다르면 건너뜀), 글꼴이 다른 환경(CI 등)에서는 화면 비교 돌연변이 쌍을 뺀다
 if ! node tests/visual/visual.cjs --fp-check >/dev/null 2>&1; then PAIRS=$(echo "$PAIRS" | grep -v ' tests/visual/visual.cjs$'); echo "화면 비교 기준과 글꼴이 다른 환경이라 화면 비교 돌연변이 쌍은 건너뜁니다"; fi
 # 동시에 돌 때 페이지 파일이 섞이지 않게 쌍마다 따로 쓰는 폴더(TEST_TMP)를 준다

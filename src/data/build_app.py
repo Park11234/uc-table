@@ -85,7 +85,7 @@ def render():
         'font': js('data:font/woff2;base64,' + base64.b64encode(open(os.path.join(ROOT, 'src', 'brand', 'uc-table-sans.woff2'), 'rb').read()).decode('ascii')),
         # v1.13.0 25차: 조약돌 탭의 수달 '달이' 3장과 조약돌 5색(WebP, 서버 연결 없이 앱 안에)
         'dari': js({k: 'data:image/webp;base64,' + base64.b64encode(open(os.path.join(ROOT, 'src', 'brand', 'dari', f), 'rb').read()).decode('ascii')
-                    for k, f in (('n', 'dari-normal.webp'), ('h', 'dari-happy.webp'), ('w', 'dari-hello.webp'), ('p1', 'pebble-1.webp'), ('p2', 'pebble-2.webp'),
+                    for k, f in (('n', 'dari-normal.webp'), ('h', 'dari-happy.webp'), ('w', 'dari-hello.webp'), ('c', 'dari-cry.webp'), ('p1', 'pebble-1.webp'), ('p2', 'pebble-2.webp'),
                                  ('p3', 'pebble-3.webp'), ('p4', 'pebble-4.webp'), ('p5', 'pebble-5.webp'))}),
         # v1.11.0 검토 R-18: 글꼴·라이브러리를 파일 하나에 넣는 오프라인 판·안드로이드 앱에도 라이선스 전문이 함께 가도록 앱 안에 넣는다
         'lic': js([[t, open(os.path.join(ROOT, *f), encoding='utf-8').read().strip()] for t, f in (
